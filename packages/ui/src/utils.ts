@@ -1,14 +1,8 @@
-import type {
-  ComponentPropsWithRef,
-  ElementType,
-  MutableRefObject,
-  Ref,
-  RefCallback,
-} from "react";
+import type { ComponentPropsWithRef, ElementType, MutableRefObject, Ref, RefCallback } from 'react';
 
-import { clsx, type ClassValue } from "clsx";
-import { forwardRef } from "react";
-import { twMerge } from "tailwind-merge";
+import { clsx, type ClassValue } from 'clsx';
+import { forwardRef } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 /**
  * Utility function to merge Tailwind CSS classes
@@ -38,8 +32,7 @@ export type PolymorphicProperties<As extends ElementType, P> = Omit<
   P &
   AsProperty<As>;
 
-export type PolymorphicReference<As extends ElementType> =
-  ComponentPropsWithRef<As>["ref"];
+export type PolymorphicReference<As extends ElementType> = ComponentPropsWithRef<As>['ref'];
 
 /**
  * Create a polymorphic component with correct ref forwarding.
@@ -60,16 +53,15 @@ export function createPolymorphic<
   },
 ) => JSX.Element | null {
   // Wrap with forwardRef so consumers pass standard `ref` instead of a prop.
-  const Comp = forwardRef<
-    unknown,
-    PolymorphicProperties<DefaultAs, OwnProperties>
-  >((_props, _ref) => {
-    // We intentionally keep the render API you provided.
-    return render(
-      _props as PolymorphicProperties<DefaultAs, OwnProperties>,
-      _ref as PolymorphicReference<DefaultAs>,
-    );
-  });
+  const Comp = forwardRef<unknown, PolymorphicProperties<DefaultAs, OwnProperties>>(
+    (_props, _ref) => {
+      // We intentionally keep the render API you provided.
+      return render(
+        _props as PolymorphicProperties<DefaultAs, OwnProperties>,
+        _ref as PolymorphicReference<DefaultAs>,
+      );
+    },
+  );
 
   (Comp as { displayName?: string }).displayName = displayName;
 
@@ -84,19 +76,15 @@ export function createPolymorphic<
  * Compose multiple refs into a single ref callback
  * Useful when you need to forward refs to multiple elements
  */
-export function composeReferences<T>(
-  ...references: Array<Ref<T> | undefined>
-): RefCallback<T> {
+export function composeReferences<T>(...references: Array<Ref<T> | undefined>): RefCallback<T> {
   return (node: T) => {
     for (const ref of references) {
       if (!ref) continue;
-      if (typeof ref === "function") {
+      if (typeof ref === 'function') {
         ref(node);
       } else {
         // Narrow and assign safely; keep nullability semantics for React refs.
-        (ref as MutableRefObject<T | undefined>).current = node as
-          | T
-          | undefined;
+        (ref as MutableRefObject<T | undefined>).current = node as T | undefined;
       }
     }
   };
@@ -117,10 +105,7 @@ export function variants<
 
   // Precompile to Maps to avoid dynamic object key sinks
   const variantMaps = new Map<string, Map<string, string>>(
-    Object.entries(variantConfig).map(([k, v]) => [
-      k,
-      new Map(Object.entries(v)),
-    ]),
+    Object.entries(variantConfig).map(([k, v]) => [k, new Map(Object.entries(v))]),
   );
 
   return (props?: Props): string => {

@@ -1,48 +1,48 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 
-import { Inter, JetBrains_Mono } from "next/font/google";
-import "./globals.css";
+import { Inter, JetBrains_Mono } from 'next/font/google';
+import './globals.css';
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
+  subsets: ['latin'],
+  variable: '--font-sans',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-mono",
+  subsets: ['latin'],
+  variable: '--font-mono',
 });
 
 // Constants for metadata to avoid duplication
-const APP_TITLE = "AI-BOS ERP";
-const APP_DESCRIPTION = "AI-BOS Enterprise Resource Planning System";
+const APP_TITLE = 'AI-BOS ERP';
+const APP_DESCRIPTION = 'AI-BOS Enterprise Resource Planning System';
 
 export const metadata: Metadata = {
   title: APP_TITLE,
   description: APP_DESCRIPTION,
-  keywords: ["ERP", "Enterprise", "Business", "Management", "AI"],
-  authors: [{ name: "AI-BOS Team" }],
-  creator: "AI-BOS",
-  publisher: "AI-BOS",
+  keywords: ['ERP', 'Enterprise', 'Business', 'Management', 'AI'],
+  authors: [{ name: 'AI-BOS Team' }],
+  creator: 'AI-BOS',
+  publisher: 'AI-BOS',
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://aibos-erp.com"),
+  metadataBase: new URL('https://aibos-erp.com'),
   openGraph: {
-    type: "website",
-    locale: "en_US",
-    url: "https://aibos-erp.com",
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://aibos-erp.com',
     title: APP_TITLE,
     description: APP_DESCRIPTION,
     siteName: APP_TITLE,
   },
   twitter: {
-    card: "summary_large_image",
+    card: 'summary_large_image',
     title: APP_TITLE,
     description: APP_DESCRIPTION,
-    creator: "@aibos_erp",
+    creator: '@aibos_erp',
   },
   robots: {
     index: true,
@@ -50,26 +50,20 @@ export const metadata: Metadata = {
     googleBot: {
       index: true,
       follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
     },
   },
   verification: {
-    google: "your-google-verification-code",
+    google: 'your-google-verification-code',
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}): JSX.Element {
+export default function RootLayout({ children }: { children: React.ReactNode }): JSX.Element {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}
-      >
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         {children}
       </body>
     </html>

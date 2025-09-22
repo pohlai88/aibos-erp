@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Base class for all commands in the Event Sourcing system
@@ -47,4 +47,3 @@ export const CommandMetadataSchema = z.object({
 });
 
 export type CommandMetadata = z.infer<typeof CommandMetadataSchema>;
-

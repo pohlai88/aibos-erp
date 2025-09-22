@@ -1,4 +1,4 @@
-import type { DomainEvent } from "../core/domain-event";
+import type { DomainEvent } from '../core/domain-event';
 
 /**
  * Base interface for projections
@@ -90,4 +90,3 @@ export abstract class BaseProjection implements Projection {
     return this.getEventTypes().includes(event.eventType);
   }
 }
-

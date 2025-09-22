@@ -1,11 +1,11 @@
-import type { Repository } from "typeorm";
+import type { Repository } from 'typeorm';
 
-import { User } from "../entities/user.entity";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { type ConfigService } from "@nestjs/config";
-import { PassportStrategy } from "@nestjs/passport";
-import { InjectRepository } from "@nestjs/typeorm";
-import { ExtractJwt, Strategy } from "passport-jwt";
+import { User } from '../entities/user.entity';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { type ConfigService } from '@nestjs/config';
+import { PassportStrategy } from '@nestjs/passport';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ExtractJwt, Strategy } from 'passport-jwt';
 
 interface JwtPayload {
   sub: string;
@@ -26,7 +26,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get("JWT_SECRET", "your-secret-key"),
+      secretOrKey: configService.get('JWT_SECRET', 'your-secret-key'),
     });
   }
 
@@ -38,11 +38,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         is_active: true,
         is_deleted: false,
       },
-      relations: ["user_roles", "user_roles.role"],
+      relations: ['user_roles', 'user_roles.role'],
     });
 
     if (!user) {
-      throw new UnauthorizedException("User not found or inactive");
+      throw new UnauthorizedException('User not found or inactive');
     }
 
     return user;

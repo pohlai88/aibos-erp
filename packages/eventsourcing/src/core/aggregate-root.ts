@@ -1,4 +1,4 @@
-import type { DomainEvent } from "./domain-event";
+import type { DomainEvent } from './domain-event';
 
 /**
  * Base class for aggregate roots in the Event Sourcing system

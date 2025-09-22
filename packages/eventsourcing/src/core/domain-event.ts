@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Base class for all domain events in the Event Sourcing system
@@ -45,7 +45,7 @@ export abstract class DomainEvent {
     this: new (...args: unknown[]) => T,
     _data: Record<string, unknown>,
   ): T {
-    throw new Error("Deserialize method must be implemented by subclasses");
+    throw new Error('Deserialize method must be implemented by subclasses');
   }
 }
 

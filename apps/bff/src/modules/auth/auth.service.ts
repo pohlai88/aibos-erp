@@ -1,12 +1,12 @@
-import type { Repository } from "typeorm";
+import type { Repository } from 'typeorm';
 
-import { type LoginDto } from "./dto/login.dto";
-import { type RegisterDto } from "./dto/register.dto";
-import { User } from "./entities/user.entity";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
-import { type JwtService } from "@nestjs/jwt";
-import { InjectRepository } from "@nestjs/typeorm";
-import * as bcrypt from "bcryptjs";
+import { type LoginDto } from './dto/login.dto';
+import { type RegisterDto } from './dto/register.dto';
+import { User } from './entities/user.entity';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { type JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
@@ -16,13 +16,10 @@ export class AuthService {
     private readonly _jwtService: JwtService,
   ) {}
 
-  async validateUser(
-    email: string,
-    password: string,
-  ): Promise<User | undefined> {
+  async validateUser(email: string, password: string): Promise<User | undefined> {
     const user = await this._userRepository.findOne({
       where: { email, is_active: true, is_deleted: false },
-      relations: ["user_roles", "user_roles.role"],
+      relations: ['user_roles', 'user_roles.role'],
     });
 
     if (user && (await bcrypt.compare(password, user.password_hash))) {
@@ -31,13 +28,11 @@ export class AuthService {
     return undefined;
   }
 
-  async login(
-    loginDto: LoginDto,
-  ): Promise<{ access_token: string; user: Partial<User> }> {
+  async login(loginDto: LoginDto): Promise<{ access_token: string; user: Partial<User> }> {
     const user = await this.validateUser(loginDto.email, loginDto.password);
 
     if (!user) {
-      throw new UnauthorizedException("Invalid credentials");
+      throw new UnauthorizedException('Invalid credentials');
     }
 
     // Update last login
@@ -67,16 +62,14 @@ export class AuthService {
     };
   }
 
-  async register(
-    registerDto: RegisterDto,
-  ): Promise<{ access_token: string; user: Partial<User> }> {
+  async register(registerDto: RegisterDto): Promise<{ access_token: string; user: Partial<User> }> {
     // Check if user already exists
     const existingUser = await this._userRepository.findOne({
       where: { email: registerDto.email },
     });
 
     if (existingUser) {
-      throw new UnauthorizedException("User already exists");
+      throw new UnauthorizedException('User already exists');
     }
 
     // Hash password

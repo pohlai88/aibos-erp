@@ -1,8 +1,8 @@
-import type { AggregateRoot } from "../core/aggregate-root";
-import type { DomainEvent } from "../core/domain-event";
-import type { EventStore } from "../core/event-store";
+import type { AggregateRoot } from '../core/aggregate-root';
+import type { DomainEvent } from '../core/domain-event';
+import type { EventStore } from '../core/event-store';
 
-import { ConcurrencyError } from "../core/event-store";
+import { ConcurrencyError } from '../core/event-store';
 
 /**
  * In-memory implementation of the Event Store for testing
@@ -12,11 +12,7 @@ export class MemoryEventStore implements EventStore {
   private streams: Map<string, number> = new Map();
   private snapshots: Map<string, AggregateRoot> = new Map();
 
-  async append(
-    streamId: string,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<void> {
+  async append(streamId: string, events: DomainEvent[], expectedVersion: number): Promise<void> {
     const currentVersion = this.streams.get(streamId) || 0;
 
     if (currentVersion !== expectedVersion) {
@@ -31,10 +27,7 @@ export class MemoryEventStore implements EventStore {
     this.streams.set(streamId, expectedVersion + events.length);
   }
 
-  async getEvents(
-    streamId: string,
-    fromVersion?: number,
-  ): Promise<DomainEvent[]> {
+  async getEvents(streamId: string, fromVersion?: number): Promise<DomainEvent[]> {
     const events = this.events.get(streamId) || [];
 
     if (fromVersion) {
@@ -56,10 +49,7 @@ export class MemoryEventStore implements EventStore {
       .sort((a, b) => a.occurredAt.getTime() - b.occurredAt.getTime());
   }
 
-  async createSnapshot(
-    streamId: string,
-    aggregate: AggregateRoot,
-  ): Promise<void> {
+  async createSnapshot(streamId: string, aggregate: AggregateRoot): Promise<void> {
     this.snapshots.set(streamId, aggregate);
   }
 

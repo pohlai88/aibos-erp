@@ -10,4 +10,4 @@ export const generateId = (): string => {
 };
 
 // Placeholder for future utility functions
-export const UTILS_VERSION = "0.1.0";
+export const UTILS_VERSION = '0.1.0';

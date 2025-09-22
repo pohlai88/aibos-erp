@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Outbox event for reliable messaging
@@ -63,9 +63,7 @@ export class OutboxEvent {
    * Check if event should be retried
    */
   shouldRetry(maxRetries: number = 3): boolean {
-    return (
-      this.status === OutboxEventStatus.FAILED && this.retryCount < maxRetries
-    );
+    return this.status === OutboxEventStatus.FAILED && this.retryCount < maxRetries;
   }
 
   /**
@@ -81,10 +79,10 @@ export class OutboxEvent {
  * Outbox event status
  */
 export enum OutboxEventStatus {
-  PENDING = "pending",
-  PROCESSING = "processing",
-  PROCESSED = "processed",
-  FAILED = "failed",
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  PROCESSED = 'processed',
+  FAILED = 'failed',
 }
 
 /**

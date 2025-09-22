@@ -1,4 +1,4 @@
-import type { DomainEvent } from "./domain-event";
+import type { DomainEvent } from './domain-event';
 
 /**
  * Base interface for event handlers
@@ -91,4 +91,3 @@ export class EventHandlerRegistry {
     return this.handlers.get(eventType)?.length || 0;
   }
 }
-

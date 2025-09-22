@@ -1,6 +1,6 @@
-import type { DomainEvent } from "../core/domain-event";
-import type { EventHandler } from "../core/event-handler";
-import type { EventStore } from "../core/event-store";
+import type { DomainEvent } from '../core/domain-event';
+import type { EventHandler } from '../core/event-handler';
+import type { EventStore } from '../core/event-store';
 
 /**
  * Configuration for event replay
@@ -56,11 +56,7 @@ export class EventReplayEngine {
       console.log(`Found ${events.length} events for stream ${streamId}`);
 
       // Process events in batches
-      for (
-        let index = 0;
-        index < events.length;
-        index += this.config.batchSize
-      ) {
+      for (let index = 0; index < events.length; index += this.config.batchSize) {
         const batch = events.slice(index, index + this.config.batchSize);
 
         for (const event of batch) {
@@ -70,9 +66,7 @@ export class EventReplayEngine {
 
         // Checkpoint
         if (processedCount - lastCheckpoint >= this.config.checkpointInterval) {
-          console.log(
-            `Processed ${processedCount}/${events.length} events for stream ${streamId}`,
-          );
+          console.log(`Processed ${processedCount}/${events.length} events for stream ${streamId}`);
           lastCheckpoint = processedCount;
         }
       }
@@ -90,13 +84,8 @@ export class EventReplayEngine {
   /**
    * Replay events from a specific timestamp
    */
-  async replayFromTimestamp(
-    fromTimestamp: Date,
-    handlers: EventHandler[],
-  ): Promise<void> {
-    console.log(
-      `Starting replay from timestamp: ${fromTimestamp.toISOString()}`,
-    );
+  async replayFromTimestamp(fromTimestamp: Date, handlers: EventHandler[]): Promise<void> {
+    console.log(`Starting replay from timestamp: ${fromTimestamp.toISOString()}`);
 
     const startTime = Date.now();
     let processedCount = 0;
@@ -104,17 +93,12 @@ export class EventReplayEngine {
 
     try {
       // Get events from the timestamp
-      const events =
-        await this.eventStore.getEventsFromTimestamp(fromTimestamp);
+      const events = await this.eventStore.getEventsFromTimestamp(fromTimestamp);
 
       console.log(`Found ${events.length} events from timestamp`);
 
       // Process events in batches
-      for (
-        let index = 0;
-        index < events.length;
-        index += this.config.batchSize
-      ) {
+      for (let index = 0; index < events.length; index += this.config.batchSize) {
         const batch = events.slice(index, index + this.config.batchSize);
 
         for (const event of batch) {
@@ -124,9 +108,7 @@ export class EventReplayEngine {
 
         // Checkpoint
         if (processedCount - lastCheckpoint >= this.config.checkpointInterval) {
-          console.log(
-            `Processed ${processedCount}/${events.length} events from timestamp`,
-          );
+          console.log(`Processed ${processedCount}/${events.length} events from timestamp`);
           lastCheckpoint = processedCount;
         }
       }
@@ -136,7 +118,7 @@ export class EventReplayEngine {
         `Completed replay from timestamp: ${processedCount} events processed in ${duration}ms`,
       );
     } catch (error) {
-      console.error("Failed to replay from timestamp:", error);
+      console.error('Failed to replay from timestamp:', error);
       throw error;
     }
   }
@@ -144,10 +126,7 @@ export class EventReplayEngine {
   /**
    * Replay events for multiple streams
    */
-  async replayStreams(
-    streamIds: string[],
-    handlers: EventHandler[],
-  ): Promise<void> {
+  async replayStreams(streamIds: string[], handlers: EventHandler[]): Promise<void> {
     console.log(`Starting replay of ${streamIds.length} streams`);
 
     const startTime = Date.now();
@@ -157,21 +136,14 @@ export class EventReplayEngine {
     }
 
     const duration = Date.now() - startTime;
-    console.log(
-      `Completed replay of ${streamIds.length} streams in ${duration}ms`,
-    );
+    console.log(`Completed replay of ${streamIds.length} streams in ${duration}ms`);
   }
 
   /**
    * Process a single event through handlers
    */
-  private async processEvent(
-    event: unknown,
-    handlers: EventHandler[],
-  ): Promise<void> {
-    const relevantHandlers = handlers.filter((handler) =>
-      handler.canHandle(event as DomainEvent),
-    );
+  private async processEvent(event: unknown, handlers: EventHandler[]): Promise<void> {
+    const relevantHandlers = handlers.filter((handler) => handler.canHandle(event as DomainEvent));
 
     for (const handler of relevantHandlers) {
       try {
@@ -202,9 +174,7 @@ export class EventReplayEngine {
     }
 
     const timestamps = events.map((event) => event.occurredAt);
-    const sortedTimestamps = timestamps.sort(
-      (a, b) => a.getTime() - b.getTime(),
-    );
+    const sortedTimestamps = timestamps.sort((a, b) => a.getTime() - b.getTime());
 
     return {
       totalEvents: events.length,

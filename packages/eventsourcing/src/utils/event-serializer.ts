@@ -1,4 +1,4 @@
-import type { DomainEvent } from "../core/domain-event";
+import type { DomainEvent } from '../core/domain-event';
 
 /**
  * Event serialization interface
@@ -12,16 +12,12 @@ export interface EventSerializer {
  * JSON-based event serializer
  */
 export class JsonEventSerializer implements EventSerializer {
-  private eventTypes: Map<string, new (...args: unknown[]) => DomainEvent> =
-    new Map();
+  private eventTypes: Map<string, new (...args: unknown[]) => DomainEvent> = new Map();
 
   /**
    * Register an event type for deserialization
    */
-  registerEventType(
-    eventType: string,
-    eventClass: new (...args: unknown[]) => DomainEvent,
-  ): void {
+  registerEventType(eventType: string, eventClass: new (...args: unknown[]) => DomainEvent): void {
     this.eventTypes.set(eventType, eventClass);
   }
 
@@ -66,9 +62,7 @@ export class JsonEventSerializer implements EventSerializer {
 
     // Set additional properties
     (event as unknown as { id: string }).id = parsed.id;
-    (event as unknown as { occurredAt: Date }).occurredAt = new Date(
-      parsed.occurredAt,
-    );
+    (event as unknown as { occurredAt: Date }).occurredAt = new Date(parsed.occurredAt);
 
     return event as T;
   }

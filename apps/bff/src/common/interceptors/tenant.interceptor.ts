@@ -1,13 +1,13 @@
-import type { DatabaseService } from "../../config/database.service";
-import type { Observable } from "rxjs";
+import type { DatabaseService } from '../../config/database.service';
+import type { Observable } from 'rxjs';
 
 import {
   Injectable,
   type NestInterceptor,
   type ExecutionContext,
   type CallHandler,
-} from "@nestjs/common";
-import { tap } from "rxjs/operators";
+} from '@nestjs/common';
+import { tap } from 'rxjs/operators';
 
 @Injectable()
 export class TenantInterceptor implements NestInterceptor {

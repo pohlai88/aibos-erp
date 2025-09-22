@@ -1,5 +1,5 @@
-import type { EventStore } from "../core/event-store";
-import type { Projection } from "./projection";
+import type { EventStore } from '../core/event-store';
+import type { Projection } from './projection';
 
 /**
  * Configuration for projection rebuilding
@@ -49,9 +49,7 @@ export class ProjectionRebuilder {
       await projection.reset();
 
       // Get all events from the beginning
-      const allEvents = await this.eventStore.getEventsFromTimestamp(
-        new Date("1970-01-01"),
-      );
+      const allEvents = await this.eventStore.getEventsFromTimestamp(new Date('1970-01-01'));
 
       // Filter events that this projection handles
       const relevantEvents = allEvents.filter((event) =>
@@ -63,15 +61,8 @@ export class ProjectionRebuilder {
       );
 
       // Process events in batches
-      for (
-        let index = 0;
-        index < relevantEvents.length;
-        index += this.config.batchSize
-      ) {
-        const batch = relevantEvents.slice(
-          index,
-          index + this.config.batchSize,
-        );
+      for (let index = 0; index < relevantEvents.length; index += this.config.batchSize) {
+        const batch = relevantEvents.slice(index, index + this.config.batchSize);
 
         for (const event of batch) {
           await projection.process(event);
@@ -92,10 +83,7 @@ export class ProjectionRebuilder {
         `Completed rebuild of projection ${projection.getName()}: ${processedCount} events processed in ${duration}ms`,
       );
     } catch (error) {
-      console.error(
-        `Failed to rebuild projection ${projection.getName()}:`,
-        error,
-      );
+      console.error(`Failed to rebuild projection ${projection.getName()}:`, error);
       throw error;
     }
   }
@@ -103,10 +91,7 @@ export class ProjectionRebuilder {
   /**
    * Rebuild a projection from a specific timestamp
    */
-  async rebuildProjectionFromTimestamp(
-    projection: Projection,
-    fromTimestamp: Date,
-  ): Promise<void> {
+  async rebuildProjectionFromTimestamp(projection: Projection, fromTimestamp: Date): Promise<void> {
     console.log(
       `Starting rebuild of projection ${projection.getName()} from ${fromTimestamp.toISOString()}`,
     );
@@ -116,8 +101,7 @@ export class ProjectionRebuilder {
 
     try {
       // Get events from the timestamp
-      const events =
-        await this.eventStore.getEventsFromTimestamp(fromTimestamp);
+      const events = await this.eventStore.getEventsFromTimestamp(fromTimestamp);
 
       // Filter events that this projection handles
       const relevantEvents = events.filter((event) =>
@@ -139,10 +123,7 @@ export class ProjectionRebuilder {
         `Completed rebuild of projection ${projection.getName()}: ${processedCount} events processed in ${duration}ms`,
       );
     } catch (error) {
-      console.error(
-        `Failed to rebuild projection ${projection.getName()}:`,
-        error,
-      );
+      console.error(`Failed to rebuild projection ${projection.getName()}:`, error);
       throw error;
     }
   }
@@ -160,9 +141,7 @@ export class ProjectionRebuilder {
     }
 
     const duration = Date.now() - startTime;
-    console.log(
-      `Completed rebuild of ${projections.length} projections in ${duration}ms`,
-    );
+    console.log(`Completed rebuild of ${projections.length} projections in ${duration}ms`);
   }
 
   /**
@@ -178,12 +157,8 @@ export class ProjectionRebuilder {
       console.log(`Projection ${projection.getName()} validation passed`);
       return true;
     } catch (error) {
-      console.error(
-        `Projection ${projection.getName()} validation failed:`,
-        error,
-      );
+      console.error(`Projection ${projection.getName()} validation failed:`, error);
       return false;
     }
   }
 }
-

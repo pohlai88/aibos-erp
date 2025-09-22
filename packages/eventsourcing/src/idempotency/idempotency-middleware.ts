@@ -1,4 +1,4 @@
-import { IdempotencyKey } from "./idempotency-key";
+import { IdempotencyKey } from './idempotency-key';
 
 /**
  * Middleware for handling idempotency in event sourcing
@@ -34,12 +34,7 @@ export class IdempotencyMiddleware {
     ttlMinutes: number = 60, // 1 hour default
     responseData?: Record<string, unknown>,
   ): Promise<IdempotencyKey> {
-    const key = new IdempotencyKey(
-      requestId,
-      requestId,
-      ttlMinutes,
-      responseData,
-    );
+    const key = new IdempotencyKey(requestId, requestId, ttlMinutes, responseData);
     this.idempotencyKeys.set(requestId, key);
     return key;
   }

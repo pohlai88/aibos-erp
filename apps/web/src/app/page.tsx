@@ -1,26 +1,25 @@
-import { Button, Card, Badge } from "@aibos/ui";
+import { Button, Card, Badge } from '@aibos/ui';
 
 export default function HomePage(): JSX.Element {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-secondary-50">
+    <div className="from-primary-50 to-secondary-50 min-h-screen bg-gradient-to-br">
       <div className="container mx-auto px-4 py-24">
-        <div className="text-center space-y-8">
+        <div className="space-y-8 text-center">
           <div className="space-y-4">
             <Badge variant="primary" className="text-sm">
               Phase 1 - Platform Bootstrap
             </Badge>
-            <h1 className="text-6xl font-bold bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent">
+            <h1 className="from-primary-600 to-primary-800 bg-gradient-to-r bg-clip-text text-6xl font-bold text-transparent">
               AI-BOS ERP
             </h1>
           </div>
 
-          <p className="text-xl text-secondary-600 max-w-3xl mx-auto leading-relaxed">
-            Transform your business operations with our intelligent,
-            cloud-native Enterprise Resource Planning system designed for modern
-            enterprises.
+          <p className="text-secondary-600 mx-auto max-w-3xl text-xl leading-relaxed">
+            Transform your business operations with our intelligent, cloud-native Enterprise
+            Resource Planning system designed for modern enterprises.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
+          <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button variant="primary" size="lg">
               Get Started
             </Button>
@@ -29,60 +28,56 @@ export default function HomePage(): JSX.Element {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16">
-            <Card className="text-center p-6 hover:shadow-medium transition-shadow">
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+          <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3">
+            <Card className="hover:shadow-medium p-6 text-center transition-shadow">
+              <div className="bg-primary-100 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <span className="text-primary-600 text-xl">🚀</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">
-                Modern Architecture
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold">Modern Architecture</h3>
               <p className="text-secondary-600 text-sm">
                 Built with Next.js, NestJS, and cloud-native technologies
               </p>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-medium transition-shadow">
-              <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Card className="hover:shadow-medium p-6 text-center transition-shadow">
+              <div className="bg-success-100 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <span className="text-success-600 text-xl">🛡️</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">
-                Enterprise Security
-              </h3>
+              <h3 className="mb-2 text-lg font-semibold">Enterprise Security</h3>
               <p className="text-secondary-600 text-sm">
                 Multi-tenant architecture with Row Level Security
               </p>
             </Card>
 
-            <Card className="text-center p-6 hover:shadow-medium transition-shadow">
-              <div className="w-12 h-12 bg-warning-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+            <Card className="hover:shadow-medium p-6 text-center transition-shadow">
+              <div className="bg-warning-100 mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg">
                 <span className="text-warning-600 text-xl">⚡</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">High Performance</h3>
+              <h3 className="mb-2 text-lg font-semibold">High Performance</h3>
               <p className="text-secondary-600 text-sm">
                 Optimized for speed with advanced caching and monitoring
               </p>
             </Card>
           </div>
 
-          <div className="mt-16 p-6 bg-white rounded-lg shadow-soft border border-secondary-200">
-            <h2 className="text-2xl font-semibold mb-4">Development Status</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+          <div className="shadow-soft border-secondary-200 mt-16 rounded-lg border bg-white p-6">
+            <h2 className="mb-4 text-2xl font-semibold">Development Status</h2>
+            <div className="grid grid-cols-2 gap-4 text-center md:grid-cols-4">
               <div>
-                <div className="text-2xl font-bold text-success-600">✅</div>
-                <div className="text-sm text-secondary-600">Monorepo</div>
+                <div className="text-success-600 text-2xl font-bold">✅</div>
+                <div className="text-secondary-600 text-sm">Monorepo</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-success-600">✅</div>
-                <div className="text-sm text-secondary-600">Anti-Drift</div>
+                <div className="text-success-600 text-2xl font-bold">✅</div>
+                <div className="text-secondary-600 text-sm">Anti-Drift</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-success-600">✅</div>
-                <div className="text-sm text-secondary-600">CI/CD</div>
+                <div className="text-success-600 text-2xl font-bold">✅</div>
+                <div className="text-secondary-600 text-sm">CI/CD</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-success-600">✅</div>
-                <div className="text-sm text-secondary-600">Docker</div>
+                <div className="text-success-600 text-2xl font-bold">✅</div>
+                <div className="text-secondary-600 text-sm">Docker</div>
               </div>
             </div>
           </div>

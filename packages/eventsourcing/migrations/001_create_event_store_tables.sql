@@ -110,3 +110,4 @@ COMMENT ON TABLE eventsourcing.snapshots IS 'Aggregate snapshots for performance
 COMMENT ON TABLE eventsourcing.outbox_events IS 'Outbox pattern for reliable messaging';
 COMMENT ON TABLE eventsourcing.idempotency_keys IS 'Idempotency key storage';
 
+

@@ -1,8 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable App Router
+  // Experimental features
   experimental: {
     appDir: true,
+    optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
   },
 
   // Performance optimizations
@@ -12,7 +13,7 @@ const nextConfig = {
 
   // Image optimization
   images: {
-    formats: ["image/webp", "image/avif"],
+    formats: ['image/webp', 'image/avif'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
@@ -21,23 +22,23 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: "/(.*)",
+        source: '/(.*)',
         headers: [
           {
-            key: "X-Frame-Options",
-            value: "DENY",
+            key: 'X-Frame-Options',
+            value: 'DENY',
           },
           {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
           },
           {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
           },
           {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=()',
           },
         ],
       },
@@ -48,8 +49,8 @@ const nextConfig = {
   async redirects() {
     return [
       {
-        source: "/home",
-        destination: "/",
+        source: '/home',
+        destination: '/',
         permanent: true,
       },
     ];
@@ -60,12 +61,12 @@ const nextConfig = {
     // Optimize bundle size
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
-        chunks: "all",
+        chunks: 'all',
         cacheGroups: {
           vendor: {
             test: /[\\/]node_modules[\\/]/,
-            name: "vendors",
-            chunks: "all",
+            name: 'vendors',
+            chunks: 'all',
           },
         },
       };
@@ -97,12 +98,7 @@ const nextConfig = {
   // output: "standalone", // Disabled for Windows compatibility
 
   // Transpile packages
-  transpilePackages: ["@aibos/ui", "@aibos/utils", "@aibos/contracts"],
-
-  // Experimental features
-  experimental: {
-    optimizePackageImports: ["@radix-ui/react-icons", "lucide-react"],
-  },
+  transpilePackages: ['@aibos/ui', '@aibos/utils', '@aibos/contracts'],
 };
 
 export default nextConfig;

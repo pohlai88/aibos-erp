@@ -19,4 +19,4 @@ export interface PaginatedResponse<T = unknown> extends ApiResponse<T[]> {
 }
 
 // Placeholder for future contract definitions
-export const CONTRACTS_VERSION = "0.1.0";
+export const CONTRACTS_VERSION = '0.1.0';

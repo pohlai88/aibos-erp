@@ -1,5 +1,5 @@
-import type { AggregateRoot } from "./aggregate-root";
-import type { DomainEvent } from "./domain-event";
+import type { AggregateRoot } from './aggregate-root';
+import type { DomainEvent } from './domain-event';
 
 /**
  * Event store interface for storing and retrieving domain events
@@ -8,11 +8,7 @@ export interface EventStore {
   /**
    * Append events to a stream with optimistic concurrency control
    */
-  append(
-    streamId: string,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<void>;
+  append(streamId: string, events: DomainEvent[], expectedVersion: number): Promise<void>;
 
   /**
    * Get all events for a stream
@@ -73,14 +69,14 @@ export class ConcurrencyError extends Error {
     super(
       `Concurrency conflict for stream ${streamId}. Expected version ${expectedVersion}, but actual version is ${actualVersion}`,
     );
-    this.name = "ConcurrencyError";
+    this.name = 'ConcurrencyError';
   }
 }
 
 export class StreamNotFoundError extends Error {
   constructor(public readonly streamId: string) {
     super(`Stream ${streamId} not found`);
-    this.name = "StreamNotFoundError";
+    this.name = 'StreamNotFoundError';
   }
 }
 
@@ -90,7 +86,6 @@ export class EventStoreError extends Error {
     public readonly cause?: Error,
   ) {
     super(message);
-    this.name = "EventStoreError";
+    this.name = 'EventStoreError';
   }
 }
-

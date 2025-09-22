@@ -1,5 +1,5 @@
-import type { AggregateRoot } from "../core/aggregate-root";
-import type { EventStore } from "../core/event-store";
+import type { AggregateRoot } from '../core/aggregate-root';
+import type { EventStore } from '../core/event-store';
 
 /**
  * Snapshot configuration
@@ -35,16 +35,10 @@ export class SnapshotManager {
   /**
    * Create a snapshot if needed
    */
-  async createSnapshotIfNeeded(
-    streamId: string,
-    aggregate: AggregateRoot,
-  ): Promise<void> {
+  async createSnapshotIfNeeded(streamId: string, aggregate: AggregateRoot): Promise<void> {
     const currentVersion = aggregate.getVersion();
 
-    if (
-      currentVersion > 0 &&
-      currentVersion % this.config.snapshotThreshold === 0
-    ) {
+    if (currentVersion > 0 && currentVersion % this.config.snapshotThreshold === 0) {
       await this.createSnapshot(streamId, aggregate);
     }
   }
@@ -52,13 +46,8 @@ export class SnapshotManager {
   /**
    * Create a snapshot
    */
-  async createSnapshot(
-    streamId: string,
-    aggregate: AggregateRoot,
-  ): Promise<void> {
-    console.log(
-      `Creating snapshot for stream ${streamId} at version ${aggregate.getVersion()}`,
-    );
+  async createSnapshot(streamId: string, aggregate: AggregateRoot): Promise<void> {
+    console.log(`Creating snapshot for stream ${streamId} at version ${aggregate.getVersion()}`);
 
     try {
       await this.eventStore.createSnapshot(streamId, aggregate);
@@ -97,10 +86,7 @@ export class SnapshotManager {
       );
 
       // Get events after snapshot
-      const events = await this.eventStore.getEvents(
-        streamId,
-        snapshot.getVersion() + 1,
-      );
+      const events = await this.eventStore.getEvents(streamId, snapshot.getVersion() + 1);
 
       // Apply events to snapshot
       return (
@@ -109,9 +95,7 @@ export class SnapshotManager {
         }
       ).fromEvents(streamId, events) as T;
     } else {
-      console.log(
-        `No snapshot found for stream ${streamId}, rebuilding from all events`,
-      );
+      console.log(`No snapshot found for stream ${streamId}, rebuilding from all events`);
 
       // Rebuild from all events
       const events = await this.eventStore.getEvents(streamId);
@@ -145,10 +129,7 @@ export class SnapshotManager {
       return { hasSnapshot: false };
     }
 
-    const events = await this.eventStore.getEvents(
-      streamId,
-      snapshot.getVersion() + 1,
-    );
+    const events = await this.eventStore.getEvents(streamId, snapshot.getVersion() + 1);
 
     return {
       hasSnapshot: true,

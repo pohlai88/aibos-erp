@@ -1,10 +1,10 @@
-import type { AggregateRoot } from "../core/aggregate-root";
-import type { DomainEvent } from "../core/domain-event";
-import type { EventStore, EventStoreConfig } from "../core/event-store";
-import type { Pool } from "pg";
+import type { AggregateRoot } from '../core/aggregate-root';
+import type { DomainEvent } from '../core/domain-event';
+import type { EventStore, EventStoreConfig } from '../core/event-store';
+import type { Pool } from 'pg';
 
-import { ConcurrencyError } from "../core/event-store";
-import { Pool as PgPool } from "pg";
+import { ConcurrencyError } from '../core/event-store';
+import { Pool as PgPool } from 'pg';
 
 /**
  * PostgreSQL implementation of the Event Store
@@ -21,19 +21,15 @@ export class PostgreSQLEventStore implements EventStore {
       idleTimeoutMillis: 30_000,
       connectionTimeoutMillis: 2000,
     });
-    this.schema = config.schema || "public";
-    this.tablePrefix = config.tablePrefix || "es";
+    this.schema = config.schema || 'public';
+    this.tablePrefix = config.tablePrefix || 'es';
   }
 
-  async append(
-    streamId: string,
-    events: DomainEvent[],
-    expectedVersion: number,
-  ): Promise<void> {
+  async append(streamId: string, events: DomainEvent[], expectedVersion: number): Promise<void> {
     const client = await this.pool.connect();
 
     try {
-      await client.query("BEGIN");
+      await client.query('BEGIN');
 
       // Check current version
       const versionResult = await client.query(
@@ -66,7 +62,7 @@ export class PostgreSQLEventStore implements EventStore {
             }),
             event.tenantId,
             event.occurredAt,
-            "system", // TODO: Get from context
+            'system', // TODO: Get from context
             event.correlationId,
             event.causationId,
           ],
@@ -84,19 +80,16 @@ export class PostgreSQLEventStore implements EventStore {
             [expectedVersion + events.length, streamId],
           ));
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
     }
   }
 
-  async getEvents(
-    streamId: string,
-    fromVersion?: number,
-  ): Promise<DomainEvent[]> {
+  async getEvents(streamId: string, fromVersion?: number): Promise<DomainEvent[]> {
     const client = await this.pool.connect();
 
     try {
@@ -104,7 +97,7 @@ export class PostgreSQLEventStore implements EventStore {
         SELECT id, stream_id, version, event_type, event_data, metadata, tenant_id, created_at, created_by, correlation_id, causation_id
         FROM ${this.schema}.${this.tablePrefix}_events
         WHERE stream_id = $1
-        ${fromVersion ? "AND version >= $2" : ""}
+        ${fromVersion ? 'AND version >= $2' : ''}
         ORDER BY version ASC
       `;
 
@@ -135,10 +128,7 @@ export class PostgreSQLEventStore implements EventStore {
     }
   }
 
-  async createSnapshot(
-    streamId: string,
-    aggregate: AggregateRoot,
-  ): Promise<void> {
+  async createSnapshot(streamId: string, aggregate: AggregateRoot): Promise<void> {
     const client = await this.pool.connect();
 
     try {
@@ -150,12 +140,7 @@ export class PostgreSQLEventStore implements EventStore {
          version = EXCLUDED.version,
          snapshot_data = EXCLUDED.snapshot_data,
          created_at = EXCLUDED.created_at`,
-        [
-          streamId,
-          aggregate.getVersion(),
-          JSON.stringify(aggregate),
-          new Date(),
-        ],
+        [streamId, aggregate.getVersion(), JSON.stringify(aggregate), new Date()],
       );
     } finally {
       client.release();
@@ -216,7 +201,7 @@ export class PostgreSQLEventStore implements EventStore {
     const client = await this.pool.connect();
 
     try {
-      await client.query("BEGIN");
+      await client.query('BEGIN');
 
       await client.query(
         `DELETE FROM ${this.schema}.${this.tablePrefix}_events WHERE stream_id = $1`,
@@ -233,9 +218,9 @@ export class PostgreSQLEventStore implements EventStore {
         [streamId],
       );
 
-      await client.query("COMMIT");
+      await client.query('COMMIT');
     } catch (error) {
-      await client.query("ROLLBACK");
+      await client.query('ROLLBACK');
       throw error;
     } finally {
       client.release();
@@ -244,7 +229,7 @@ export class PostgreSQLEventStore implements EventStore {
 
   private deserializeEvent(_row: unknown): DomainEvent {
     // TODO: Implement proper event deserialization based on event type
-    throw new Error("Event deserialization not implemented");
+    throw new Error('Event deserialization not implemented');
   }
 
   async close(): Promise<void> {

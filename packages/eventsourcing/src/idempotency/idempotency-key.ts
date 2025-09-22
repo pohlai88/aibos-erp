@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 /**
  * Idempotency key for ensuring operations are only executed once
@@ -61,10 +61,12 @@ export class IdempotencyKey {
       data.responseData as Record<string, unknown> | undefined,
     );
 
-    (key as unknown as { createdAt: Date; expiresAt: Date }).createdAt =
-      new Date(data.createdAt as string);
-    (key as unknown as { createdAt: Date; expiresAt: Date }).expiresAt =
-      new Date(data.expiresAt as string);
+    (key as unknown as { createdAt: Date; expiresAt: Date }).createdAt = new Date(
+      data.createdAt as string,
+    );
+    (key as unknown as { createdAt: Date; expiresAt: Date }).expiresAt = new Date(
+      data.expiresAt as string,
+    );
 
     return key;
   }
@@ -100,7 +102,7 @@ export class IdempotencyKeyGenerator {
       method: method.toUpperCase(),
       path,
       body: body ? JSON.stringify(body, Object.keys(body).sort()) : undefined,
-      idempotencyKey: headers?.["idempotency-key"],
+      idempotencyKey: headers?.['idempotency-key'],
     };
 
     const hash = this.hashObject(data);
@@ -110,11 +112,7 @@ export class IdempotencyKeyGenerator {
   /**
    * Generate a key for a specific operation
    */
-  static generateForOperation(
-    operation: string,
-    tenantId: string,
-    resourceId?: string,
-  ): string {
+  static generateForOperation(operation: string, tenantId: string, resourceId?: string): string {
     const data = {
       operation,
       tenantId,
@@ -130,6 +128,6 @@ export class IdempotencyKeyGenerator {
    */
   private static hashObject(object: Record<string, unknown>): string {
     const string_ = JSON.stringify(object, Object.keys(object).sort());
-    return btoa(string_).replaceAll(/[+/=]/g, "");
+    return btoa(string_).replaceAll(/[+/=]/g, '');
   }
 }

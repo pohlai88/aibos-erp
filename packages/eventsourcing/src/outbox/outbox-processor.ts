@@ -1,6 +1,6 @@
-import type { Pool } from "pg";
+import type { Pool } from 'pg';
 
-import { OutboxEvent, OutboxEventStatus } from "./outbox-event";
+import { OutboxEvent, OutboxEventStatus } from './outbox-event';
 
 /**
  * Configuration for the outbox processor
@@ -49,10 +49,7 @@ export class OutboxProcessor {
     }
 
     this.isRunning = true;
-    this.intervalId = setInterval(
-      () => this.processBatch(),
-      this.config.pollIntervalMs,
-    );
+    this.intervalId = setInterval(() => this.processBatch(), this.config.pollIntervalMs);
   }
 
   /**
@@ -81,7 +78,7 @@ export class OutboxProcessor {
         client as {
           query: (sql: string, params: unknown[]) => Promise<unknown>;
         }
-      ).query("BEGIN", []);
+      ).query('BEGIN', []);
 
       // Get pending events
       const result = await client.query(
@@ -91,16 +88,10 @@ export class OutboxProcessor {
          WHERE status = $1 AND retry_count < $2
          ORDER BY created_at ASC 
          LIMIT $3`,
-        [
-          OutboxEventStatus.PENDING,
-          this.config.maxRetries,
-          this.config.batchSize,
-        ],
+        [OutboxEventStatus.PENDING, this.config.maxRetries, this.config.batchSize],
       );
 
-      const events = result.rows.map((row: unknown) =>
-        this.mapRowToOutboxEvent(row),
-      );
+      const events = result.rows.map((row: unknown) => this.mapRowToOutboxEvent(row));
 
       for (const event of events) {
         await this.processEvent(client, event);
@@ -110,14 +101,14 @@ export class OutboxProcessor {
         client as {
           query: (sql: string, params: unknown[]) => Promise<unknown>;
         }
-      ).query("COMMIT", []);
+      ).query('COMMIT', []);
     } catch (error) {
       await (
         client as {
           query: (sql: string, params: unknown[]) => Promise<unknown>;
         }
-      ).query("ROLLBACK", []);
-      console.error("Error processing outbox batch:", error);
+      ).query('ROLLBACK', []);
+      console.error('Error processing outbox batch:', error);
     } finally {
       client.release();
     }
@@ -126,10 +117,7 @@ export class OutboxProcessor {
   /**
    * Process a single outbox event
    */
-  private async processEvent(
-    client: unknown,
-    event: OutboxEvent,
-  ): Promise<void> {
+  private async processEvent(client: unknown, event: OutboxEvent): Promise<void> {
     try {
       // Mark as processing
       await (
@@ -170,7 +158,7 @@ export class OutboxProcessor {
         [
           OutboxEventStatus.FAILED,
           event.retryCount + 1,
-          error instanceof Error ? error.message : "Unknown error",
+          error instanceof Error ? error.message : 'Unknown error',
           event.id,
         ],
       );
@@ -285,10 +273,8 @@ export class OutboxProcessor {
 
     // Set additional properties
     (event as unknown as { id: string }).id = rowData.id as string;
-    (event as unknown as { createdAt: Date }).createdAt =
-      rowData.created_at as Date;
-    (event as unknown as { retryCount: number }).retryCount =
-      rowData.retry_count as number;
+    (event as unknown as { createdAt: Date }).createdAt = rowData.created_at as Date;
+    (event as unknown as { retryCount: number }).retryCount = rowData.retry_count as number;
     (event as unknown as { status: string }).status = rowData.status as string;
 
     return event;
