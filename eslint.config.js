@@ -28,6 +28,10 @@ export default [
       '**/*.generated.ts',
       '**/dist/**',
       '**/build/**',
+      '**/apps/web/.next/**',
+      '**/apps/web/.next/types/**',
+      '**/apps/web/.next/static/**',
+      '**/apps/web/.next/server/**',
     ],
   },
 
@@ -430,6 +434,23 @@ export default [
   // Eventsourcing package - handle unused vars and any types
   {
     files: ['packages/eventsourcing/**/*.{ts,tsx}'],
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
+
+  // Accounting package - handle unused vars and enum values
+  {
+    files: ['packages/accounting/**/*.{ts,tsx}'],
     rules: {
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': [

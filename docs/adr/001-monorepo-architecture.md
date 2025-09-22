@@ -1,9 +1,11 @@
 # ADR-001: Monorepo Architecture
 
 ## Status
+
 Accepted
 
 ## Date
+
 2024-01-15
 
 ## Context
@@ -68,20 +70,24 @@ aibos-erp/
 ## Alternatives Considered
 
 ### 1. Multi-Repository Approach
+
 - **Pros**: Simpler individual repositories, independent deployments
 - **Cons**: Code duplication, complex dependency management, difficult cross-repository changes
 
 ### 2. Lerna + npm/yarn
+
 - **Pros**: Mature tooling, wide adoption
 - **Cons**: Slower builds, less efficient caching, higher disk usage
 
 ### 3. Nx Monorepo
+
 - **Pros**: Comprehensive tooling, good caching
 - **Cons**: Steeper learning curve, more complex configuration
 
 ## Implementation Details
 
 ### Turborepo Configuration (`turbo.json`)
+
 ```json
 {
   "pipeline": {
@@ -105,6 +111,7 @@ aibos-erp/
 ```
 
 ### pnpm Workspace Configuration (`pnpm-workspace.yaml`)
+
 ```yaml
 packages:
   - 'apps/*'
@@ -112,6 +119,7 @@ packages:
 ```
 
 ### Package Dependencies
+
 - **Workspace Protocol**: Use `workspace:^` for internal dependencies
 - **Shared Dependencies**: Common dependencies hoisted to root
 - **Version Management**: Centralized version management

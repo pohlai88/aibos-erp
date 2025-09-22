@@ -78,14 +78,14 @@ aibos-erp/
 
 ### Core Commands
 
-| Command | Purpose | Description |
-|---------|---------|-------------|
-| `pnpm dx` | Development check | Format, lint, typecheck, test, dependencies |
-| `pnpm dev` | Start development | All services in development mode |
-| `pnpm build` | Build all packages | Production builds for all packages |
-| `pnpm test` | Run tests | Unit, integration, and E2E tests |
-| `pnpm lint` | Code quality | ESLint + dependency-cruiser checks |
-| `pnpm typecheck` | Type safety | TypeScript compilation checks |
+| Command          | Purpose            | Description                                 |
+| ---------------- | ------------------ | ------------------------------------------- |
+| `pnpm dx`        | Development check  | Format, lint, typecheck, test, dependencies |
+| `pnpm dev`       | Start development  | All services in development mode            |
+| `pnpm build`     | Build all packages | Production builds for all packages          |
+| `pnpm test`      | Run tests          | Unit, integration, and E2E tests            |
+| `pnpm lint`      | Code quality       | ESLint + dependency-cruiser checks          |
+| `pnpm typecheck` | Type safety        | TypeScript compilation checks               |
 
 ### Package-Specific Commands
 
@@ -132,14 +132,14 @@ pnpm test:performance
 
 The development environment includes several services:
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| **PostgreSQL** | 5432 | Primary database |
-| **Redis** | 6379 | Caching and sessions |
-| **Kong Gateway** | 8000 | API gateway |
-| **Prometheus** | 9090 | Metrics collection |
-| **Grafana** | 3000 | Metrics visualization |
-| **Jaeger** | 16686 | Distributed tracing |
+| Service          | Port  | Purpose               |
+| ---------------- | ----- | --------------------- |
+| **PostgreSQL**   | 5432  | Primary database      |
+| **Redis**        | 6379  | Caching and sessions  |
+| **Kong Gateway** | 8000  | API gateway           |
+| **Prometheus**   | 9090  | Metrics collection    |
+| **Grafana**      | 3000  | Metrics visualization |
+| **Jaeger**       | 16686 | Distributed tracing   |
 
 ### Starting Services
 
@@ -210,41 +210,41 @@ packages/ui/src/
 ### Example Component
 
 ```tsx
-import { forwardRef } from "react";
-import { cn } from "./utils";
+import { forwardRef } from 'react';
+import { cn } from './utils';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline";
-  size?: "sm" | "md" | "lg";
+  variant?: 'primary' | 'secondary' | 'outline';
+  size?: 'sm' | 'md' | 'lg';
   asChild?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", asChild = false, ...props }, ref) => {
-    const Comp = asChild ? "span" : "button";
-    
+  ({ className, variant = 'primary', size = 'md', asChild = false, ...props }, ref) => {
+    const Comp = asChild ? 'span' : 'button';
+
     return (
       <Comp
         className={cn(
-          "inline-flex items-center justify-center rounded-md font-medium transition-colors",
+          'inline-flex items-center justify-center rounded-md font-medium transition-colors',
           {
-            "bg-primary-600 text-white hover:bg-primary-700": variant === "primary",
-            "bg-secondary-100 text-secondary-900 hover:bg-secondary-200": variant === "secondary",
-            "border border-primary-600 text-primary-600 hover:bg-primary-50": variant === "outline",
-            "h-8 px-3 text-sm": size === "sm",
-            "h-10 px-4": size === "md",
-            "h-12 px-6 text-lg": size === "lg",
+            'bg-primary-600 hover:bg-primary-700 text-white': variant === 'primary',
+            'bg-secondary-100 text-secondary-900 hover:bg-secondary-200': variant === 'secondary',
+            'border-primary-600 text-primary-600 hover:bg-primary-50 border': variant === 'outline',
+            'h-8 px-3 text-sm': size === 'sm',
+            'h-10 px-4': size === 'md',
+            'h-12 px-6 text-lg': size === 'lg',
           },
-          className
+          className,
         )}
         ref={ref}
         {...props}
       />
     );
-  }
+  },
 );
 
-Button.displayName = "Button";
+Button.displayName = 'Button';
 ```
 
 ---
@@ -319,10 +319,10 @@ describe("Button", () => {
 #### Integration Tests
 
 ```typescript
-import { Test, TestingModule } from "@nestjs/testing";
-import { AuthService } from "./auth.service";
+import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from './auth.service';
 
-describe("AuthService", () => {
+describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(async () => {
@@ -333,7 +333,7 @@ describe("AuthService", () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it("should be defined", () => {
+  it('should be defined', () => {
     expect(service).toBeDefined();
   });
 });
@@ -342,12 +342,12 @@ describe("AuthService", () => {
 #### E2E Tests
 
 ```typescript
-import { test, expect } from "@playwright/test";
+import { test, expect } from '@playwright/test';
 
-test("homepage loads correctly", async ({ page }) => {
-  await page.goto("/");
+test('homepage loads correctly', async ({ page }) => {
+  await page.goto('/');
   await expect(page).toHaveTitle(/AI-BOS ERP/);
-  await expect(page.locator("h1")).toContainText("AI-BOS ERP");
+  await expect(page.locator('h1')).toContainText('AI-BOS ERP');
 });
 ```
 
@@ -405,6 +405,7 @@ pnpm health:check
 ### Common Issues
 
 #### Module Resolution Errors
+
 ```bash
 # Clear node_modules and reinstall
 rm -rf node_modules
@@ -415,6 +416,7 @@ pnpm turbo clean
 ```
 
 #### Docker Issues
+
 ```bash
 # Clean Docker environment
 docker-compose down
@@ -423,6 +425,7 @@ docker-compose up -d
 ```
 
 #### Build Issues
+
 ```bash
 # Clear all build outputs
 pnpm clean
@@ -491,21 +494,25 @@ pnpm build
 
 ```markdown
 ## Description
+
 Brief description of changes
 
 ## Type of Change
+
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Breaking change
 - [ ] Documentation update
 
 ## Testing
+
 - [ ] Unit tests pass
 - [ ] Integration tests pass
 - [ ] E2E tests pass
 - [ ] Manual testing completed
 
 ## Checklist
+
 - [ ] Code follows style guidelines
 - [ ] Self-review completed
 - [ ] Documentation updated

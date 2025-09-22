@@ -64,6 +64,7 @@ Quality gates ensure code meets enterprise standards before deployment:
 ### Quality Gate Configuration
 
 #### GitHub Actions Workflow
+
 ```yaml
 name: Quality Gates
 
@@ -78,47 +79,47 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'pnpm'
-      
+
       - name: Install dependencies
         run: pnpm install
-      
+
       - name: Code Quality
         run: pnpm lint
-      
+
       - name: Type Safety
         run: pnpm typecheck
-      
+
       - name: Architecture Enforcement
         run: pnpm check:deps
-      
+
       - name: Unit Tests
         run: pnpm test
-      
+
       - name: E2E Tests
         run: pnpm test:e2e
-      
+
       - name: Contract Tests
         run: pnpm test:contract
-      
+
       - name: Performance Tests
         run: pnpm test:performance
 ```
 
 ### Quality Gate Metrics
 
-| Metric | Target | Current | Status |
-|--------|--------|---------|--------|
-| **Test Coverage** | 95%+ | 95%+ | ✅ |
-| **Bundle Size** | <1MB | 716KB | ✅ |
-| **Response Time** | <500ms | <350ms | ✅ |
-| **Security Score** | A+ | A+ | ✅ |
-| **Performance Score** | 90+ | 95+ | ✅ |
+| Metric                | Target | Current | Status |
+| --------------------- | ------ | ------- | ------ |
+| **Test Coverage**     | 95%+   | 95%+    | ✅     |
+| **Bundle Size**       | <1MB   | 716KB   | ✅     |
+| **Response Time**     | <500ms | <350ms  | ✅     |
+| **Security Score**    | A+     | A+      | ✅     |
+| **Performance Score** | 90+    | 95+     | ✅     |
 
 ---
 
@@ -137,6 +138,7 @@ The platform implements a comprehensive testing pyramid:
 ### Unit Testing
 
 #### Configuration
+
 ```json
 {
   "jest": {
@@ -155,6 +157,7 @@ The platform implements a comprehensive testing pyramid:
 ```
 
 #### Example Test
+
 ```typescript
 import { render, screen } from "@testing-library/react";
 import { Button } from "@aibos/ui";
@@ -175,11 +178,12 @@ describe("Button", () => {
 ### Integration Testing
 
 #### Configuration
-```typescript
-import { Test, TestingModule } from "@nestjs/testing";
-import { AuthService } from "./auth.service";
 
-describe("AuthService", () => {
+```typescript
+import { Test, TestingModule } from '@nestjs/testing';
+import { AuthService } from './auth.service';
+
+describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(async () => {
@@ -190,8 +194,8 @@ describe("AuthService", () => {
     service = module.get<AuthService>(AuthService);
   });
 
-  it("should authenticate user", async () => {
-    const result = await service.login("user@example.com", "password");
+  it('should authenticate user', async () => {
+    const result = await service.login('user@example.com', 'password');
     expect(result).toBeDefined();
     expect(result.token).toBeDefined();
   });
@@ -201,88 +205,91 @@ describe("AuthService", () => {
 ### E2E Testing
 
 #### Playwright Configuration
+
 ```typescript
-import { defineConfig } from "@playwright/test";
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
-  testDir: "./tests/e2e",
+  testDir: './tests/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: "html",
+  reporter: 'html',
   use: {
-    baseURL: "http://localhost:3000",
-    trace: "on-first-retry",
+    baseURL: 'http://localhost:3000',
+    trace: 'on-first-retry',
   },
   projects: [
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: 'chromium',
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });
 ```
 
 #### Example E2E Test
-```typescript
-import { test, expect } from "@playwright/test";
 
-test("homepage loads correctly", async ({ page }) => {
-  await page.goto("/");
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('homepage loads correctly', async ({ page }) => {
+  await page.goto('/');
   await expect(page).toHaveTitle(/AI-BOS ERP/);
-  await expect(page.locator("h1")).toContainText("AI-BOS ERP");
+  await expect(page.locator('h1')).toContainText('AI-BOS ERP');
 });
 
-test("user can login", async ({ page }) => {
-  await page.goto("/login");
-  await page.fill('[data-testid="email"]', "user@example.com");
-  await page.fill('[data-testid="password"]', "password");
+test('user can login', async ({ page }) => {
+  await page.goto('/login');
+  await page.fill('[data-testid="email"]', 'user@example.com');
+  await page.fill('[data-testid="password"]', 'password');
   await page.click('[data-testid="login-button"]');
-  await expect(page).toHaveURL("/dashboard");
+  await expect(page).toHaveURL('/dashboard');
 });
 ```
 
 ### Contract Testing
 
 #### Pact Configuration
-```typescript
-import { Pact } from "@pact-foundation/pact";
 
-describe("Health API Contract", () => {
+```typescript
+import { Pact } from '@pact-foundation/pact';
+
+describe('Health API Contract', () => {
   const provider = new Pact({
-    consumer: "web-app",
-    provider: "bff-api",
+    consumer: 'web-app',
+    provider: 'bff-api',
     port: 1234,
-    log: path.resolve(process.cwd(), "logs", "pact.log"),
-    dir: path.resolve(process.cwd(), "pacts"),
-    logLevel: "INFO",
+    log: path.resolve(process.cwd(), 'logs', 'pact.log'),
+    dir: path.resolve(process.cwd(), 'pacts'),
+    logLevel: 'INFO',
   });
 
   beforeAll(() => provider.setup());
   afterEach(() => provider.verify());
   afterAll(() => provider.finalize());
 
-  it("should return health status", async () => {
+  it('should return health status', async () => {
     await provider
-      .given("health service is available")
-      .uponReceiving("a request for health status")
+      .given('health service is available')
+      .uponReceiving('a request for health status')
       .withRequest({
-        method: "GET",
-        path: "/health",
+        method: 'GET',
+        path: '/health',
       })
       .willRespondWith({
         status: 200,
-        headers: { "Content-Type": "application/json" },
+        headers: { 'Content-Type': 'application/json' },
         body: {
-          status: "ok",
-          timestamp: "2024-01-15T10:30:00Z",
+          status: 'ok',
+          timestamp: '2024-01-15T10:30:00Z',
         },
       });
 
-    const response = await fetch("http://localhost:1234/health");
+    const response = await fetch('http://localhost:1234/health');
     const data = await response.json();
-    expect(data.status).toBe("ok");
+    expect(data.status).toBe('ok');
   });
 });
 ```
@@ -290,25 +297,26 @@ describe("Health API Contract", () => {
 ### Performance Testing
 
 #### k6 Configuration
+
 ```javascript
-import http from "k6/http";
-import { check, sleep } from "k6";
+import http from 'k6/http';
+import { check, sleep } from 'k6';
 
 export let options = {
   stages: [
-    { duration: "2m", target: 100 },
-    { duration: "5m", target: 100 },
-    { duration: "2m", target: 200 },
-    { duration: "5m", target: 200 },
-    { duration: "2m", target: 0 },
+    { duration: '2m', target: 100 },
+    { duration: '5m', target: 100 },
+    { duration: '2m', target: 200 },
+    { duration: '5m', target: 200 },
+    { duration: '2m', target: 0 },
   ],
 };
 
 export default function () {
-  let response = http.get("http://localhost:3000/");
+  let response = http.get('http://localhost:3000/');
   check(response, {
-    "status is 200": (r) => r.status === 200,
-    "response time < 500ms": (r) => r.timings.duration < 500,
+    'status is 200': (r) => r.status === 200,
+    'response time < 500ms': (r) => r.timings.duration < 500,
   });
   sleep(1);
 }
@@ -331,17 +339,18 @@ Security scanning includes:
 ### SAST Scanning
 
 #### Configuration
+
 ```yaml
 security-scan:
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v4
-    
+
     - name: Run SAST Scan
       uses: github/codeql-action/init@v2
       with:
         languages: javascript,typescript
-    
+
     - name: Perform SAST Scan
       uses: github/codeql-action/analyze@v2
 ```
@@ -349,24 +358,25 @@ security-scan:
 ### Dependency Scanning
 
 #### Configuration
+
 ```yaml
 dependency-scan:
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'pnpm'
-    
+
     - name: Install dependencies
       run: pnpm install
-    
+
     - name: Run security audit
       run: pnpm audit --audit-level moderate
-    
+
     - name: Check for vulnerabilities
       run: pnpm check:security
 ```
@@ -388,27 +398,28 @@ Performance testing includes:
 ### Bundle Size Analysis
 
 #### Configuration
+
 ```yaml
 bundle-analysis:
   runs-on: ubuntu-latest
   steps:
     - uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'pnpm'
-    
+
     - name: Install dependencies
       run: pnpm install
-    
+
     - name: Build packages
       run: pnpm build
-    
+
     - name: Analyze bundle size
       run: pnpm analyze:bundle
-    
+
     - name: Upload bundle analysis
       uses: actions/upload-artifact@v3
       with:
@@ -419,38 +430,40 @@ bundle-analysis:
 ### Core Web Vitals
 
 #### Configuration
+
 ```typescript
 export const config = {
-  testDir: "./tests/performance",
+  testDir: './tests/performance',
   use: {
-    baseURL: "http://localhost:3000",
+    baseURL: 'http://localhost:3000',
   },
   projects: [
     {
-      name: "core-web-vitals",
-      testMatch: "**/core-web-vitals.spec.ts",
+      name: 'core-web-vitals',
+      testMatch: '**/core-web-vitals.spec.ts',
     },
   ],
 };
 ```
 
 #### Example Test
-```typescript
-import { test, expect } from "@playwright/test";
 
-test("Core Web Vitals", async ({ page }) => {
-  await page.goto("/");
-  
+```typescript
+import { test, expect } from '@playwright/test';
+
+test('Core Web Vitals', async ({ page }) => {
+  await page.goto('/');
+
   // Measure LCP
   const lcp = await page.evaluate(() => {
     return new Promise((resolve) => {
       new PerformanceObserver((list) => {
         const entries = list.getEntries();
         resolve(entries[entries.length - 1].startTime);
-      }).observe({ entryTypes: ["largest-contentful-paint"] });
+      }).observe({ entryTypes: ['largest-contentful-paint'] });
     });
   });
-  
+
   expect(lcp).toBeLessThan(2500);
 });
 ```
@@ -472,23 +485,24 @@ Deployment automation includes:
 ### Staging Deployment
 
 #### Configuration
+
 ```yaml
 deploy-staging:
   runs-on: ubuntu-latest
   needs: [quality-gates, security-scan, performance-test]
   if: github.ref == 'refs/heads/develop'
-  
+
   steps:
     - uses: actions/checkout@v4
-    
+
     - name: Deploy to Staging
       run: |
         pnpm build
         pnpm deploy:staging
-    
+
     - name: Run E2E Tests
       run: pnpm test:e2e:staging
-    
+
     - name: Health Check
       run: pnpm health:check:staging
 ```
@@ -496,26 +510,27 @@ deploy-staging:
 ### Production Deployment
 
 #### Configuration
+
 ```yaml
 deploy-production:
   runs-on: ubuntu-latest
   needs: [deploy-staging]
   if: github.ref == 'refs/heads/main'
-  
+
   steps:
     - uses: actions/checkout@v4
-    
+
     - name: Deploy to Production
       run: |
         pnpm build
         pnpm deploy:production
-    
+
     - name: Run Smoke Tests
       run: pnpm test:smoke:production
-    
+
     - name: Health Check
       run: pnpm health:check:production
-    
+
     - name: Notify Team
       run: pnpm notify:deployment
 ```
@@ -523,20 +538,21 @@ deploy-production:
 ### Rollback Strategy
 
 #### Configuration
+
 ```yaml
 rollback:
   runs-on: ubuntu-latest
   if: failure()
-  
+
   steps:
     - uses: actions/checkout@v4
-    
+
     - name: Rollback Deployment
       run: pnpm rollback:production
-    
+
     - name: Verify Rollback
       run: pnpm health:check:production
-    
+
     - name: Notify Team
       run: pnpm notify:rollback
 ```
@@ -558,18 +574,19 @@ Monitoring includes:
 ### Health Checks
 
 #### Configuration
+
 ```typescript
 export const healthCheck = {
-  name: "AI-BOS ERP Health Check",
-  url: "https://api.aibos-erp.com/health",
-  interval: "1m",
-  timeout: "30s",
+  name: 'AI-BOS ERP Health Check',
+  url: 'https://api.aibos-erp.com/health',
+  interval: '1m',
+  timeout: '30s',
   retries: 3,
   alerts: [
     {
-      type: "email",
-      recipients: ["team@aibos-erp.com"],
-      conditions: ["status != 200", "response_time > 5s"],
+      type: 'email',
+      recipients: ['team@aibos-erp.com'],
+      conditions: ['status != 200', 'response_time > 5s'],
     },
   ],
 };
@@ -578,15 +595,10 @@ export const healthCheck = {
 ### Performance Monitoring
 
 #### Configuration
+
 ```typescript
 export const performanceMonitoring = {
-  metrics: [
-    "response_time",
-    "throughput",
-    "error_rate",
-    "cpu_usage",
-    "memory_usage",
-  ],
+  metrics: ['response_time', 'throughput', 'error_rate', 'cpu_usage', 'memory_usage'],
   thresholds: {
     response_time: 500,
     error_rate: 0.01,
@@ -595,14 +607,14 @@ export const performanceMonitoring = {
   },
   alerts: [
     {
-      metric: "response_time",
-      condition: "> 500ms",
-      severity: "warning",
+      metric: 'response_time',
+      condition: '> 500ms',
+      severity: 'warning',
     },
     {
-      metric: "error_rate",
-      condition: "> 1%",
-      severity: "critical",
+      metric: 'error_rate',
+      condition: '> 1%',
+      severity: 'critical',
     },
   ],
 };
@@ -615,6 +627,7 @@ export const performanceMonitoring = {
 ### Common Issues
 
 #### Pipeline Failures
+
 ```bash
 # Check pipeline status
 gh run list
@@ -627,6 +640,7 @@ gh run rerun <run-id>
 ```
 
 #### Quality Gate Failures
+
 ```bash
 # Check specific quality gate
 pnpm lint
@@ -639,6 +653,7 @@ pnpm test --watch
 ```
 
 #### Deployment Issues
+
 ```bash
 # Check deployment status
 pnpm status:deployment

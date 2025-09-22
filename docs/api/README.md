@@ -495,17 +495,17 @@ The API supports webhooks for real-time notifications:
 ### JavaScript/TypeScript
 
 ```typescript
-import { AibosERPClient } from "@aibos/erp-sdk";
+import { AibosERPClient } from '@aibos/erp-sdk';
 
 const client = new AibosERPClient({
-  baseUrl: "http://localhost:3001",
-  apiKey: "your-api-key",
+  baseUrl: 'http://localhost:3001',
+  apiKey: 'your-api-key',
 });
 
 // Login
 const auth = await client.auth.login({
-  email: "user@example.com",
-  password: "password",
+  email: 'user@example.com',
+  password: 'password',
 });
 
 // Get users

@@ -110,7 +110,7 @@ pnpm dx  # Runs all quality checks
 ### **Usage Example**
 
 ```tsx
-import { Button, Card, Badge } from "@aibos/ui";
+import { Button, Card, Badge } from '@aibos/ui';
 
 export function MyComponent() {
   return (

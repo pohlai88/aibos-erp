@@ -44,6 +44,7 @@ Anti-drift guardrails are automated systems that prevent code quality degradatio
 ### Overview
 
 ESLint is configured with enterprise-grade rules for:
+
 - **Code Quality**: Consistent formatting and best practices
 - **Security**: Vulnerability detection and prevention
 - **Performance**: Performance anti-patterns
@@ -52,6 +53,7 @@ ESLint is configured with enterprise-grade rules for:
 ### Key Rules
 
 #### Code Quality Rules
+
 ```json
 {
   "rules": {
@@ -65,6 +67,7 @@ ESLint is configured with enterprise-grade rules for:
 ```
 
 #### Security Rules
+
 ```json
 {
   "rules": {
@@ -76,6 +79,7 @@ ESLint is configured with enterprise-grade rules for:
 ```
 
 #### Import Rules
+
 ```json
 {
   "rules": {
@@ -105,20 +109,22 @@ pnpm --filter @aibos/ui lint
 ### Common ESLint Issues
 
 #### Import Order Issues
+
 ```typescript
 // ❌ Wrong order
-import { clsx } from "clsx";
-import type { ComponentProps } from "react";
-import { forwardRef } from "react";
+import { clsx } from 'clsx';
+import type { ComponentProps } from 'react';
+import { forwardRef } from 'react';
 
 // ✅ Correct order
-import type { ComponentProps } from "react";
+import type { ComponentProps } from 'react';
 
-import { forwardRef } from "react";
-import { clsx } from "clsx";
+import { forwardRef } from 'react';
+import { clsx } from 'clsx';
 ```
 
 #### Security Issues
+
 ```typescript
 // ❌ Object injection vulnerability
 const result = config[key][value];
@@ -134,6 +140,7 @@ const result = configMap.get(key)?.get(value);
 ### Overview
 
 Dependency-cruiser enforces architectural rules and prevents:
+
 - **Circular Dependencies**: Prevents dependency cycles
 - **Architecture Violations**: Enforces architectural boundaries
 - **Unused Dependencies**: Identifies dead code
@@ -142,6 +149,7 @@ Dependency-cruiser enforces architectural rules and prevents:
 ### Key Rules
 
 #### Architecture Enforcement
+
 ```json
 {
   "rules": {
@@ -158,6 +166,7 @@ Dependency-cruiser enforces architectural rules and prevents:
 ```
 
 #### Circular Dependency Prevention
+
 ```json
 {
   "rules": {
@@ -184,26 +193,28 @@ pnpm check:deps --output-type dot | dot -T svg > deps.svg
 ### Common Dependency Issues
 
 #### Circular Dependencies
+
 ```typescript
 // ❌ Circular dependency
 // fileA.ts
-import { funcB } from "./fileB";
+import { funcB } from './fileB';
 export const funcA = () => funcB();
 
 // fileB.ts
-import { funcA } from "./fileA";
+import { funcA } from './fileA';
 export const funcB = () => funcA();
 ```
 
 #### Architecture Violations
+
 ```typescript
 // ❌ BFF importing UI components
 // apps/bff/src/auth/auth.service.ts
-import { Button } from "@aibos/ui"; // Violates architecture
+import { Button } from '@aibos/ui'; // Violates architecture
 
 // ✅ BFF using contracts only
 // apps/bff/src/auth/auth.service.ts
-import { User } from "@aibos/contracts"; // Correct
+import { User } from '@aibos/contracts'; // Correct
 ```
 
 ---
@@ -213,6 +224,7 @@ import { User } from "@aibos/contracts"; // Correct
 ### Overview
 
 TypeScript is configured with strict mode for:
+
 - **Type Safety**: Catch type errors at compile time
 - **Code Quality**: Enforce best practices
 - **Maintainability**: Improve code readability
@@ -221,6 +233,7 @@ TypeScript is configured with strict mode for:
 ### Key Settings
 
 #### Strict Mode
+
 ```json
 {
   "compilerOptions": {
@@ -235,6 +248,7 @@ TypeScript is configured with strict mode for:
 ```
 
 #### Module Resolution
+
 ```json
 {
   "compilerOptions": {
@@ -262,19 +276,21 @@ pnpm typecheck --watch
 ### Common TypeScript Issues
 
 #### Type Safety Issues
+
 ```typescript
 // ❌ Implicit any
 function processData(data) {
-  return data.map(item => item.value);
+  return data.map((item) => item.value);
 }
 
 // ✅ Explicit types
 function processData(data: Array<{ value: string }>) {
-  return data.map(item => item.value);
+  return data.map((item) => item.value);
 }
 ```
 
 #### Null Safety Issues
+
 ```typescript
 // ❌ Potential null reference
 function getName(user: User | null) {
@@ -283,7 +299,7 @@ function getName(user: User | null) {
 
 // ✅ Null check
 function getName(user: User | null) {
-  return user?.name ?? "Unknown";
+  return user?.name ?? 'Unknown';
 }
 ```
 
@@ -294,6 +310,7 @@ function getName(user: User | null) {
 ### Overview
 
 Pre-commit hooks automatically run quality checks before commits:
+
 - **Formatting**: Ensure consistent code formatting
 - **Linting**: Run ESLint checks
 - **Type Checking**: Run TypeScript checks
@@ -303,6 +320,7 @@ Pre-commit hooks automatically run quality checks before commits:
 ### Configuration
 
 #### Husky Setup
+
 ```json
 {
   "husky": {
@@ -315,19 +333,12 @@ Pre-commit hooks automatically run quality checks before commits:
 ```
 
 #### Lint-staged Configuration
+
 ```json
 {
   "lint-staged": {
-    "*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write",
-      "git add"
-    ],
-    "*.{js,jsx}": [
-      "eslint --fix",
-      "prettier --write",
-      "git add"
-    ]
+    "*.{ts,tsx}": ["eslint --fix", "prettier --write", "git add"],
+    "*.{js,jsx}": ["eslint --fix", "prettier --write", "git add"]
   }
 }
 ```
@@ -352,6 +363,7 @@ pnpm lint-staged
 ### Overview
 
 The CI/CD pipeline enforces quality gates:
+
 - **Code Quality**: ESLint and dependency-cruiser
 - **Type Safety**: TypeScript compilation
 - **Testing**: Unit, integration, and E2E tests
@@ -361,34 +373,36 @@ The CI/CD pipeline enforces quality gates:
 ### Pipeline Stages
 
 #### Quality Gates
+
 ```yaml
 quality-gates:
-  - name: "Code Quality"
+  - name: 'Code Quality'
     commands:
       - pnpm lint
       - pnpm typecheck
       - pnpm check:deps
-  
-  - name: "Testing"
+
+  - name: 'Testing'
     commands:
       - pnpm test
       - pnpm test:e2e
       - pnpm test:contract
-  
-  - name: "Security"
+
+  - name: 'Security'
     commands:
       - pnpm audit
       - pnpm check:security
 ```
 
 #### Build and Deploy
+
 ```yaml
 build-deploy:
-  - name: "Build"
+  - name: 'Build'
     commands:
       - pnpm build
-  
-  - name: "Deploy"
+
+  - name: 'Deploy'
     commands:
       - pnpm deploy
 ```
@@ -400,6 +414,7 @@ build-deploy:
 ### Common Issues
 
 #### ESLint Errors
+
 ```bash
 # Clear ESLint cache
 rm -rf .eslintcache
@@ -413,6 +428,7 @@ pnpm lint --rule "no-console"
 ```
 
 #### Dependency-Cruiser Errors
+
 ```bash
 # Clear dependency-cruiser cache
 rm -rf .dependency-cruiser-cache
@@ -423,6 +439,7 @@ pnpm check:deps --rule "no-circular"
 ```
 
 #### TypeScript Errors
+
 ```bash
 # Clear TypeScript cache
 rm -rf node_modules/.cache

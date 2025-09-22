@@ -192,14 +192,14 @@ aibos-erp/
 ### Kong Gateway Configuration
 
 ```yaml
-_format_version: "3.0"
+_format_version: '3.0'
 _transform: true
 services:
   - name: accounting-service
     url: http://accounting-service:3000
     routes:
       - name: accounting-routes
-        paths: ["/api/v1/accounting"]
+        paths: ['/api/v1/accounting']
         methods: [GET, POST, PUT, DELETE]
     plugins:
       - name: jwt
@@ -224,14 +224,14 @@ services:
         config:
           strategy: memory
           cache_ttl: 30
-          content_type: ["application/json"]
+          content_type: ['application/json']
       - name: correlation-id
         config:
           header_name: X-Request-Id
           generator: uuid
       - name: ip-restriction
         config:
-          allow: ["0.0.0.0/0"]
+          allow: ['0.0.0.0/0']
 ```
 
 ### Resilience Patterns
@@ -366,7 +366,7 @@ receivers:
       grpc: {}
 exporters:
   prometheus:
-    endpoint: "0.0.0.0:8889"
+    endpoint: '0.0.0.0:8889'
   loki:
     endpoint: http://loki:3100/loki/api/v1/push
   jaeger:
@@ -435,8 +435,8 @@ groups:
 ### Multi-Tenant Isolation Testing
 
 ```typescript
-describe("Multi-tenant Isolation", () => {
-  it("prevents cross-tenant data access", async () => {
+describe('Multi-tenant Isolation', () => {
+  it('prevents cross-tenant data access', async () => {
     const tenant1 = await seedTenant();
     const tenant2 = await seedTenant();
 
@@ -444,9 +444,7 @@ describe("Multi-tenant Isolation", () => {
     const journal2 = await createJournal(tenant2.id);
 
     // Should not be able to access tenant2's data with tenant1's token
-    await expect(getJournal(journal2.id, tenant1.token)).rejects.toThrow(
-      /Forbidden|RLS/,
-    );
+    await expect(getJournal(journal2.id, tenant1.token)).rejects.toThrow(/Forbidden|RLS/);
   });
 });
 ```
@@ -688,8 +686,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-          cache: "pnpm"
+          node-version: '20'
+          cache: 'pnpm'
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile

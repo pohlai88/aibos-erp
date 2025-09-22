@@ -1,18 +1,13 @@
 # Debugging Guide
 
-This document provides comprehensive debugging guidance for the AI-BOS ERP monorepo, covering common issues and their solutions.
+This document provides essential debugging guidance for the AI-BOS ERP monorepo, covering critical issues and their solutions.
 
 ## Table of Contents
 
 - [Quick Diagnostics](#quick-diagnostics)
-- [Build Issues](#build-issues)
-- [TypeScript Issues](#typescript-issues)
-- [ESLint Issues](#eslint-issues)
-- [Package Resolution Issues](#package-resolution-issues)
-- [Cache Issues](#cache-issues)
-- [Dependency Issues](#dependency-issues)
-- [Development Workflow](#development-workflow)
-- [Troubleshooting Commands](#troubleshooting-commands)
+- [Critical Issues](#critical-issues)
+- [Common Solutions](#common-solutions)
+- [Debugging Workflow](#debugging-workflow)
 
 ## Quick Diagnostics
 
@@ -40,454 +35,98 @@ pnpm syncpack list-mismatches
 | `'variable' is defined but never used` | ESLint unused vars          | Prefix with `_` or configure ESLint     |
 | `Module not found`                     | Cache or linking issue      | Run `pnpm -w run clean && pnpm install` |
 
-## Build Issues
+## Critical Issues
 
-### UI Package Type Export Issues - The Complete Hell
+### 1. UI Package Type Export Issues
 
-**⚠️ CRITICAL**: This was one of the most painful debugging sessions. The web app was treating UI components as `any` types, causing JSX errors.
+**⚠️ CRITICAL**: Web app treating UI components as `any` types, causing JSX errors.
 
 **Symptoms:**
 
 - Web app shows `any` types for UI components
 - JSX errors: `Property 'children' does not exist on type 'IntrinsicAttributes & RefAttributes<any>'`
 - TypeScript can't infer component props
-- Components appear as bare ref-only components
 
-**Root Cause Analysis:**
+**Root Cause:** Missing TypeScript declaration files, incorrect package exports, missing transpilePackages, or stale build cache.
 
-The issue was a **perfect storm** of configuration problems:
-
-1. **Missing TypeScript declaration files** (`.d.ts`) - `tsup.config.ts` had `dts: false`
-2. **Incorrect package exports** - Missing `types` field in exports
-3. **Missing transpilePackages** - Next.js wasn't processing the UI package
-4. **Stale build cache** - Old builds were cached
-
-**The Complete Solution:**
+**Solution:**
 
 ```bash
-# 1. Nuclear option - clean everything
+# 1. Clean everything
 pnpm -w run clean
 
 # 2. Ensure UI package generates types
-cd packages/ui
-pnpm build
+cd packages/ui && pnpm build
 
 # 3. Verify dist/index.d.ts exists
 ls dist/index.d.ts
 
-# 4. Check package.json exports
-cat package.json | grep -A 10 '"exports"'
-
-# 5. Rebuild in correct order
+# 4. Rebuild in correct order
 pnpm -r --filter @aibos/ui build
 pnpm -r --filter @aibos/web build
 ```
 
-**Configuration Checklist - Every Single Item:**
+**Configuration Checklist:**
 
 - [ ] `packages/ui/tsup.config.ts` has `dts: true` ← **CRITICAL**
 - [ ] `packages/ui/package.json` has `"types": "./dist/index.d.ts"`
 - [ ] `packages/ui/package.json` has proper `exports` with `types` field
 - [ ] `apps/web/package.json` has `transpilePackages: ["@aibos/ui"]`
-- [ ] `packages/ui/tsconfig.json` has `"jsx": "react-jsx"`
-- [ ] `packages/ui/tsconfig.json` has `"declaration": true`
 
-**The Exact Configuration That Works:**
+### 2. DX Command Failure - Test Script Hell
 
-```typescript
-// packages/ui/tsup.config.ts
-export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
-  dts: true, // ← CRITICAL: Generate .d.ts files
-  splitting: false,
-  sourcemap: true,
-  clean: true,
-  treeshake: true,
-  skipNodeModulesBundle: true,
-  minify: false,
-  target: "es2022",
-});
-```
-
-```json
-// packages/ui/package.json
-{
-  "name": "@aibos/ui",
-  "types": "./dist/index.d.ts", // ← CRITICAL
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts", // ← CRITICAL
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
-    }
-  }
-}
-```
-
-```json
-// apps/web/package.json
-{
-  "next": {
-    "transpilePackages": ["@aibos/ui"] // ← CRITICAL
-  }
-}
-```
-
-**Why This Was So Painful:**
-
-1. **Silent failures** - TypeScript didn't error, just resolved to `any`
-2. **Cache issues** - Old builds were cached and not cleared
-3. **Multiple config files** - Had to fix 4 different configuration files
-4. **Build order** - UI package had to be built before web app
-5. **No clear error messages** - The error was cryptic JSX prop errors
-
-**Debugging Commands:**
-
-```bash
-# Check if types are actually generated
-ls packages/ui/dist/index.d.ts
-
-# Verify TypeScript can find the types
-pnpm -C apps/web tsc --showConfig | grep @aibos
-
-# Check if web app can resolve UI package
-ls apps/web/node_modules/@aibos/ui/dist/index.d.ts
-
-# Test type resolution
-pnpm -C apps/web tsc --noEmit
-```
-
-**Prevention:**
-
-- Always run `pnpm -w run clean` before debugging type issues
-- Verify `dts: true` in tsup configs
-- Check package exports include `types` field
-- Ensure transpilePackages includes workspace packages
-- Build UI package before web app
-
-### Monorepo Build Order Issues
+**⚠️ CRITICAL**: The `dx` command fails due to incorrect test script configuration.
 
 **Symptoms:**
 
-- Build failures due to missing dependencies
-- TypeScript can't find workspace packages
+- `dx` command exits with code 1
+- Error: `No test files found, exiting with code 1`
+
+**Root Cause:** Packages without tests using `vitest run` instead of `echo 'No tests yet'`.
 
 **Solution:**
 
 ```bash
-# Build in correct order
-pnpm -r --filter @aibos/ui build
-pnpm -r --filter @aibos/eventsourcing build
-pnpm -r --filter @aibos/bff build
-pnpm -r --filter @aibos/web build
+# Check which packages have test files
+find packages -name "*.test.*" -o -name "*.spec.*"
 
-# Or use turbo for dependency-aware builds
-pnpm turbo build
+# Check test script patterns
+grep -r '"test":' packages/*/package.json
+
+# Fix packages without tests
+# Change from: "test": "vitest run"
+# Change to:   "test": "echo 'No tests yet'"
 ```
 
-## TypeScript Issues
-
-### Type Resolution Problems
-
-**Symptoms:**
-
-- `TS2307: Cannot find module '@aibos/ui'`
-- `TS2322: Type '{ children: string }' is not assignable`
-
-**Debugging Steps:**
-
-```bash
-# 1. Check TypeScript configuration
-pnpm -C apps/web tsc --showConfig
-
-# 2. Verify module resolution
-pnpm -C apps/web tsc --traceResolution | grep @aibos
-
-# 3. Check if types are generated
-ls packages/ui/dist/index.d.ts
-
-# 4. Verify workspace linking
-ls apps/web/node_modules/@aibos/ui
-```
-
-**Common Fixes:**
+**Pattern That Works:**
 
 ```json
-// tsconfig.json - Ensure proper module resolution
+// ✅ For packages WITH tests
 {
-  "compilerOptions": {
-    "moduleResolution": "bundler",
-    "baseUrl": ".",
-    "paths": {
-      "@aibos/*": ["packages/*/src"]
-    }
-  }
-}
-```
-
-### Generic Type Issues - Eventsourcing Package Hell
-
-**⚠️ CRITICAL**: The Eventsourcing package had 67 ESLint errors that required systematic fixing.
-
-**What We Encountered:**
-
-1. **67 ESLint errors** - Mix of unused variables and `any` types
-2. **Type assertion issues** - `(aggregate as any).version` patterns
-3. **Missing return types** - Decorator functions without explicit returns
-4. **Client query issues** - Missing arguments in database calls
-
-**The Systematic Fix Pattern:**
-
-#### Step 1: Fix Unused Variables
-
-```typescript
-// ❌ Before - ESLint errors
-export function Idempotent(requestIdExtractor: (...args: unknown[]) => string) {
-  return function (
-    target: unknown,
-    propertyName: string,
-    descriptor: PropertyDescriptor,
-  ) {
-    const method = descriptor.value;
-    descriptor.value = async function (...args: unknown[]) {
-      const requestId = requestIdExtractor(...args);
-      const middleware = new IdempotencyMiddleware();
-      const key = await middleware.createIdempotencyKey(requestId); // ← unused
-      // ...
-    };
-  };
-}
-
-// ✅ After - Prefix unused with underscore
-export function Idempotent(requestIdExtractor: (...args: unknown[]) => string) {
-  return function (
-    target: unknown,
-    propertyName: string,
-    descriptor: PropertyDescriptor,
-  ): PropertyDescriptor {
-    const method = descriptor.value;
-    descriptor.value = async function (...args: unknown[]) {
-      const requestId = requestIdExtractor(...args);
-      const middleware = new IdempotencyMiddleware();
-      const _key = await middleware.createIdempotencyKey(requestId); // ← _ prefix
-      // ...
-    };
-    return descriptor; // ← Explicit return type
-  };
-}
-```
-
-#### Step 2: Replace `any` with `unknown` and Narrow
-
-```typescript
-// ❌ Before - Using 'any'
-function processEvent(event: any) {
-  return event.id;
-}
-
-// ✅ After - Use 'unknown' and narrow
-function processEvent(event: unknown) {
-  if (isValidEvent(event)) {
-    return event.id; // Now properly typed
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
   }
 }
 
-// ✅ Or use type assertions with proper casting
-function processEvent(event: unknown) {
-  const typedEvent = event as { id: string; type: string };
-  return typedEvent.id;
-}
-```
-
-#### Step 3: Fix Database Client Issues
-
-```typescript
-// ❌ Before - Missing arguments
-await client.query("BEGIN");
-await client.query("SELECT * FROM events");
-
-// ✅ After - Explicit arguments
-await (
-  client as { query: (sql: string, params: unknown[]) => Promise<unknown> }
-).query("BEGIN", []);
-await (
-  client as { query: (sql: string, params: unknown[]) => Promise<unknown> }
-).query("SELECT * FROM events", []);
-```
-
-#### Step 4: Fix Property Access on Unknown Objects
-
-```typescript
-// ❌ Before - Unsafe property access
-const rowData = row as any;
-event.id = rowData.id;
-
-// ✅ After - Safe property access with casting
-const rowData = row as Record<string, unknown>;
-(event as unknown as { id: string }).id = rowData.id as string;
-```
-
-**The Complete Eventsourcing Fix Pattern:**
-
-```typescript
-// ✅ Complete example of proper type handling
-export async function processEvent(
-  client: unknown,
-  event: unknown,
-  handler: { canHandle: (event: DomainEvent) => boolean },
-): Promise<void> {
-  // Type narrow the client
-  const dbClient = client as {
-    query: (sql: string, params: unknown[]) => Promise<unknown>;
-  };
-
-  // Type narrow the event
-  const domainEvent = event as DomainEvent;
-
-  if (!handler.canHandle(domainEvent)) {
-    return;
-  }
-
-  try {
-    await dbClient.query("BEGIN", []);
-    // Process the event...
-    await dbClient.query("COMMIT", []);
-  } catch (error) {
-    await dbClient.query("ROLLBACK", []);
-    throw error;
-  }
-}
-```
-
-**Why This Was Painful:**
-
-1. **67 errors** - Had to fix each one systematically
-2. **Type assertions** - Required careful casting to avoid `any`
-3. **Database patterns** - Had to fix client.query calls throughout
-4. **Decorator complexity** - Required explicit return types
-5. **Unknown vs any** - Had to understand when to use each
-
-**Prevention:**
-
-- Use `unknown` instead of `any` at boundaries
-- Always provide explicit return types for decorators
-- Prefix unused variables with `_`
-- Use proper type assertions with casting
-- Test database client calls with explicit arguments
-
-## ESLint Issues
-
-### Unused Variables in NestJS (BFF)
-
-**Symptoms:**
-
-- `'databaseService' is defined but never used`
-- Constructor parameters flagged as unused
-
-**Solution:**
-
-```typescript
-// Prefix unused injected dependencies with underscore
-constructor(
-  private readonly _databaseService: DatabaseService,
-  private readonly _logger: Logger,
-) {}
-
-// Update ESLint config to ignore _ prefixed vars
+// ✅ For packages WITHOUT tests
 {
-  files: ['apps/bff/**/*.{ts,tsx}'],
-  rules: {
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-      varsIgnorePattern: '^_',
-      argsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_',
-      ignoreRestSiblings: true
-    }]
+  "scripts": {
+    "test": "echo 'No tests yet'"
   }
 }
 ```
 
-### Import Order Issues
+### 3. ESLint Configuration Hell
 
-**Symptoms:**
+**⚠️ CRITICAL**: ESLint configuration issues causing major debugging headaches.
 
-- `perfectionist/sort-imports` errors
-- Import statements in wrong order
+**Root Cause:** Base `no-unused-vars` rule conflicts with `@typescript-eslint/no-unused-vars`.
 
-**Solution:**
-
-```typescript
-// Correct import order:
-// 1. Type imports first
-import type { ComponentPropsWithRef } from "react";
-
-// 2. Blank line
-// 3. Value imports
-import { forwardRef } from "react";
-
-// 4. Blank line
-// 5. External libraries
-import { clsx } from "clsx";
-
-// 6. Blank line
-// 7. Internal imports
-import { cn } from "./utils";
-```
-
-### HTML Element Globals
-
-**Symptoms:**
-
-- `'HTMLButtonElement' is not defined`
-- `'HTMLElement' is not defined`
-
-**Solution:**
+**Solution Pattern:**
 
 ```javascript
-// Add to eslint.config.js globals
-globals: {
-  HTMLInputElement: 'readonly',
-  HTMLElement: 'readonly',
-  HTMLSpanElement: 'readonly',
-  HTMLButtonElement: 'readonly',
-  HTMLDivElement: 'readonly',
-  HTMLHeadingElement: 'readonly',
-}
-```
-
-### ESLint Configuration Hell - Critical Insights
-
-**⚠️ CRITICAL**: This section documents the ESLint configuration issues that caused major debugging headaches. Read this carefully to avoid future pain.
-
-#### The Unused Variables Nightmare
-
-**What Happened:**
-
-- ESLint was flagging unused injected dependencies in NestJS constructors
-- Disable comments (`// eslint-disable-line no-unused-vars`) weren't working
-- Multiple packages had different ESLint configurations causing inconsistency
-
-**Root Cause:**
-The base `no-unused-vars` rule was still active alongside `@typescript-eslint/no-unused-vars`, causing conflicts.
-
-**The Solution Pattern:**
-
-```javascript
-// ❌ WRONG - This doesn't work
-{
-  files: ['apps/bff/**/*.{ts,tsx}'],
-  rules: {
-    '@typescript-eslint/no-unused-vars': ['error', {
-      varsIgnorePattern: '^_',
-      argsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_',
-      ignoreRestSiblings: true
-    }]
-  }
-}
-
 // ✅ CORRECT - Must disable base rule first
 {
   files: ['apps/bff/**/*.{ts,tsx}'],
@@ -503,12 +142,7 @@ The base `no-unused-vars` rule was still active alongside `@typescript-eslint/no
 }
 ```
 
-#### NestJS Dependency Injection Pattern
-
-**The Problem:**
-NestJS injects dependencies that might not be used immediately, causing ESLint errors.
-
-**The Solution:**
+**NestJS Dependency Injection Pattern:**
 
 ```typescript
 // ✅ Prefix unused injected dependencies with underscore
@@ -516,207 +150,63 @@ constructor(
   private readonly _databaseService: DatabaseService,  // ← _ prefix
   private readonly _logger: Logger,                    // ← _ prefix
 ) {}
-
-// Then update all references to use the new names
-async someMethod() {
-  return this._databaseService.getData();  // ← Use _ prefixed name
-}
 ```
 
-#### Package-Specific ESLint Configuration
+### 4. TypeScript Generic Type Issues
 
-**Critical Pattern for Monorepos:**
+**⚠️ CRITICAL**: Eventsourcing package had 67 ESLint errors requiring systematic fixing.
 
-```javascript
-// BFF package (NestJS) - handle injected dependencies
-{
-  files: ['apps/bff/**/*.{ts,tsx}'],
-  rules: {
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-      varsIgnorePattern: '^_',
-      argsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_',
-      ignoreRestSiblings: true
-    }]
-  }
-},
-
-// Eventsourcing package - handle unused vars and any types
-{
-  files: ['packages/eventsourcing/**/*.{ts,tsx}'],
-  rules: {
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-      varsIgnorePattern: '^_',
-      argsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_',
-      ignoreRestSiblings: true
-    }]
-  }
-},
-
-// UI package - disable perfectionist and allow utils filename
-{
-  files: ['packages/ui/**/*.{ts,tsx}'],
-  rules: {
-    'perfectionist/sort-imports': 'off',
-    'unicorn/prevent-abbreviations': ['error', {
-      allowList: {
-        utils: true,  // ← Allow utils.ts filename
-        Props: true,
-        Ref: true,
-        // ... other abbreviations
-      }
-    }],
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-      varsIgnorePattern: '^_',
-      argsIgnorePattern: '^_',
-      caughtErrorsIgnorePattern: '^_',
-      ignoreRestSiblings: true
-    }]
-  }
-}
-```
-
-#### Duplicate Rule Prevention
-
-**The Problem:**
-ESLint config had duplicate `unicorn/prevent-abbreviations` rules causing errors.
-
-**The Solution:**
-
-```javascript
-// ❌ WRONG - Duplicate rules
-rules: {
-  'unicorn/prevent-abbreviations': ['error', { allowList: { Props: true } }],
-  'unicorn/prevent-abbreviations': ['error', { allowList: { utils: true } }], // ← Duplicate!
-}
-
-// ✅ CORRECT - Merge into single rule
-rules: {
-  'unicorn/prevent-abbreviations': ['error', {
-    allowList: {
-      Props: true,
-      utils: true,  // ← Merged
-      // ... other abbreviations
-    }
-  }]
-}
-```
-
-#### Disable Comments That Don't Work
-
-**Common Mistake:**
+**Common Patterns:**
 
 ```typescript
-// ❌ This doesn't work when base rule is active
-constructor(
-  private readonly databaseService: DatabaseService, // eslint-disable-line no-unused-vars
-) {}
+// ❌ Before - Using 'any'
+function processEvent(event: any) {
+  return event.id;
+}
+
+// ✅ After - Use 'unknown' and narrow
+function processEvent(event: unknown) {
+  if (isValidEvent(event)) {
+    return event.id;
+  }
+}
+
+// ✅ Or use type assertions with proper casting
+function processEvent(event: unknown) {
+  const typedEvent = event as { id: string; type: string };
+  return typedEvent.id;
+}
 ```
 
-**Better Approach:**
+**Database Client Issues:**
 
 ```typescript
-// ✅ Use underscore prefix + ESLint config
-constructor(
-  private readonly _databaseService: DatabaseService,
-) {}
+// ❌ Before - Missing arguments
+await client.query('BEGIN');
+
+// ✅ After - Explicit arguments
+await (client as { query: (sql: string, params: unknown[]) => Promise<unknown> }).query(
+  'BEGIN',
+  [],
+);
 ```
 
-#### ESLint Flat Config Gotchas
+## Common Solutions
 
-**Critical Points:**
-
-1. **Always disable base rule** when using TypeScript-specific rules
-2. **Package-specific configs** must be separate objects in the array
-3. **Duplicate rules** will cause parsing errors
-4. **Disable comments** don't work reliably with conflicting rules
-
-**Validation Commands:**
+### Build Issues
 
 ```bash
-# Check ESLint config syntax
-pnpm eslint --print-config eslint.config.js
+# Build in correct order
+pnpm -r --filter @aibos/ui build
+pnpm -r --filter @aibos/eventsourcing build
+pnpm -r --filter @aibos/bff build
+pnpm -r --filter @aibos/web build
 
-# Test specific package
-pnpm --filter @aibos/ui lint
-
-# Debug ESLint issues
-pnpm eslint --debug packages/ui/src/utils.ts
+# Or use turbo for dependency-aware builds
+pnpm turbo build
 ```
 
-## Package Resolution Issues
-
-### Workspace Package Not Found
-
-**Symptoms:**
-
-- `Cannot resolve dependency '@aibos/ui'`
-- Module resolution errors
-
-**Debugging:**
-
-```bash
-# Check workspace configuration
-cat pnpm-workspace.yaml
-
-# Verify package exists
-ls packages/ui/package.json
-
-# Check if package is built
-ls packages/ui/dist/
-
-# Verify linking
-ls apps/web/node_modules/@aibos/ui
-```
-
-**Solution:**
-
-```bash
-# Reinstall dependencies
-pnpm install
-
-# Rebuild packages
-pnpm -r build
-
-# Check workspace linking
-pnpm list --depth=0
-```
-
-### Version Mismatches
-
-**Symptoms:**
-
-- Dependency version conflicts
-- Peer dependency warnings
-
-**Solution:**
-
-```bash
-# Check for version mismatches
-pnpm syncpack list-mismatches
-
-# Fix version mismatches
-pnpm syncpack fix-mismatches
-
-# Update lockfile
-pnpm install
-```
-
-## Cache Issues
-
-### Stale Build Cache
-
-**Symptoms:**
-
-- Changes not reflected in builds
-- Outdated type definitions
-- Inconsistent build results
-
-**Solution:**
+### Cache Issues
 
 ```bash
 # Clean all caches
@@ -733,185 +223,43 @@ pnpm install
 pnpm -r build
 ```
 
-### TypeScript Build Info
-
-**Symptoms:**
-
-- TypeScript incremental builds failing
-- Stale type checking results
-
-**Solution:**
+### Package Resolution Issues
 
 ```bash
-# Remove TypeScript build info
-rm -rf **/tsconfig.tsbuildinfo
-
-# Clear TypeScript cache
-pnpm -r exec tsc --build --clean
-```
-
-## Dependency Issues
-
-### Peer Dependency Warnings
-
-**Symptoms:**
-
-- `WARN: unmet peer dependency`
-- Version conflicts
-
-**Solution:**
-
-```bash
-# Check peer dependencies
-pnpm list --depth=0
-
-# Install missing peer dependencies
-pnpm add -D react@^18 react-dom@^18
-
-# Update to compatible versions
-pnpm update
-```
-
-### Lock File Issues
-
-**Symptoms:**
-
-- `ERR_PNPM_OUTDATED_LOCKFILE`
-- Dependency resolution failures
-
-**Solution:**
-
-```bash
-# Update lockfile
+# Reinstall dependencies
 pnpm install
 
-# Force update
-pnpm install --force
-
-# Clean install
-rm -rf node_modules pnpm-lock.yaml
-pnpm install
-```
-
-## Development Workflow
-
-### Pre-commit Hook Failures
-
-**Symptoms:**
-
-- Git hooks failing
-- ESLint/TypeScript errors in hooks
-
-**Debugging:**
-
-```bash
-# Run hooks manually
-pnpm simple-git-hooks
-
-# Check hook configuration
-cat .simple-git-hooks.json
-
-# Skip hooks temporarily
-git commit --no-verify -m "message"
-```
-
-### Pre-push Hook Failures
-
-**Symptoms:**
-
-- Push blocked by dependency cruiser
-- Architecture constraint violations
-
-**Solution:**
-
-```bash
-# Check dependency rules
-pnpm depcruise --validate --config .dependency-cruiser.js src
-
-# Update dependency cruiser config
-# Edit .dependency-cruiser.js
-```
-
-## Troubleshooting Commands
-
-### Diagnostic Scripts
-
-```bash
-# Full project health check
-pnpm dx
-
-# Package-specific checks
-pnpm --filter @aibos/ui lint
-pnpm --filter @aibos/web typecheck
-pnpm --filter @aibos/bff test
-
-# Dependency analysis
-pnpm syncpack list-mismatches
-pnpm list --depth=0
-
-# Cache management
-pnpm -w run clean
-pnpm store prune
-
-# Build verification
+# Rebuild packages
 pnpm -r build
-pnpm turbo build
+
+# Check workspace linking
+pnpm list --depth=0
+
+# Fix version mismatches
+pnpm syncpack fix-mismatches
 ```
 
-### Environment Debugging
+### ESLint Issues
 
-```bash
-# Check Node.js version
-node --version
+```typescript
+// Correct import order:
+// 1. Type imports first
+import type { ComponentPropsWithRef } from 'react';
 
-# Check pnpm version
-pnpm --version
+// 2. Blank line
+// 3. Value imports
+import { forwardRef } from 'react';
 
-# Check workspace configuration
-cat pnpm-workspace.yaml
+// 4. Blank line
+// 5. External libraries
+import { clsx } from 'clsx';
 
-# Check package.json scripts
-cat package.json | grep -A 20 '"scripts"'
+// 6. Blank line
+// 7. Internal imports
+import { cn } from './utils';
 ```
 
-### Log Analysis
-
-```bash
-# Verbose build output
-pnpm build --verbose
-
-# TypeScript verbose output
-pnpm tsc --verbose
-
-# ESLint debug output
-pnpm eslint --debug src/
-```
-
-## Common Solutions Summary
-
-| Issue                | Quick Fix                                    |
-| -------------------- | -------------------------------------------- |
-| UI types not working | `pnpm -w run clean && pnpm -r build`         |
-| ESLint unused vars   | Prefix with `_` or configure ESLint          |
-| Import order errors  | Reorder imports or disable perfectionist     |
-| Cache issues         | `pnpm -w run clean`                          |
-| Dependency conflicts | `pnpm syncpack fix-mismatches`               |
-| Build failures       | Check build order and dependencies           |
-| Type resolution      | Verify package exports and transpilePackages |
-
-## Debugging Workflow - Lessons Learned
-
-**⚠️ CRITICAL**: This section documents the debugging workflow that saved us from hours of pain.
-
-### The Debugging Session That Taught Us Everything
-
-**What We Debugged:**
-
-1. **UI Package Type Resolution** - Web app treating components as `any`
-2. **ESLint Configuration Hell** - 67 errors across multiple packages
-3. **NestJS Dependency Injection** - Unused constructor parameters
-4. **Eventsourcing Type Safety** - `any` types and missing return types
-5. **Monorepo Build Order** - Packages not building in correct sequence
+## Debugging Workflow
 
 ### The Debugging Workflow That Works
 
@@ -980,13 +328,6 @@ pnpm dx
 - **Workspace linking** can break silently
 - **Cache issues** are common and hard to debug
 - **Dependency order** is critical
-
-#### 4. NestJS Patterns
-
-- **Injected dependencies** are often unused initially
-- **Underscore prefix** is the cleanest solution
-- **ESLint config** must handle `_` prefixed variables
-- **Constructor parameters** need special handling
 
 ### The Debugging Checklist
 
@@ -1071,8 +412,7 @@ If you encounter issues not covered in this guide:
 1. **Run diagnostics first**: `pnpm debug:quick`
 2. **Check this guide** for similar issues
 3. **Follow the debugging workflow** above
-4. **Check the [Issues](https://github.com/your-org/aibos-erp/issues) page**
-5. **Create a detailed issue report** with:
+4. **Create a detailed issue report** with:
    - Error messages (full output)
    - Steps to reproduce
    - Environment details (`node --version`, `pnpm --version`)

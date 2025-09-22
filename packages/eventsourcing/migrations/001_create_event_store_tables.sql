@@ -111,3 +111,4 @@ COMMENT ON TABLE eventsourcing.outbox_events IS 'Outbox pattern for reliable mes
 COMMENT ON TABLE eventsourcing.idempotency_keys IS 'Idempotency key storage';
 
 
+

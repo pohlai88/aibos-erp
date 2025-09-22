@@ -140,7 +140,7 @@ export abstract class DomainEvent {
     public readonly occurredAt: Date,
     public readonly tenantId: string,
     public readonly correlationId?: string,
-    public readonly causationId?: string
+    public readonly causationId?: string,
   ) {}
 }
 
@@ -171,11 +171,7 @@ export abstract class AggregateRoot {
 
 // Event store interface
 export interface EventStore {
-  append(
-    streamId: string,
-    events: DomainEvent[],
-    expectedVersion: number
-  ): Promise<void>;
+  append(streamId: string, events: DomainEvent[], expectedVersion: number): Promise<void>;
   getEvents(streamId: string, fromVersion?: number): Promise<DomainEvent[]>;
   getEventsFromTimestamp(timestamp: Date): Promise<DomainEvent[]>;
   createSnapshot(streamId: string, aggregate: AggregateRoot): Promise<void>;
@@ -274,7 +270,7 @@ export class ChartOfAccounts extends AggregateRoot {
       command.accountName,
       command.accountType,
       command.parentAccountCode,
-      command.tenantId
+      command.tenantId,
     );
 
     this.addEvent(
@@ -284,21 +280,18 @@ export class ChartOfAccounts extends AggregateRoot {
         command.accountType,
         command.parentAccountCode,
         command.tenantId,
-        this.version + 1
-      )
+        this.version + 1,
+      ),
     );
   }
 
   private validateAccountCreation(command: CreateAccountCommand): void {
     if (this.accounts.has(command.accountCode)) {
-      throw new BusinessRuleViolation("Account code already exists");
+      throw new BusinessRuleViolation('Account code already exists');
     }
 
-    if (
-      command.parentAccountCode &&
-      !this.accounts.has(command.parentAccountCode)
-    ) {
-      throw new BusinessRuleViolation("Parent account does not exist");
+    if (command.parentAccountCode && !this.accounts.has(command.parentAccountCode)) {
+      throw new BusinessRuleViolation('Parent account does not exist');
     }
   }
 }
@@ -320,23 +313,17 @@ export class JournalEntry extends AggregateRoot {
         command.reference,
         command.description,
         command.tenantId,
-        this.version + 1
-      )
+        this.version + 1,
+      ),
     );
   }
 
   private validateDoubleEntry(entries: JournalEntryLine[]): void {
-    const totalDebit = entries.reduce(
-      (sum, entry) => sum + entry.debitAmount,
-      0
-    );
-    const totalCredit = entries.reduce(
-      (sum, entry) => sum + entry.creditAmount,
-      0
-    );
+    const totalDebit = entries.reduce((sum, entry) => sum + entry.debitAmount, 0);
+    const totalCredit = entries.reduce((sum, entry) => sum + entry.creditAmount, 0);
 
     if (Math.abs(totalDebit - totalCredit) > 0.01) {
-      throw new BusinessRuleViolation("Journal entry is not balanced");
+      throw new BusinessRuleViolation('Journal entry is not balanced');
     }
   }
 }
@@ -350,7 +337,7 @@ export class AccountingService {
   constructor(
     private readonly eventStore: EventStore,
     private readonly accountRepository: AccountRepository,
-    private readonly journalEntryRepository: JournalEntryRepository
+    private readonly journalEntryRepository: JournalEntryRepository,
   ) {}
 
   async createAccount(command: CreateAccountCommand): Promise<void> {
@@ -359,7 +346,7 @@ export class AccountingService {
     await this.eventStore.append(
       `chart-of-accounts-${command.tenantId}`,
       chartOfAccounts.getUncommittedEvents(),
-      chartOfAccounts.getVersion()
+      chartOfAccounts.getVersion(),
     );
     chartOfAccounts.markEventsAsCommitted();
   }
@@ -371,7 +358,7 @@ export class AccountingService {
     await this.eventStore.append(
       `journal-entry-${command.journalEntryId}`,
       journalEntry.getUncommittedEvents(),
-      journalEntry.getVersion()
+      journalEntry.getVersion(),
     );
 
     journalEntry.markEventsAsCommitted();
@@ -380,14 +367,12 @@ export class AccountingService {
     await this.updateGeneralLedger(command);
   }
 
-  private async updateGeneralLedger(
-    command: PostJournalEntryCommand
-  ): Promise<void> {
+  private async updateGeneralLedger(command: PostJournalEntryCommand): Promise<void> {
     for (const entry of command.entries) {
       await this.accountRepository.updateBalance(
         entry.accountCode,
         entry.debitAmount - entry.creditAmount,
-        command.tenantId
+        command.tenantId,
       );
     }
   }
@@ -490,7 +475,7 @@ export class InventoryItem extends AggregateRoot {
       command.unitCost,
       command.location,
       StockMovementType.RECEIPT,
-      command.reference
+      command.reference,
     );
 
     this.addEvent(
@@ -501,8 +486,8 @@ export class InventoryItem extends AggregateRoot {
         command.location,
         command.reference,
         command.tenantId,
-        this.version + 1
-      )
+        this.version + 1,
+      ),
     );
   }
 
@@ -515,7 +500,7 @@ export class InventoryItem extends AggregateRoot {
       this.calculateIssueCost(command),
       command.location,
       StockMovementType.ISSUE,
-      command.reference
+      command.reference,
     );
 
     this.addEvent(
@@ -526,8 +511,8 @@ export class InventoryItem extends AggregateRoot {
         command.location,
         command.reference,
         command.tenantId,
-        this.version + 1
-      )
+        this.version + 1,
+      ),
     );
   }
 
@@ -540,7 +525,7 @@ export class InventoryItem extends AggregateRoot {
       case ValuationMethod.WEIGHTED_AVERAGE:
         return this.calculateWeightedAverageCost();
       default:
-        throw new BusinessRuleViolation("Invalid valuation method");
+        throw new BusinessRuleViolation('Invalid valuation method');
     }
   }
 }
@@ -554,7 +539,7 @@ export class StockMovement {
     public readonly location: string,
     public readonly movementType: StockMovementType,
     public readonly reference: string,
-    public readonly timestamp: Date = new Date()
+    public readonly timestamp: Date = new Date(),
   ) {}
 }
 ```
@@ -567,20 +552,17 @@ export class InventoryService {
   constructor(
     private readonly eventStore: EventStore,
     private readonly inventoryRepository: InventoryRepository,
-    private readonly valuationService: ValuationService
+    private readonly valuationService: ValuationService,
   ) {}
 
   async receiveStock(command: ReceiveStockCommand): Promise<void> {
-    const inventoryItem = await this.loadInventoryItem(
-      command.sku,
-      command.tenantId
-    );
+    const inventoryItem = await this.loadInventoryItem(command.sku, command.tenantId);
     inventoryItem.receiveStock(command);
 
     await this.eventStore.append(
       `inventory-item-${command.sku}`,
       inventoryItem.getUncommittedEvents(),
-      inventoryItem.getVersion()
+      inventoryItem.getVersion(),
     );
 
     inventoryItem.markEventsAsCommitted();
@@ -591,16 +573,13 @@ export class InventoryService {
   }
 
   async issueStock(command: IssueStockCommand): Promise<void> {
-    const inventoryItem = await this.loadInventoryItem(
-      command.sku,
-      command.tenantId
-    );
+    const inventoryItem = await this.loadInventoryItem(command.sku, command.tenantId);
     inventoryItem.issueStock(command);
 
     await this.eventStore.append(
       `inventory-item-${command.sku}`,
       inventoryItem.getUncommittedEvents(),
-      inventoryItem.getVersion()
+      inventoryItem.getVersion(),
     );
 
     inventoryItem.markEventsAsCommitted();
@@ -610,15 +589,13 @@ export class InventoryService {
     await this.updateValuation(command);
   }
 
-  private async updateStockLevels(
-    command: StockMovementCommand
-  ): Promise<void> {
+  private async updateStockLevels(command: StockMovementCommand): Promise<void> {
     await this.inventoryRepository.updateStockLevel(
       command.sku,
       command.location,
       command.quantity,
       command.movementType,
-      command.tenantId
+      command.tenantId,
     );
   }
 
@@ -628,7 +605,7 @@ export class InventoryService {
       command.quantity,
       command.unitCost,
       command.movementType,
-      command.tenantId
+      command.tenantId,
     );
   }
 }
@@ -666,16 +643,16 @@ export class InventoryService {
 **Aggregate Testing:**
 
 ```typescript
-describe("JournalEntry", () => {
-  it("should post balanced journal entry", () => {
-    const journalEntry = new JournalEntry("JE-001");
+describe('JournalEntry', () => {
+  it('should post balanced journal entry', () => {
+    const journalEntry = new JournalEntry('JE-001');
     const command = new PostJournalEntryCommand({
       entries: [
-        { accountCode: "1000", debitAmount: 1000, creditAmount: 0 },
-        { accountCode: "2000", debitAmount: 0, creditAmount: 1000 },
+        { accountCode: '1000', debitAmount: 1000, creditAmount: 0 },
+        { accountCode: '2000', debitAmount: 0, creditAmount: 1000 },
       ],
-      reference: "INV-001",
-      description: "Inventory purchase",
+      reference: 'INV-001',
+      description: 'Inventory purchase',
     });
 
     journalEntry.postEntry(command);
@@ -685,20 +662,18 @@ describe("JournalEntry", () => {
     expect(events[0]).toBeInstanceOf(JournalEntryPostedEvent);
   });
 
-  it("should reject unbalanced journal entry", () => {
-    const journalEntry = new JournalEntry("JE-001");
+  it('should reject unbalanced journal entry', () => {
+    const journalEntry = new JournalEntry('JE-001');
     const command = new PostJournalEntryCommand({
       entries: [
-        { accountCode: "1000", debitAmount: 1000, creditAmount: 0 },
-        { accountCode: "2000", debitAmount: 0, creditAmount: 500 },
+        { accountCode: '1000', debitAmount: 1000, creditAmount: 0 },
+        { accountCode: '2000', debitAmount: 0, creditAmount: 500 },
       ],
-      reference: "INV-001",
-      description: "Inventory purchase",
+      reference: 'INV-001',
+      description: 'Inventory purchase',
     });
 
-    expect(() => journalEntry.postEntry(command)).toThrow(
-      "Journal entry is not balanced"
-    );
+    expect(() => journalEntry.postEntry(command)).toThrow('Journal entry is not balanced');
   });
 });
 ```
@@ -706,29 +681,25 @@ describe("JournalEntry", () => {
 **Event Store Testing:**
 
 ```typescript
-describe("EventStore", () => {
-  it("should append events with optimistic concurrency", async () => {
+describe('EventStore', () => {
+  it('should append events with optimistic concurrency', async () => {
     const eventStore = new PostgreSQLEventStore();
-    const events = [
-      new AccountCreatedEvent("ACC-001", "Cash", "Asset", "TENANT-001"),
-    ];
+    const events = [new AccountCreatedEvent('ACC-001', 'Cash', 'Asset', 'TENANT-001')];
 
-    await eventStore.append("account-ACC-001", events, 0);
+    await eventStore.append('account-ACC-001', events, 0);
 
-    const retrievedEvents = await eventStore.getEvents("account-ACC-001");
+    const retrievedEvents = await eventStore.getEvents('account-ACC-001');
     expect(retrievedEvents).toHaveLength(1);
     expect(retrievedEvents[0]).toBeInstanceOf(AccountCreatedEvent);
   });
 
-  it("should reject append with wrong expected version", async () => {
+  it('should reject append with wrong expected version', async () => {
     const eventStore = new PostgreSQLEventStore();
-    const events = [
-      new AccountCreatedEvent("ACC-001", "Cash", "Asset", "TENANT-001"),
-    ];
+    const events = [new AccountCreatedEvent('ACC-001', 'Cash', 'Asset', 'TENANT-001')];
 
-    await expect(
-      eventStore.append("account-ACC-001", events, 1)
-    ).rejects.toThrow("Concurrency conflict");
+    await expect(eventStore.append('account-ACC-001', events, 1)).rejects.toThrow(
+      'Concurrency conflict',
+    );
   });
 });
 ```
@@ -736,40 +707,36 @@ describe("EventStore", () => {
 **Integration Testing:**
 
 ```typescript
-describe("Accounting Service Integration", () => {
-  it("should create account and post journal entry", async () => {
-    const accountingService = new AccountingService(
-      eventStore,
-      accountRepo,
-      journalRepo
-    );
+describe('Accounting Service Integration', () => {
+  it('should create account and post journal entry', async () => {
+    const accountingService = new AccountingService(eventStore, accountRepo, journalRepo);
 
     // Create account
     await accountingService.createAccount(
       new CreateAccountCommand({
-        accountCode: "1000",
-        accountName: "Cash",
-        accountType: "Asset",
-        tenantId: "TENANT-001",
-      })
+        accountCode: '1000',
+        accountName: 'Cash',
+        accountType: 'Asset',
+        tenantId: 'TENANT-001',
+      }),
     );
 
     // Post journal entry
     await accountingService.postJournalEntry(
       new PostJournalEntryCommand({
-        journalEntryId: "JE-001",
+        journalEntryId: 'JE-001',
         entries: [
-          { accountCode: "1000", debitAmount: 1000, creditAmount: 0 },
-          { accountCode: "2000", debitAmount: 0, creditAmount: 1000 },
+          { accountCode: '1000', debitAmount: 1000, creditAmount: 0 },
+          { accountCode: '2000', debitAmount: 0, creditAmount: 1000 },
         ],
-        reference: "INV-001",
-        description: "Inventory purchase",
-        tenantId: "TENANT-001",
-      })
+        reference: 'INV-001',
+        description: 'Inventory purchase',
+        tenantId: 'TENANT-001',
+      }),
     );
 
     // Verify account balance
-    const account = await accountRepo.findByCode("1000", "TENANT-001");
+    const account = await accountRepo.findByCode('1000', 'TENANT-001');
     expect(account.balance).toBe(1000);
   });
 });

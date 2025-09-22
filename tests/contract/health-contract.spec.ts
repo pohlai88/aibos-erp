@@ -1,6 +1,6 @@
+import { healthApi } from '../../apps/bff/src/health/health.controller';
 import { Pact } from '@pact-foundation/pact';
 import { Matchers } from '@pact-foundation/pact';
-import { healthApi } from '../../apps/bff/src/health/health.controller';
 
 const { like, eachLike } = Matchers;
 
@@ -41,7 +41,7 @@ describe('Health API Contract', () => {
             method: 'GET',
             path: '/health',
             headers: {
-              'Accept': 'application/json',
+              Accept: 'application/json',
             },
           },
           willRespondWith: {
@@ -55,8 +55,8 @@ describe('Health API Contract', () => {
         .then(() => {
           // Test the actual API call
           return fetch('http://localhost:3001/health')
-            .then(response => response.json())
-            .then(data => {
+            .then((response) => response.json())
+            .then((data) => {
               expect(data.status).toBe('ok');
               expect(data.timestamp).toBeDefined();
               expect(data.uptime).toBeDefined();
@@ -87,7 +87,7 @@ describe('Health API Contract', () => {
             method: 'GET',
             path: '/health/database',
             headers: {
-              'Accept': 'application/json',
+              Accept: 'application/json',
             },
           },
           willRespondWith: {
@@ -101,8 +101,8 @@ describe('Health API Contract', () => {
         .then(() => {
           // Test the actual API call
           return fetch('http://localhost:3001/health/database')
-            .then(response => response.json())
-            .then(data => {
+            .then((response) => response.json())
+            .then((data) => {
               expect(data.status).toBe('ok');
               expect(data.database.status).toBe('connected');
               expect(data.database.responseTime).toBeDefined();

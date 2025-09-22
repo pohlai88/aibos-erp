@@ -49,7 +49,7 @@ function checkFile(path, description) {
 
 function checkPackageHealth() {
   log(`\n${colors.bright}${colors.magenta}📦 Package Health Check${colors.reset}`);
-  
+
   const packages = [
     { name: '@aibos/ui', path: 'packages/ui' },
     { name: '@aibos/web', path: 'apps/web' },
@@ -57,15 +57,15 @@ function checkPackageHealth() {
     { name: '@aibos/eventsourcing', path: 'packages/eventsourcing' },
   ];
 
-  packages.forEach(pkg => {
+  packages.forEach((pkg) => {
     log(`\n${colors.yellow}Checking ${pkg.name}${colors.reset}`);
-    
+
     // Check package.json exists
     checkFile(join(pkg.path, 'package.json'), 'Package configuration');
-    
+
     // Check if built
     checkFile(join(pkg.path, 'dist'), 'Build output');
-    
+
     // Check TypeScript config
     checkFile(join(pkg.path, 'tsconfig.json'), 'TypeScript configuration');
   });
@@ -73,27 +73,27 @@ function checkPackageHealth() {
 
 function checkDependencies() {
   log(`\n${colors.bright}${colors.magenta}🔗 Dependency Check${colors.reset}`);
-  
+
   runCommand('pnpm syncpack list-mismatches', 'Checking for version mismatches');
   runCommand('pnpm list --depth=0', 'Checking installed packages');
 }
 
 function checkBuildSystem() {
   log(`\n${colors.bright}${colors.magenta}🔨 Build System Check${colors.reset}`);
-  
+
   checkFile('turbo.json', 'Turbo configuration');
   checkFile('pnpm-workspace.yaml', 'Workspace configuration');
   checkFile('package.json', 'Root package configuration');
-  
+
   runCommand('pnpm --version', 'pnpm version');
   runCommand('node --version', 'Node.js version');
 }
 
 function checkLinting() {
   log(`\n${colors.bright}${colors.magenta}🧹 Linting Check${colors.reset}`);
-  
+
   checkFile('eslint.config.js', 'ESLint configuration');
-  
+
   runCommand('pnpm --filter @aibos/ui lint', 'UI package linting');
   runCommand('pnpm --filter @aibos/web lint', 'Web app linting');
   runCommand('pnpm --filter @aibos/bff lint', 'BFF package linting');
@@ -101,7 +101,7 @@ function checkLinting() {
 
 function checkTypeScript() {
   log(`\n${colors.bright}${colors.magenta}📝 TypeScript Check${colors.reset}`);
-  
+
   runCommand('pnpm --filter @aibos/ui typecheck', 'UI package types');
   runCommand('pnpm --filter @aibos/web typecheck', 'Web app types');
   runCommand('pnpm --filter @aibos/bff typecheck', 'BFF package types');
@@ -109,7 +109,7 @@ function checkTypeScript() {
 
 function suggestFixes() {
   log(`\n${colors.bright}${colors.magenta}💡 Common Fixes${colors.reset}`);
-  
+
   log(`
 ${colors.yellow}If you see build issues:${colors.reset}
   pnpm -w run clean
@@ -135,14 +135,14 @@ ${colors.yellow}For full diagnostics:${colors.reset}
 function main() {
   log(`${colors.bright}${colors.blue}🚀 AI-BOS ERP Debug Tool${colors.reset}`);
   log(`${colors.cyan}Running comprehensive diagnostics...${colors.reset}`);
-  
+
   checkBuildSystem();
   checkPackageHealth();
   checkDependencies();
   checkLinting();
   checkTypeScript();
   suggestFixes();
-  
+
   log(`\n${colors.bright}${colors.green}✅ Debug check complete!${colors.reset}`);
   log(`${colors.cyan}For detailed debugging info, see docs/DEBUGGING.md${colors.reset}`);
 }

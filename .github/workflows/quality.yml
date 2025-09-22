@@ -7,8 +7,8 @@ on:
     branches: [main, develop]
 
 env:
-  NODE_VERSION: "20.11.1"
-  PNPM_VERSION: "9.7.1"
+  NODE_VERSION: '20.11.1'
+  PNPM_VERSION: '9.7.1'
   CI: true
 
 jobs:
@@ -329,15 +329,7 @@ jobs:
   final-gate:
     name: Final Quality Gate
     runs-on: ubuntu-latest
-    needs:
-      [
-        security,
-        performance,
-        testing,
-        data-governance,
-        quality,
-        database-quality,
-      ]
+    needs: [security, performance, testing, data-governance, quality, database-quality]
     if: always()
     steps:
       - name: Quality Gate Results

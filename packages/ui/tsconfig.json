@@ -6,6 +6,7 @@
     "strict": true,
     "skipLibCheck": true,
     "declaration": true,
+    "composite": true,
     "declarationMap": true,
     "emitDeclarationOnly": false,
     "jsx": "react-jsx",

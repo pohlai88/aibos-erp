@@ -4,6 +4,8 @@
     { "path": "packages/contracts" },
     { "path": "packages/ui" },
     { "path": "packages/utils" },
+    { "path": "packages/eventsourcing" },
+    { "path": "packages/accounting" },
     { "path": "apps/bff" }
   ],
   "compilerOptions": {

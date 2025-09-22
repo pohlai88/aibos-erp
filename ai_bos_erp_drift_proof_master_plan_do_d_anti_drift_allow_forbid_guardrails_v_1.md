@@ -54,220 +54,208 @@ Create **`/.eslintrc.cjs`** at repo root:
 /* eslint-disable no-undef */
 module.exports = {
   root: true,
-  parser: "@typescript-eslint/parser",
+  parser: '@typescript-eslint/parser',
   plugins: [
-    "@typescript-eslint",
-    "import",
-    "boundaries",
-    "perfectionist",
-    "promise",
-    "sonarjs",
-    "security",
-    "unicorn",
-    "jsx-a11y",
-    "react-hooks",
-    "testing-library",
-    "jest-dom",
+    '@typescript-eslint',
+    'import',
+    'boundaries',
+    'perfectionist',
+    'promise',
+    'sonarjs',
+    'security',
+    'unicorn',
+    'jsx-a11y',
+    'react-hooks',
+    'testing-library',
+    'jest-dom',
   ],
   extends: [
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:import/recommended",
-    "plugin:import/typescript",
-    "plugin:promise/recommended",
-    "plugin:sonarjs/recommended",
-    "plugin:security/recommended",
-    "plugin:unicorn/recommended",
-    "plugin:jsx-a11y/recommended",
-    "plugin:react-hooks/recommended",
-    "plugin:testing-library/recommended",
-    "plugin:jest-dom/recommended",
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
+    'plugin:promise/recommended',
+    'plugin:sonarjs/recommended',
+    'plugin:security/recommended',
+    'plugin:unicorn/recommended',
+    'plugin:jsx-a11y/recommended',
+    'plugin:react-hooks/recommended',
+    'plugin:testing-library/recommended',
+    'plugin:jest-dom/recommended',
   ],
   settings: {
-    "import/resolver": { typescript: { project: ["./tsconfig.json"] } },
+    'import/resolver': { typescript: { project: ['./tsconfig.json'] } },
     boundaries: {
-      defaultMessage: "Import violates layer lineage policy",
-      ignore: ["**/*.test.*", "**/*.spec.*", "**/*.stories.*"],
+      defaultMessage: 'Import violates layer lineage policy',
+      ignore: ['**/*.test.*', '**/*.spec.*', '**/*.stories.*'],
       // Map layers by alias/patterns — adjust paths to your repo
       // FE
       elements: [
-        { type: "fe-tokens", pattern: "^@aibos/ui/(?:tokens|theme)(/.*)?$" },
-        { type: "fe-primitives", pattern: "^@aibos/ui/primitives(/.*)?$" },
-        { type: "fe-components", pattern: "^@aibos/ui/components(/.*)?$" },
-        { type: "fe-features", pattern: "^@aibos/ui/features(/.*)?$" },
-        { type: "fe-app", pattern: "^@aibos/app(.*)?$" },
+        { type: 'fe-tokens', pattern: '^@aibos/ui/(?:tokens|theme)(/.*)?$' },
+        { type: 'fe-primitives', pattern: '^@aibos/ui/primitives(/.*)?$' },
+        { type: 'fe-components', pattern: '^@aibos/ui/components(/.*)?$' },
+        { type: 'fe-features', pattern: '^@aibos/ui/features(/.*)?$' },
+        { type: 'fe-app', pattern: '^@aibos/app(.*)?$' },
         // BE
-        { type: "be-utils", pattern: "^@aibos/utils(/.*)?$" },
-        { type: "be-contracts", pattern: "^@aibos/contracts(/.*)?$" },
+        { type: 'be-utils', pattern: '^@aibos/utils(/.*)?$' },
+        { type: 'be-contracts', pattern: '^@aibos/contracts(/.*)?$' },
         {
-          type: "be-domain",
-          pattern: "^@aibos/(accounting|inventory|procurement|wms|crm)(/.*)?$",
+          type: 'be-domain',
+          pattern: '^@aibos/(accounting|inventory|procurement|wms|crm)(/.*)?$',
         },
-        { type: "be-bff", pattern: "^@aibos/bff(/.*)?$" },
-        { type: "be-gateway", pattern: "^@aibos/gateway(/.*)?$" },
+        { type: 'be-bff', pattern: '^@aibos/bff(/.*)?$' },
+        { type: 'be-gateway', pattern: '^@aibos/gateway(/.*)?$' },
       ],
       // Allow only downstream edges (left → right)
       rules: [
         {
-          from: ["fe-primitives"],
-          to: [
-            "fe-tokens",
-            "fe-primitives",
-            "fe-components",
-            "fe-features",
-            "fe-app",
-          ],
+          from: ['fe-primitives'],
+          to: ['fe-tokens', 'fe-primitives', 'fe-components', 'fe-features', 'fe-app'],
         },
         {
-          from: ["fe-components"],
-          to: ["fe-components", "fe-features", "fe-app"],
+          from: ['fe-components'],
+          to: ['fe-components', 'fe-features', 'fe-app'],
         },
-        { from: ["fe-features"], to: ["fe-features", "fe-app"] },
-        { from: ["fe-app"], to: ["fe-app"] },
+        { from: ['fe-features'], to: ['fe-features', 'fe-app'] },
+        { from: ['fe-app'], to: ['fe-app'] },
 
         {
-          from: ["be-contracts"],
-          to: ["be-contracts", "be-domain", "be-bff", "be-gateway"],
+          from: ['be-contracts'],
+          to: ['be-contracts', 'be-domain', 'be-bff', 'be-gateway'],
         },
-        { from: ["be-domain"], to: ["be-domain", "be-bff", "be-gateway"] },
-        { from: ["be-bff"], to: ["be-bff", "be-gateway"] },
-        { from: ["be-gateway"], to: ["be-gateway"] },
+        { from: ['be-domain'], to: ['be-domain', 'be-bff', 'be-gateway'] },
+        { from: ['be-bff'], to: ['be-bff', 'be-gateway'] },
+        { from: ['be-gateway'], to: ['be-gateway'] },
       ],
     },
   },
   rules: {
     // Lineage enforcement
-    "boundaries/element-types": ["error"],
-    "import/no-cycle": ["error", { maxDepth: 3 }],
-    "import/no-relative-packages": "error",
-    "import/no-restricted-paths": [
-      "error",
+    'boundaries/element-types': ['error'],
+    'import/no-cycle': ['error', { maxDepth: 3 }],
+    'import/no-relative-packages': 'error',
+    'import/no-restricted-paths': [
+      'error',
       {
         zones: [
           // Ban cross-service internals; use @aibos/contracts only
           {
-            target: "./services/accounting/src",
-            from: "./services/inventory/src",
+            target: './services/accounting/src',
+            from: './services/inventory/src',
           },
           {
-            target: "./services/inventory/src",
-            from: "./services/accounting/src",
+            target: './services/inventory/src',
+            from: './services/accounting/src',
           },
         ],
       },
     ],
     // Enhanced Security Rules
-    "security/detect-object-injection": "error",
-    "security/detect-non-literal-regexp": "error",
-    "security/detect-unsafe-regex": "error",
-    "security/detect-buffer-noassert": "error",
-    "security/detect-child-process": "warn",
-    "security/detect-disable-mustache-escape": "error",
-    "security/detect-eval-with-expression": "error",
-    "security/detect-no-csrf-before-method-override": "error",
-    "security/detect-non-literal-fs-filename": "warn",
-    "security/detect-non-literal-require": "warn",
-    "security/detect-possible-timing-attacks": "warn",
-    "security/detect-pseudoRandomBytes": "error",
+    'security/detect-object-injection': 'error',
+    'security/detect-non-literal-regexp': 'error',
+    'security/detect-unsafe-regex': 'error',
+    'security/detect-buffer-noassert': 'error',
+    'security/detect-child-process': 'warn',
+    'security/detect-disable-mustache-escape': 'error',
+    'security/detect-eval-with-expression': 'error',
+    'security/detect-no-csrf-before-method-override': 'error',
+    'security/detect-non-literal-fs-filename': 'warn',
+    'security/detect-non-literal-require': 'warn',
+    'security/detect-possible-timing-attacks': 'warn',
+    'security/detect-pseudoRandomBytes': 'error',
 
     // Enhanced Performance Rules
-    "sonarjs/no-duplicate-string": "error",
-    "sonarjs/no-identical-functions": "error",
-    "sonarjs/no-redundant-boolean": "error",
-    "sonarjs/no-unused-collection": "error",
-    "sonarjs/prefer-immediate-return": "error",
-    "sonarjs/prefer-single-boolean-return": "error",
+    'sonarjs/no-duplicate-string': 'error',
+    'sonarjs/no-identical-functions': 'error',
+    'sonarjs/no-redundant-boolean': 'error',
+    'sonarjs/no-unused-collection': 'error',
+    'sonarjs/prefer-immediate-return': 'error',
+    'sonarjs/prefer-single-boolean-return': 'error',
 
     // Enhanced Code Quality Rules
-    "unicorn/prefer-module": "error",
-    "unicorn/prefer-node-protocol": "error",
-    "unicorn/prefer-query-selector": "error",
-    "unicorn/prefer-string-slice": "error",
-    "unicorn/prefer-text-content": "error",
-    "unicorn/prefer-type-error": "error",
+    'unicorn/prefer-module': 'error',
+    'unicorn/prefer-node-protocol': 'error',
+    'unicorn/prefer-query-selector': 'error',
+    'unicorn/prefer-string-slice': 'error',
+    'unicorn/prefer-text-content': 'error',
+    'unicorn/prefer-type-error': 'error',
 
     // Accessibility Rules
-    "jsx-a11y/alt-text": "error",
-    "jsx-a11y/anchor-has-content": "error",
-    "jsx-a11y/anchor-is-valid": "error",
-    "jsx-a11y/aria-props": "error",
-    "jsx-a11y/aria-proptypes": "error",
-    "jsx-a11y/aria-unsupported-elements": "error",
-    "jsx-a11y/click-events-have-key-events": "error",
-    "jsx-a11y/heading-has-content": "error",
-    "jsx-a11y/html-has-lang": "error",
-    "jsx-a11y/iframe-has-title": "error",
-    "jsx-a11y/img-redundant-alt": "error",
-    "jsx-a11y/no-access-key": "error",
-    "jsx-a11y/no-autofocus": "error",
-    "jsx-a11y/no-distracting-elements": "error",
-    "jsx-a11y/no-interactive-element-to-noninteractive-role": "error",
-    "jsx-a11y/no-noninteractive-element-interactions": "error",
-    "jsx-a11y/no-noninteractive-element-to-interactive-role": "error",
-    "jsx-a11y/no-noninteractive-tabindex": "error",
-    "jsx-a11y/no-redundant-roles": "error",
-    "jsx-a11y/no-static-element-interactions": "error",
-    "jsx-a11y/role-has-required-aria-props": "error",
-    "jsx-a11y/role-supports-aria-props": "error",
-    "jsx-a11y/scope": "error",
-    "jsx-a11y/tabindex-no-positive": "error",
+    'jsx-a11y/alt-text': 'error',
+    'jsx-a11y/anchor-has-content': 'error',
+    'jsx-a11y/anchor-is-valid': 'error',
+    'jsx-a11y/aria-props': 'error',
+    'jsx-a11y/aria-proptypes': 'error',
+    'jsx-a11y/aria-unsupported-elements': 'error',
+    'jsx-a11y/click-events-have-key-events': 'error',
+    'jsx-a11y/heading-has-content': 'error',
+    'jsx-a11y/html-has-lang': 'error',
+    'jsx-a11y/iframe-has-title': 'error',
+    'jsx-a11y/img-redundant-alt': 'error',
+    'jsx-a11y/no-access-key': 'error',
+    'jsx-a11y/no-autofocus': 'error',
+    'jsx-a11y/no-distracting-elements': 'error',
+    'jsx-a11y/no-interactive-element-to-noninteractive-role': 'error',
+    'jsx-a11y/no-noninteractive-element-interactions': 'error',
+    'jsx-a11y/no-noninteractive-element-to-interactive-role': 'error',
+    'jsx-a11y/no-noninteractive-tabindex': 'error',
+    'jsx-a11y/no-redundant-roles': 'error',
+    'jsx-a11y/no-static-element-interactions': 'error',
+    'jsx-a11y/role-has-required-aria-props': 'error',
+    'jsx-a11y/role-supports-aria-props': 'error',
+    'jsx-a11y/scope': 'error',
+    'jsx-a11y/tabindex-no-positive': 'error',
 
     // Safety & quality
-    "@typescript-eslint/no-explicit-any": [
-      "error",
-      { fixToUnknown: true, ignoreRestArgs: false },
-    ],
-    "@typescript-eslint/explicit-module-boundary-types": "error",
-    "@typescript-eslint/await-thenable": "error",
-    "@typescript-eslint/no-floating-promises": ["error", { ignoreVoid: false }],
+    '@typescript-eslint/no-explicit-any': ['error', { fixToUnknown: true, ignoreRestArgs: false }],
+    '@typescript-eslint/explicit-module-boundary-types': 'error',
+    '@typescript-eslint/await-thenable': 'error',
+    '@typescript-eslint/no-floating-promises': ['error', { ignoreVoid: false }],
     // Import hygiene
-    "import/order": [
-      "error",
+    'import/order': [
+      'error',
       {
         groups: [
-          ["builtin", "external", "internal"],
-          ["parent", "sibling", "index"],
+          ['builtin', 'external', 'internal'],
+          ['parent', 'sibling', 'index'],
         ],
-        "newlines-between": "always",
+        'newlines-between': 'always',
       },
     ],
-    "perfectionist/sort-imports": [
-      "error",
+    'perfectionist/sort-imports': [
+      'error',
       {
-        type: "natural",
-        groups: [
-          "type",
-          ["builtin", "external", "internal", "parent", "sibling", "index"],
-        ],
+        type: 'natural',
+        groups: ['type', ['builtin', 'external', 'internal', 'parent', 'sibling', 'index']],
       },
     ],
     // Local policies
-    "no-restricted-imports": [
-      "error",
+    'no-restricted-imports': [
+      'error',
       {
         paths: [
           {
-            name: "lucide-react",
-            message: "Use @aibos/ui/icons wrapper to avoid heavy bundles.",
+            name: 'lucide-react',
+            message: 'Use @aibos/ui/icons wrapper to avoid heavy bundles.',
           },
           {
-            name: "lodash",
-            message: "Use lodash-es per‑method imports or stdlib.",
+            name: 'lodash',
+            message: 'Use lodash-es per‑method imports or stdlib.',
           },
         ],
         patterns: [
           // No deep internal paths across services
-          "@aibos/*/src/*",
+          '@aibos/*/src/*',
           // Forbid utils → app or utils → domain (upstream) if desired
         ],
       },
     ],
   },
   overrides: [
-    { files: ["**/*.ts", "**/*.tsx"], rules: {} },
+    { files: ['**/*.ts', '**/*.tsx'], rules: {} },
     {
-      files: ["**/*.test.ts", "**/*.spec.ts"],
-      rules: { "@typescript-eslint/no-explicit-any": "off" },
+      files: ['**/*.test.ts', '**/*.spec.ts'],
+      rules: { '@typescript-eslint/no-explicit-any': 'off' },
     },
   ],
 };
@@ -283,75 +271,75 @@ Create **`/dependency-cruiser.config.cjs`**:
 
 ```js
 /* eslint-disable */
-const { not, matchesPattern } = require("dependency-cruiser").presets;
+const { not, matchesPattern } = require('dependency-cruiser').presets;
 
 module.exports = {
   options: {
-    doNotFollow: { path: "node_modules" },
-    includeOnly: "^src|^packages|^services|^apps",
+    doNotFollow: { path: 'node_modules' },
+    includeOnly: '^src|^packages|^services|^apps',
     tsConfig: {
-      fileName: "./tsconfig.json",
+      fileName: './tsconfig.json',
     },
     reporterOptions: {
       dot: {
-        collapsePattern: "node_modules/[^/]+",
-        theme: { graph: { rankdir: "LR" } },
+        collapsePattern: 'node_modules/[^/]+',
+        theme: { graph: { rankdir: 'LR' } },
       },
     },
   },
   forbidden: [
     {
-      name: "no-circular",
-      severity: "error",
+      name: 'no-circular',
+      severity: 'error',
       from: {},
       to: { circular: true },
     },
     {
-      name: "no-orphans",
-      severity: "error",
-      from: { orphan: true, pathNot: "(^test/|/stories/)" },
+      name: 'no-orphans',
+      severity: 'error',
+      from: { orphan: true, pathNot: '(^test/|/stories/)' },
       to: {},
     },
     {
-      name: "no-duplicate-dep-types",
-      severity: "warn",
+      name: 'no-duplicate-dep-types',
+      severity: 'warn',
       from: {},
-      to: { dependencyTypes: ["npm-dev", "npm"] },
+      to: { dependencyTypes: ['npm-dev', 'npm'] },
     },
     {
-      name: "not-to-unresolvable",
-      severity: "error",
+      name: 'not-to-unresolvable',
+      severity: 'error',
       from: {},
       to: { couldNotResolve: true },
     },
     {
-      name: "not-to-dev-dep",
-      severity: "error",
-      from: { path: "^(apps|services)/" },
-      to: { dependencyTypes: ["npm-dev"] },
+      name: 'not-to-dev-dep',
+      severity: 'error',
+      from: { path: '^(apps|services)/' },
+      to: { dependencyTypes: ['npm-dev'] },
     },
     // Layering (FE)
     {
-      name: "fe-no-upstream",
-      severity: "error",
-      from: { path: "^packages/ui/components" },
+      name: 'fe-no-upstream',
+      severity: 'error',
+      from: { path: '^packages/ui/components' },
       to: {
-        path: "^packages/ui/primitives|^packages/ui/tokens",
-        pathNot: "^packages/ui/components",
+        path: '^packages/ui/primitives|^packages/ui/tokens',
+        pathNot: '^packages/ui/components',
       },
     },
     {
-      name: "fe-no-sibling",
-      severity: "error",
-      from: { path: "^packages/ui/components" },
-      to: { path: "^packages/ui/components/.+" },
+      name: 'fe-no-sibling',
+      severity: 'error',
+      from: { path: '^packages/ui/components' },
+      to: { path: '^packages/ui/components/.+' },
     },
     // Cross-service internals banned
     {
-      name: "no-cross-service-src",
-      severity: "error",
-      from: { path: "^services/[^/]+/src" },
-      to: { path: "^services/(?!$1)[^/]+/src" },
+      name: 'no-cross-service-src',
+      severity: 'error',
+      from: { path: '^services/[^/]+/src' },
+      to: { path: '^services/(?!$1)[^/]+/src' },
     },
   ],
 };
@@ -430,7 +418,7 @@ CLI wiring in **`package.json`** (root):
 **`/commitlint.config.cjs`**
 
 ```js
-module.exports = { extends: ["@commitlint/config-conventional"] };
+module.exports = { extends: ['@commitlint/config-conventional'] };
 ```
 
 **`.github/pull_request_template.md`**
@@ -498,19 +486,13 @@ module.exports = { extends: ["@commitlint/config-conventional"] };
 **`/dangerfile.ts`** (optional)
 
 ```ts
-import { danger, fail, message } from "danger";
+import { danger, fail, message } from 'danger';
 
-if (
-  !danger.git.modified_files.some(
-    (f) => f.includes("CHANGELOG") || f.includes(".changeset"),
-  )
-) {
-  message("No changeset found. If this is user‑visible, add one.");
+if (!danger.git.modified_files.some((f) => f.includes('CHANGELOG') || f.includes('.changeset'))) {
+  message('No changeset found. If this is user‑visible, add one.');
 }
-if (
-  danger.git.modified_files.some((f) => f.includes("packages/ui/src/tokens"))
-) {
-  fail("Design tokens changed — requires @ui-core approval.");
+if (danger.git.modified_files.some((f) => f.includes('packages/ui/src/tokens'))) {
+  fail('Design tokens changed — requires @ui-core approval.');
 }
 ```
 
@@ -531,7 +513,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 9 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: "pnpm" }
+        with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
       - name: Secret Detection
         run: |
@@ -553,7 +535,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 9 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: "pnpm" }
+        with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
       - name: Bundle Size Analysis
         run: npx bundlesize --config .bundlesizerc
@@ -569,7 +551,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 9 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: "pnpm" }
+        with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
       - name: Mutation Testing
         run: npx stryker run
@@ -587,7 +569,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 9 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: "pnpm" }
+        with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
       - name: PII Detection
         run: npx pii-detector --config .piirc.json
@@ -603,7 +585,7 @@ jobs:
       - uses: pnpm/action-setup@v4
         with: { version: 9 }
       - uses: actions/setup-node@v4
-        with: { node-version: 20, cache: "pnpm" }
+        with: { node-version: 20, cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
       - run: pnpm run typecheck
       - run: pnpm run lint
@@ -783,15 +765,15 @@ Optional strict block‑deep‑imports variant:
 `packages/utils/tsup.config.ts`
 
 ```ts
-import { defineConfig } from "tsup";
+import { defineConfig } from 'tsup';
 export default defineConfig({
-  entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
+  entry: ['src/index.ts'],
+  format: ['esm', 'cjs'],
   dts: true,
   sourcemap: true,
   clean: true,
   splitting: false,
-  target: "node18",
+  target: 'node18',
 });
 ```
 
