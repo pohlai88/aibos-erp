@@ -32,6 +32,12 @@ export enum SpecialAccountType {
   INTERCO_PAYABLE = 'IntercompanyPayable',
   // Depreciation expense marker (for companion linking clarity)
   DEPRECIATION_EXPENSE = 'DepreciationExpense',
+  // Consolidation & Group accounts (MFRS/IFRS aligned)
+  ELIMINATION_RESERVE = 'EliminationReserve',
+  CTA_EQUITY = 'CtaEquity',
+  NCI_EQUITY = 'NciEquity',
+  GOODWILL = 'Goodwill',
+  UNREALIZED_PROFIT_INVENTORY = 'UnrealizedProfitInventory',
 }
 
 export interface AccountProperties {

@@ -1,8 +1,10 @@
 import type { DomainEvent } from '@aibos/eventsourcing';
 
 import { type CreateAccountCommand } from '../commands/create-account-command';
+import { AccountCompanionLinksSetEvent } from '../events/account-companion-links-set-event';
 import { AccountCreatedEvent } from '../events/account-created-event';
 import { AccountParentChangedEvent } from '../events/account-parent-changed-event';
+import { AccountPostingPolicyChangedEvent } from '../events/account-posting-policy-changed-event';
 import {
   AccountBalanceUpdatedEvent,
   AccountStateUpdatedEvent,
@@ -76,10 +78,11 @@ export class ChartOfAccounts extends AggregateRoot {
 
     // Posting rule: cannot post to accounts that have children (headers) or when posting is not allowed
     const hasChildren = (this.accountHierarchy.get(accountCode) || []).length > 0;
-    if (hasChildren || !account.postingAllowed) {
-      throw new Error(
-        `Cannot post to account ${accountCode} (${hasChildren ? 'has child accounts' : 'posting not allowed'})`,
-      );
+    if (hasChildren) {
+      throw new Error(`Cannot post to header account ${accountCode} (has child accounts)`);
+    }
+    if (!account.postingAllowed) {
+      throw new Error(`Posting is blocked by policy on account ${accountCode}`);
     }
 
     const updatedAccount = account.updateBalance(amount);
@@ -164,6 +167,52 @@ export class ChartOfAccounts extends AggregateRoot {
         this.id,
         this.getVersion() + 1,
         this._tenantId,
+      ),
+    );
+  }
+
+  /** Governance: toggle posting policy (e.g., lock control accounts) */
+  public setPostingPolicy(accountCode: string, postingAllowed: boolean): void {
+    const account = this.accounts.get(accountCode);
+    if (!account) throw new Error(`Account ${accountCode} not found`);
+    if (account.postingAllowed === postingAllowed) return; // no-op
+
+    this.addEvent(
+      new AccountPostingPolicyChangedEvent(
+        accountCode,
+        postingAllowed,
+        this.id,
+        this.getVersion() + 1,
+        this._tenantId,
+      ),
+    );
+  }
+
+  /** Set/replace companion links (e.g., depreciation trio, AR allowance) */
+  public setCompanionLinks(
+    accountCode: string,
+    links: NonNullable<Account['companionLinks']>,
+  ): void {
+    const accumulator = this.accounts.get(accountCode);
+    if (!accumulator) throw new Error(`Account ${accountCode} not found`);
+
+    // Minimal shape check; deeper checks reuse creation rules
+    if (!!links.accumulatedDepreciationCode !== !!links.depreciationExpenseCode) {
+      throw new Error(
+        'Both accumulatedDepreciationCode and depreciationExpenseCode must be provided together',
+      );
+    }
+
+    // Emit event; on apply we'll re-validate existence and types
+    this.addEvent(
+      new AccountCompanionLinksSetEvent(
+        accountCode,
+        this.id,
+        this.getVersion() + 1,
+        this._tenantId,
+        links.accumulatedDepreciationCode,
+        links.depreciationExpenseCode,
+        links.allowanceAccountCode,
       ),
     );
   }
@@ -393,6 +442,14 @@ export class ChartOfAccounts extends AggregateRoot {
       this.whenAccountParentChanged(event);
       return;
     }
+    if (event instanceof AccountPostingPolicyChangedEvent) {
+      this.whenAccountPostingPolicyChanged(event);
+      return;
+    }
+    if (event instanceof AccountCompanionLinksSetEvent) {
+      this.whenAccountCompanionLinksSet(event);
+      return;
+    }
     // Unknown events are ignored here by design (or throw if preferred)
   }
 
@@ -416,6 +473,10 @@ export class ChartOfAccounts extends AggregateRoot {
       this.whenAccountStateUpdated(event);
     } else if (event instanceof AccountParentChangedEvent) {
       this.whenAccountParentChanged(event);
+    } else if (event instanceof AccountPostingPolicyChangedEvent) {
+      this.whenAccountPostingPolicyChanged(event);
+    } else if (event instanceof AccountCompanionLinksSetEvent) {
+      this.whenAccountCompanionLinksSet(event);
     }
   }
 
@@ -478,5 +539,75 @@ export class ChartOfAccounts extends AggregateRoot {
 
   private whenAccountParentChanged(event: AccountParentChangedEvent): void {
     this.rewireHierarchy(event.accountCode, event.oldParentAccountCode, event.newParentAccountCode);
+  }
+
+  private whenAccountPostingPolicyChanged(event: AccountPostingPolicyChangedEvent): void {
+    const accumulator = this.accounts.get(event.accountCode);
+    if (!accumulator) return;
+    const updated = new Account({
+      accountCode: accumulator.accountCode,
+      accountName: accumulator.accountName,
+      accountType: accumulator.accountType,
+      parentAccountCode: accumulator.parentAccountCode,
+      tenantId: accumulator.tenantId,
+      isActive: accumulator.isActive,
+      balance: accumulator.balance,
+      createdAt: accumulator.createdAt,
+      updatedAt: event.occurredAt,
+      specialAccountType: accumulator.specialAccountType,
+      postingAllowed: event.postingAllowed,
+      companionLinks: accumulator.companionLinks,
+    });
+    this.accounts.set(event.accountCode, updated);
+  }
+
+  private whenAccountCompanionLinksSet(event: AccountCompanionLinksSetEvent): void {
+    // Validate existence/types if provided
+    const check = (code?: string) => (code ? this.accounts.get(code) : undefined);
+    const accumulatorDep = check(event.accumulatedDepreciationCode);
+    const depExp = check(event.depreciationExpenseCode);
+    if (event.accumulatedDepreciationCode && !accumulatorDep) {
+      throw new Error(
+        `Accumulated Depreciation account ${event.accumulatedDepreciationCode} not found`,
+      );
+    }
+    if (event.depreciationExpenseCode && !depExp) {
+      throw new Error(`Depreciation Expense account ${event.depreciationExpenseCode} not found`);
+    }
+    if (
+      accumulatorDep &&
+      accumulatorDep.specialAccountType !== SpecialAccountType.ACCUMULATED_DEPRECIATION
+    ) {
+      throw new Error(
+        `Account ${accumulatorDep.accountCode} must be SpecialAccountType=AccumulatedDepreciation`,
+      );
+    }
+    if (depExp && depExp.specialAccountType !== SpecialAccountType.DEPRECIATION_EXPENSE) {
+      throw new Error(
+        `Account ${depExp.accountCode} must be SpecialAccountType=DepreciationExpense`,
+      );
+    }
+
+    const accumulator = this.accounts.get(event.accountCode);
+    if (!accumulator) return;
+    const updated = new Account({
+      accountCode: accumulator.accountCode,
+      accountName: accumulator.accountName,
+      accountType: accumulator.accountType,
+      parentAccountCode: accumulator.parentAccountCode,
+      tenantId: accumulator.tenantId,
+      isActive: accumulator.isActive,
+      balance: accumulator.balance,
+      createdAt: accumulator.createdAt,
+      updatedAt: event.occurredAt,
+      specialAccountType: accumulator.specialAccountType,
+      postingAllowed: accumulator.postingAllowed,
+      companionLinks: {
+        accumulatedDepreciationCode: event.accumulatedDepreciationCode,
+        depreciationExpenseCode: event.depreciationExpenseCode,
+        allowanceAccountCode: event.allowanceAccountCode,
+      },
+    });
+    this.accounts.set(event.accountCode, updated);
   }
 }

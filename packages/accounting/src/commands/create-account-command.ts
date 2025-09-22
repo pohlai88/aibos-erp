@@ -78,6 +78,18 @@ export class CreateAccountCommand {
     if (this.parentAccountCode && this.parentAccountCode === this.accountCode) {
       throw new Error('Parent account code cannot be the same as account code');
     }
+
+    // Basic sanity for companions (if partially provided)
+    const links = this.companionLinks;
+    if (links) {
+      const hasAccumulatorDep = !!links.accumulatedDepreciationCode;
+      const hasDepExp = !!links.depreciationExpenseCode;
+      if (hasAccumulatorDep !== hasDepExp) {
+        throw new Error(
+          'Both accumulatedDepreciationCode and depreciationExpenseCode must be provided together',
+        );
+      }
+    }
   }
 }
 
