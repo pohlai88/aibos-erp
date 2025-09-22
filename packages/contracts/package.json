@@ -24,6 +24,7 @@
   "scripts": {
     "format": "prettier -w .",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "echo 'No tests yet'",
     "build": "tsup",
@@ -32,7 +33,9 @@
     "clean": "rimraf dist"
   },
   "devDependencies": {
-    "tsup": "8.0.0",
+    "eslint": "9.36.0",
+    "prettier": "3.6.2",
+    "tsup": "8.5.0",
     "typescript": "5.9.2"
   },
   "engines": {

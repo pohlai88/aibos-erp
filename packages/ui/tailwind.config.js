@@ -1,4 +1,12 @@
 /** @type {import('tailwindcss').Config} */
+
+// Constants to avoid duplication
+const FOREGROUND_COLOR = "hsl(var(--foreground))";
+const PRIMARY_COLOR = "hsl(var(--primary))";
+const MUTED_FOREGROUND_COLOR = "hsl(var(--muted-foreground))";
+const BORDER_COLOR = "hsl(var(--border))";
+const BACKGROUND_SECONDARY_COLOR = "hsl(var(--background-secondary))";
+
 module.exports = {
   darkMode: ["class"],
   // Ensure our utilities win against third-party CSS without overusing !important everywhere
@@ -36,49 +44,49 @@ module.exports = {
     },
     extend: {
       // Make typography plugin inherit our tokens (so prose matches app theme)
-      typography: (theme) => ({
+      typography: (_theme) => ({
         DEFAULT: {
           css: {
-            "--tw-prose-body": "hsl(var(--foreground))",
-            "--tw-prose-headings": "hsl(var(--foreground))",
-            "--tw-prose-links": "hsl(var(--primary))",
-            "--tw-prose-bold": "hsl(var(--foreground))",
-            "--tw-prose-counters": "hsl(var(--muted-foreground))",
-            "--tw-prose-bullets": "hsl(var(--muted-foreground))",
-            "--tw-prose-hr": "hsl(var(--border))",
-            "--tw-prose-quotes": "hsl(var(--foreground))",
-            "--tw-prose-quote-borders": "hsl(var(--border))",
-            "--tw-prose-captions": "hsl(var(--muted-foreground))",
-            "--tw-prose-code": "hsl(var(--foreground))",
-            "--tw-prose-pre-code": "hsl(var(--foreground))",
-            "--tw-prose-pre-bg": "hsl(var(--background-secondary))",
-            "--tw-prose-th-borders": "hsl(var(--border))",
-            "--tw-prose-td-borders": "hsl(var(--border))",
-            color: "hsl(var(--foreground))",
-            a: { color: "hsl(var(--primary))" },
-            h1: { color: "hsl(var(--foreground))" },
-            h2: { color: "hsl(var(--foreground))" },
-            h3: { color: "hsl(var(--foreground))" },
-            code: { color: "hsl(var(--foreground))" },
+            "--tw-prose-body": FOREGROUND_COLOR,
+            "--tw-prose-headings": FOREGROUND_COLOR,
+            "--tw-prose-links": PRIMARY_COLOR,
+            "--tw-prose-bold": FOREGROUND_COLOR,
+            "--tw-prose-counters": MUTED_FOREGROUND_COLOR,
+            "--tw-prose-bullets": MUTED_FOREGROUND_COLOR,
+            "--tw-prose-hr": BORDER_COLOR,
+            "--tw-prose-quotes": FOREGROUND_COLOR,
+            "--tw-prose-quote-borders": BORDER_COLOR,
+            "--tw-prose-captions": MUTED_FOREGROUND_COLOR,
+            "--tw-prose-code": FOREGROUND_COLOR,
+            "--tw-prose-pre-code": FOREGROUND_COLOR,
+            "--tw-prose-pre-bg": BACKGROUND_SECONDARY_COLOR,
+            "--tw-prose-th-borders": BORDER_COLOR,
+            "--tw-prose-td-borders": BORDER_COLOR,
+            color: FOREGROUND_COLOR,
+            a: { color: PRIMARY_COLOR },
+            h1: { color: FOREGROUND_COLOR },
+            h2: { color: FOREGROUND_COLOR },
+            h3: { color: FOREGROUND_COLOR },
+            code: { color: FOREGROUND_COLOR },
           },
         },
         invert: {
           css: {
-            "--tw-prose-body": "hsl(var(--foreground))",
-            "--tw-prose-headings": "hsl(var(--foreground))",
-            "--tw-prose-links": "hsl(var(--primary))",
-            "--tw-prose-bold": "hsl(var(--foreground))",
-            "--tw-prose-counters": "hsl(var(--muted-foreground))",
-            "--tw-prose-bullets": "hsl(var(--muted-foreground))",
-            "--tw-prose-hr": "hsl(var(--border))",
-            "--tw-prose-quotes": "hsl(var(--foreground))",
-            "--tw-prose-quote-borders": "hsl(var(--border))",
-            "--tw-prose-captions": "hsl(var(--muted-foreground))",
-            "--tw-prose-code": "hsl(var(--foreground))",
-            "--tw-prose-pre-code": "hsl(var(--foreground))",
-            "--tw-prose-pre-bg": "hsl(var(--background-secondary))",
-            "--tw-prose-th-borders": "hsl(var(--border))",
-            "--tw-prose-td-borders": "hsl(var(--border))",
+            "--tw-prose-body": FOREGROUND_COLOR,
+            "--tw-prose-headings": FOREGROUND_COLOR,
+            "--tw-prose-links": PRIMARY_COLOR,
+            "--tw-prose-bold": FOREGROUND_COLOR,
+            "--tw-prose-counters": MUTED_FOREGROUND_COLOR,
+            "--tw-prose-bullets": MUTED_FOREGROUND_COLOR,
+            "--tw-prose-hr": BORDER_COLOR,
+            "--tw-prose-quotes": FOREGROUND_COLOR,
+            "--tw-prose-quote-borders": BORDER_COLOR,
+            "--tw-prose-captions": MUTED_FOREGROUND_COLOR,
+            "--tw-prose-code": FOREGROUND_COLOR,
+            "--tw-prose-pre-code": FOREGROUND_COLOR,
+            "--tw-prose-pre-bg": BACKGROUND_SECONDARY_COLOR,
+            "--tw-prose-th-borders": BORDER_COLOR,
+            "--tw-prose-td-borders": BORDER_COLOR,
           },
         },
       }),

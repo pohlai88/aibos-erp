@@ -25,8 +25,5 @@
       "@aibos/bff/*": ["apps/bff/src/*"]
     }
   },
-  "include": [
-    "packages/*/src/**/*",
-    "apps/*/src/**/*"
-  ]
+  "include": ["packages/*/src/**/*", "apps/*/src/**/*"]
 }

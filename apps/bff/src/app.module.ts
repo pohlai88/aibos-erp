@@ -1,7 +1,7 @@
-import { createDatabaseConfig } from "./config/database.config";
-import { DatabaseService } from "./config/database.service";
-import { HealthModule } from "./health/health.module";
-import { AuthModule } from "./modules/auth/auth.module";
+import { createDatabaseConfig } from "./config/database.config.js";
+import { DatabaseService } from "./config/database.service.js";
+import { HealthModule } from "./health/health.module.js";
+import { AuthModule } from "./modules/auth/auth.module.js";
 import { Module } from "@nestjs/common";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { TypeOrmModule } from "@nestjs/typeorm";

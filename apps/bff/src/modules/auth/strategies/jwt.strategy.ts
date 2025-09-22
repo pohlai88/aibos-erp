@@ -7,7 +7,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { InjectRepository } from "@nestjs/typeorm";
 import { ExtractJwt, Strategy } from "passport-jwt";
 
-export interface JwtPayload {
+interface JwtPayload {
   sub: string;
   email: string;
   tenant_id: string;

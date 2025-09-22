@@ -14,17 +14,20 @@ This directory contains all the configuration files and scripts needed to run th
 ### Starting the Environment
 
 **Windows:**
+
 ```bash
 scripts/start-dev.bat
 ```
 
 **Linux/Mac:**
+
 ```bash
 chmod +x scripts/start-dev.sh
 scripts/start-dev.sh
 ```
 
 **Manual Start:**
+
 ```bash
 # Start all services
 docker-compose up -d
@@ -43,27 +46,27 @@ pnpm dev
 
 ### Core Services
 
-| Service | Port | Description | Health Check |
-|---------|------|-------------|--------------|
-| **PostgreSQL** | 5432 | Primary database with RLS | `pg_isready` |
-| **Redis** | 6379 | Caching and session storage | `redis-cli ping` |
-| **ClickHouse** | 8123 | Analytics database | HTTP ping |
-| **MongoDB** | 27017 | Document storage | Connection test |
+| Service        | Port  | Description                 | Health Check     |
+| -------------- | ----- | --------------------------- | ---------------- |
+| **PostgreSQL** | 5432  | Primary database with RLS   | `pg_isready`     |
+| **Redis**      | 6379  | Caching and session storage | `redis-cli ping` |
+| **ClickHouse** | 8123  | Analytics database          | HTTP ping        |
+| **MongoDB**    | 27017 | Document storage            | Connection test  |
 
 ### API Gateway
 
-| Service | Port | Description |
-|---------|------|-------------|
-| **Kong** | 8000 | API Gateway (Proxy) |
-| **Kong Admin** | 8001 | Kong Admin API |
+| Service        | Port | Description         |
+| -------------- | ---- | ------------------- |
+| **Kong**       | 8000 | API Gateway (Proxy) |
+| **Kong Admin** | 8001 | Kong Admin API      |
 
 ### Observability Stack
 
-| Service | Port | Description |
-|---------|------|-------------|
-| **Jaeger** | 16686 | Distributed tracing UI |
-| **Prometheus** | 9090 | Metrics collection |
-| **Grafana** | 3001 | Metrics visualization |
+| Service            | Port      | Description             |
+| ------------------ | --------- | ----------------------- |
+| **Jaeger**         | 16686     | Distributed tracing UI  |
+| **Prometheus**     | 9090      | Metrics collection      |
+| **Grafana**        | 3001      | Metrics visualization   |
 | **OTEL Collector** | 4317/4318 | OpenTelemetry collector |
 
 ## 🔧 Configuration Files
@@ -95,17 +98,18 @@ Once the environment is running, you can access:
 
 ## 🔐 Default Credentials
 
-| Service | Username | Password |
-|---------|----------|----------|
-| PostgreSQL | `aibos` | `aibos_dev_password` |
-| Redis | - | `aibos_redis_password` |
-| ClickHouse | `aibos` | `aibos_clickhouse_password` |
-| MongoDB | `aibos` | `aibos_mongo_password` |
-| Grafana | `admin` | `aibos_grafana_password` |
+| Service    | Username | Password                    |
+| ---------- | -------- | --------------------------- |
+| PostgreSQL | `aibos`  | `aibos_dev_password`        |
+| Redis      | -        | `aibos_redis_password`      |
+| ClickHouse | `aibos`  | `aibos_clickhouse_password` |
+| MongoDB    | `aibos`  | `aibos_mongo_password`      |
+| Grafana    | `admin`  | `aibos_grafana_password`    |
 
 ## 🛠️ Development Commands
 
 ### Quality Checks
+
 ```bash
 pnpm dx              # Run all quality checks
 pnpm lint            # Run ESLint
@@ -115,12 +119,14 @@ pnpm dep:check       # Run dependency analysis
 ```
 
 ### Building
+
 ```bash
 pnpm build           # Build all packages
 pnpm dev             # Start all development servers
 ```
 
 ### Database Operations
+
 ```bash
 cd apps/bff
 pnpm run db:migrate  # Run database migrations
@@ -128,6 +134,7 @@ pnpm run db:seed     # Seed development data
 ```
 
 ### Docker Operations
+
 ```bash
 docker-compose up -d     # Start all services
 docker-compose down      # Stop all services
@@ -154,21 +161,25 @@ docker-compose logs kong
 ### Database Access
 
 **PostgreSQL:**
+
 ```bash
 docker exec -it aibos-postgres psql -U aibos -d aibos_erp
 ```
 
 **Redis:**
+
 ```bash
 docker exec -it aibos-redis redis-cli -a aibos_redis_password
 ```
 
 **ClickHouse:**
+
 ```bash
 docker exec -it aibos-clickhouse clickhouse-client --user aibos --password aibos_clickhouse_password
 ```
 
 **MongoDB:**
+
 ```bash
 docker exec -it aibos-mongodb mongosh -u aibos -p aibos_mongo_password
 ```
@@ -185,6 +196,7 @@ docker exec -it aibos-mongodb mongosh -u aibos -p aibos_mongo_password
 
 **1. Port Conflicts**
 If you get port conflicts, check what's running on the ports:
+
 ```bash
 # Windows
 netstat -ano | findstr :3000
@@ -196,6 +208,7 @@ lsof -i :5432
 ```
 
 **2. Docker Services Not Starting**
+
 ```bash
 # Check Docker status
 docker info
@@ -206,6 +219,7 @@ docker-compose up -d
 ```
 
 **3. Database Connection Issues**
+
 ```bash
 # Check PostgreSQL logs
 docker-compose logs postgres
@@ -215,6 +229,7 @@ docker exec -it aibos-postgres pg_isready -U aibos -d aibos_erp
 ```
 
 **4. Permission Issues (Linux/Mac)**
+
 ```bash
 # Fix script permissions
 chmod +x scripts/start-dev.sh

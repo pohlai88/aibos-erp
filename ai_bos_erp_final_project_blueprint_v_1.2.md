@@ -7,6 +7,7 @@
 ## 0) What's New in v1.2 (Merged from v1.0 + v1.1)
 
 ### From v1.0 (Core Architecture)
+
 - **Modular monolith** approach with clean DDD boundaries
 - **Selective Event Sourcing** for Accounting and Inventory
 - **Contracts as Code** with zero-drift API generation
@@ -16,6 +17,7 @@
 - **Developer-first** ergonomics with TypeScript end-to-end
 
 ### From v1.1 (Enhanced Operations)
+
 - **Gateway policies** with rate-limiting, retries, timeouts, JWT/OIDC verification
 - **Comprehensive security** framework with encryption, secrets management, GDPR/PDPA compliance
 - **Audit and soft-delete** strategies with schema implementations
@@ -44,6 +46,7 @@
 ## 2) Target Tech Stack
 
 ### Frontend
+
 - **Framework:** Next.js 14+ (App Router) + React 18+ + TypeScript
 - **State Management:** TanStack Query + Zustand
 - **UI:** Tailwind CSS (token-driven) + shadcn/ui components
@@ -52,23 +55,27 @@
 - **Charts:** Recharts for analytics dashboards
 
 ### Backend APIs
+
 - **BFF:** NestJS (Fastify) **GraphQL** (schema-first, codegen)
 - **Domain Services:** NestJS (Fastify) **REST** with OpenAPI + codegen clients
 - **Gateway:** Kong/Envoy with comprehensive policies
 - **Authentication:** OIDC (Keycloak/Auth0/Cognito) with JWT tokens
 
 ### Workflows & Messaging
+
 - **Workflows:** Temporal (long-running, retries, sagas)
 - **Events:** Kafka/Redpanda (domain events), Outbox pattern per write transaction
 - **Caching:** Redis Cluster for distributed caching and locks
 
 ### Data Layer
+
 - **Primary Database:** PostgreSQL 16 (RLS, partitions, PITR backups)
 - **Analytics:** ClickHouse (analytics/read-heavy reports)
 - **Cache:** Redis (catalog lookups, report caches, distributed locks)
 - **Search:** Optional OpenSearch for fuzzy/global search
 
 ### Infrastructure & DevOps
+
 - **Containerization:** Docker + Docker Compose
 - **Orchestration:** Kubernetes (GKE/EKS/AKS) with Helm charts
 - **GitOps:** Argo CD for deployment automation
@@ -81,6 +88,7 @@
 ## 3) Multi‑Tenancy & Data Strategy
 
 ### Row Level Security (RLS)
+
 ```sql
 -- Enable RLS on all tenant tables
 ALTER TABLE gl_entry ENABLE ROW LEVEL SECURITY;
@@ -92,6 +100,7 @@ SET app.tenant_id = 'tenant-uuid-here';
 ```
 
 ### Data Partitioning & Indexing
+
 - **Keys:** Use **ULIDs** for locality & chronological ordering
 - **Monthly partitions** for `gl_entry` & time-series heavy tables
 - **Covering indexes:**
@@ -99,6 +108,7 @@ SET app.tenant_id = 'tenant-uuid-here';
   - Inventory: `(tenant_id, item_id, warehouse_id, occurred_at)`
 
 ### Caching Strategy
+
 - **Redis caching** for catalog lookups (Item/UOM/Price List)
 - **Short-TTL report caches** (30-120s)
 - **Event-driven invalidation** on data updates
@@ -120,6 +130,7 @@ Web/Mobile → GraphQL BFF ──► Domain REST Services ──► Postgres (RL
 ```
 
 **Key Components:**
+
 - **API Gateway:** Kong/Envoy with rate limiting, authentication, retries
 - **BFF Layer:** GraphQL aggregation with service client calls
 - **Domain Services:** REST APIs with OpenAPI contracts
@@ -179,6 +190,7 @@ aibos-erp/
 ## 6) API Gateway & Resilience Policies
 
 ### Kong Gateway Configuration
+
 ```yaml
 _format_version: "3.0"
 _transform: true
@@ -202,7 +214,7 @@ services:
           header_name: X-Tenant-Id
       - name: request-size-limiting
         config:
-          allowed_payload_size: 2  # MB
+          allowed_payload_size: 2 # MB
       - name: response-ratelimiting
         config:
           limits:
@@ -223,6 +235,7 @@ services:
 ```
 
 ### Resilience Patterns
+
 - **Timeouts:** 2s for reads, 5s for writes
 - **Retries:** 3 attempts with exponential backoff (no retry on POST unless idempotent)
 - **Circuit Breaker:** Resilience4j in services with configurable thresholds
@@ -234,28 +247,33 @@ services:
 ## 7) Security & Compliance Framework
 
 ### Transport Security
+
 - **TLS 1.2+** everywhere with perfect forward secrecy
 - **Optional mTLS** inside cluster for service-to-service communication
 - **Certificate rotation** automated via cert-manager
 
 ### Data Protection
+
 - **At Rest:** Cloud KMS-managed disk encryption
 - **Field-Level:** Encryption for PII using libsodium/pgcrypto
 - **Token Security:** Hashed tokens (HMAC) at rest, short-lived JWTs
 
 ### Identity & Access Management
+
 - **OIDC Provider:** Keycloak/Auth0/Cognito integration
 - **Token Claims:** Include `tenant_id`, `scopes`, `org_id`
 - **API Keys:** Tenant-scoped and hashed with least privilege
 - **RBAC/ABAC:** OPA/Casbin policy bundles for fine-grained access control
 
 ### Compliance (GDPR/PDPA)
+
 - **Data Subject Rights:** Export/delete endpoints with async fulfillment
 - **Data Minimization:** Default policies with per-field retention
 - **Pseudonymization:** Analytics sinks with anonymized data
 - **Audit Trails:** Complete activity logging for compliance reporting
 
 ### Disaster Recovery & Business Continuity
+
 - **RPO:** 5 minutes (Point-in-time recovery)
 - **RTO:** 60 minutes (Recovery time objective)
 - **Backup Strategy:** Postgres PITR with WAL-G to object storage
@@ -266,6 +284,7 @@ services:
 ## 8) Audit & Soft-Delete Strategy
 
 ### Central Audit Log
+
 ```sql
 CREATE TABLE audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -287,6 +306,7 @@ CREATE TABLE audit_log_2024_01 PARTITION OF audit_log
 ```
 
 ### Soft Delete Policy
+
 - **Tombstone Tables:** For entities where historical joins matter (master data)
 - **Deleted At Columns:** For simple entities with filtered queries
 - **Never Purge:** Ledger and event streams remain immutable
@@ -297,30 +317,35 @@ CREATE TABLE audit_log_2024_01 PARTITION OF audit_log
 ## 9) Performance & Scale Playbook
 
 ### Database Optimization
+
 - **Connection Pooling:** pgBouncer in transaction mode
 - **Pool Sizing:** `pool_size = cores * 2 + (spikes)` per service
 - **Global Limits:** Control `max_connections` on PostgreSQL
 - **Query Optimization:** Covering indexes and partition pruning
 
 ### Caching Strategy
+
 - **Data Cache (Redis):** Key pattern `tenant:{id}:item:{id}:v1`
 - **TTL:** 300s for catalog data, 30-120s for reports
 - **Invalidation:** Event-driven on `catalog.item.updated`
 - **Cache Warming:** Proactive loading of frequently accessed data
 
 ### CDN Configuration
+
 - **Provider:** CloudFront/Azure CDN
 - **Asset Versioning:** Immutable paths `/static/_next/<hash>`
 - **Cache Policies:** Stale-while-revalidate for optimal performance
 - **Edge Locations:** Global distribution for low latency
 
 ### Autoscaling Triggers
+
 - **HPA:** CPU and memory-based scaling
 - **KEDA:** Kafka lag and Temporal queue length scaling
 - **Custom Metrics:** API response times and error rates
 - **Scale to Zero:** Disabled for core services
 
 ### Backpressure Management
+
 - **Gateway Rate Limiting:** Per-tenant and per-user limits
 - **Service Responses:** 429 with exponential backoff hints
 - **Job Quotas:** Per-tenant submission limits
@@ -331,6 +356,7 @@ CREATE TABLE audit_log_2024_01 PARTITION OF audit_log
 ## 10) Observability (OpenTelemetry-First)
 
 ### Distributed Tracing
+
 ```yaml
 # OpenTelemetry Collector Configuration
 receivers:
@@ -361,18 +387,21 @@ service:
 ```
 
 ### Metrics & Monitoring
+
 - **RED Metrics:** Rate, Errors, Duration for all services
 - **Custom Metrics:** Domain-specific (journals/min, inventory events/min)
 - **Infrastructure:** Kafka lag, Temporal failures, database performance
 - **Sampling:** 10% head-based in production, always sample errors
 
 ### Logging Strategy
+
 - **Format:** Structured JSON logs
 - **Fields:** Include `tenant_id`, `request_id`, `user_id`
 - **PII Redaction:** Server-side redaction in logs
 - **Correlation:** Trace correlation across services
 
 ### Alerting Rules
+
 ```yaml
 # Prometheus Alert Rules
 groups:
@@ -395,6 +424,7 @@ groups:
 ## 11) Testing Strategy (Comprehensive Pyramid)
 
 ### Test Types & Coverage
+
 - **Unit Tests:** Vitest + NestJS testing utilities (≥80% coverage)
 - **Integration Tests:** Service-to-database testing
 - **Contract Tests:** Pact for BFF↔services compatibility
@@ -403,23 +433,26 @@ groups:
 - **Chaos Tests:** Litmus experiments in staging nightly
 
 ### Multi-Tenant Isolation Testing
+
 ```typescript
-describe('Multi-tenant Isolation', () => {
-  it('prevents cross-tenant data access', async () => {
+describe("Multi-tenant Isolation", () => {
+  it("prevents cross-tenant data access", async () => {
     const tenant1 = await seedTenant();
     const tenant2 = await seedTenant();
-    
+
     const journal1 = await createJournal(tenant1.id);
     const journal2 = await createJournal(tenant2.id);
-    
+
     // Should not be able to access tenant2's data with tenant1's token
-    await expect(getJournal(journal2.id, tenant1.token))
-      .rejects.toThrow(/Forbidden|RLS/);
+    await expect(getJournal(journal2.id, tenant1.token)).rejects.toThrow(
+      /Forbidden|RLS/,
+    );
   });
 });
 ```
 
 ### Quality Gates
+
 - **Coverage Threshold:** ≥80% code coverage
 - **Contract Tests:** Must pass in CI
 - **Performance Regression:** k6 SLO verification
@@ -431,6 +464,7 @@ describe('Multi-tenant Isolation', () => {
 ## 12) Core Schemas & Data Models
 
 ### Accounting (Event Sourcing)
+
 ```sql
 -- Event Store
 CREATE TABLE acc_event (
@@ -466,6 +500,7 @@ CREATE INDEX gl_idx1 ON gl_entry (tenant_id, account_id, posting_ts);
 ```
 
 ### Inventory (Event Sourcing)
+
 ```sql
 -- Inventory Event Store
 CREATE TABLE inv_event (
@@ -494,6 +529,7 @@ CREATE INDEX bin_idx1 ON stock_bin (tenant_id, item_id, warehouse_id);
 ```
 
 ### Outbox & Idempotency
+
 ```sql
 -- Outbox Pattern
 CREATE TABLE outbox (
@@ -519,50 +555,55 @@ CREATE TABLE idempotency (
 ## 13) Module Blueprint & Rollout Tiers
 
 ### Tier-1 (Core Foundation - Phases 1-3)
-| Module | Context Type | Data Ownership | APIs | Core Events | Notes |
-|--------|-------------|----------------|------|-------------|-------|
-| identity-access-management_iam | Relational | Tenants, users, roles, org units, API keys | REST + GraphQL via BFF | `iam.user.created`, `iam.tenant.created` | OIDC integration |
-| catalog-master-data | Relational | Item, UOM, Warehouse, Customer, Supplier, Price List | REST | `catalog.item.updated` | Heavy Redis caching |
-| accounting | **ES + Projections** | `acc_event`, `gl_entry` | REST | `accounting.journal.posted` | Double-entry, idempotency |
-| inventory | **ES + Snapshot** | `inv_event`, `stock_bin` | REST | `inventory.stock.received/issued/adjusted/transferred` | Deterministic valuation |
-| procurement | Relational | Requisition, PO, Vendor Bill | REST | `procurement.po.approved/received/invoiced` | Integrates with Inventory & Accounting |
-| warehouse-management-system_wms | Relational | Picks, packs, moves | REST | `wms.pick.created/completed` | Consumes/produces Inventory events |
+
+| Module                          | Context Type         | Data Ownership                                       | APIs                   | Core Events                                            | Notes                                  |
+| ------------------------------- | -------------------- | ---------------------------------------------------- | ---------------------- | ------------------------------------------------------ | -------------------------------------- |
+| identity-access-management_iam  | Relational           | Tenants, users, roles, org units, API keys           | REST + GraphQL via BFF | `iam.user.created`, `iam.tenant.created`               | OIDC integration                       |
+| catalog-master-data             | Relational           | Item, UOM, Warehouse, Customer, Supplier, Price List | REST                   | `catalog.item.updated`                                 | Heavy Redis caching                    |
+| accounting                      | **ES + Projections** | `acc_event`, `gl_entry`                              | REST                   | `accounting.journal.posted`                            | Double-entry, idempotency              |
+| inventory                       | **ES + Snapshot**    | `inv_event`, `stock_bin`                             | REST                   | `inventory.stock.received/issued/adjusted/transferred` | Deterministic valuation                |
+| procurement                     | Relational           | Requisition, PO, Vendor Bill                         | REST                   | `procurement.po.approved/received/invoiced`            | Integrates with Inventory & Accounting |
+| warehouse-management-system_wms | Relational           | Picks, packs, moves                                  | REST                   | `wms.pick.created/completed`                           | Consumes/produces Inventory events     |
 
 ### Tier-2 (Commercial Operations - Phases 4-5)
-| Module | Context Type | Data Ownership | APIs | Core Events | Notes |
-|--------|-------------|----------------|------|-------------|-------|
-| customer-relationship-management_crm | Relational | Leads, opportunities, activities | REST | `crm.opportunity.updated` | Omnichannel integration |
-| retail | Relational | POS orders, shifts | REST | `retail.sale.completed` | Offline sync capability |
-| e-commerce | Relational | Cart, orders, payments | REST | `ecom.order.created/paid` | Payment provider webhooks |
-| service-management | Relational | Cases, SLAs, work orders | REST | `service.case.created/closed` | Inventory integration for spares |
-| quality-management | Relational | Inspections, NCR/CAPA | REST | `quality.inspection.passed/failed` | Stock release gating |
+
+| Module                               | Context Type | Data Ownership                   | APIs | Core Events                        | Notes                            |
+| ------------------------------------ | ------------ | -------------------------------- | ---- | ---------------------------------- | -------------------------------- |
+| customer-relationship-management_crm | Relational   | Leads, opportunities, activities | REST | `crm.opportunity.updated`          | Omnichannel integration          |
+| retail                               | Relational   | POS orders, shifts               | REST | `retail.sale.completed`            | Offline sync capability          |
+| e-commerce                           | Relational   | Cart, orders, payments           | REST | `ecom.order.created/paid`          | Payment provider webhooks        |
+| service-management                   | Relational   | Cases, SLAs, work orders         | REST | `service.case.created/closed`      | Inventory integration for spares |
+| quality-management                   | Relational   | Inspections, NCR/CAPA            | REST | `quality.inspection.passed/failed` | Stock release gating             |
 
 ### Tier-3 (Industrial & Strategy - Phases 6-7)
-| Module | Context Type | Data Ownership | APIs | Core Events | Notes |
-|--------|-------------|----------------|------|-------------|-------|
-| manufacturing | Workflows + Relational | BOM, Routing, MRP plan/jobs | REST + Temporal | `mrp.job.*` | Stock reservation/consumption |
-| supply-chain-management_scm | Relational | ASN, shipments, carriers | REST | `scm.asn.created/received` | Planning + tracking |
-| business-intelligence-analytics_bia | CH loaders | Facts & dimensions | N/A (internal) | n/a | ClickHouse materializations |
-| enterprise-performance-management_epm | Relational + CH | KPIs, scorecards | GraphQL via BFF | `epm.kpi.updated` | CH reads, PG writes |
-| sustainability-ehs | Relational | Incidents, audits, emissions | REST | `ehs.incident.logged` | CH reporting |
-| iot-platform-integration | Ingest | Telemetry streams | REST/Webhooks | `iot.telemetry.ingested` | CH downsampling |
+
+| Module                                | Context Type           | Data Ownership               | APIs            | Core Events                | Notes                         |
+| ------------------------------------- | ---------------------- | ---------------------------- | --------------- | -------------------------- | ----------------------------- |
+| manufacturing                         | Workflows + Relational | BOM, Routing, MRP plan/jobs  | REST + Temporal | `mrp.job.*`                | Stock reservation/consumption |
+| supply-chain-management_scm           | Relational             | ASN, shipments, carriers     | REST            | `scm.asn.created/received` | Planning + tracking           |
+| business-intelligence-analytics_bia   | CH loaders             | Facts & dimensions           | N/A (internal)  | n/a                        | ClickHouse materializations   |
+| enterprise-performance-management_epm | Relational + CH        | KPIs, scorecards             | GraphQL via BFF | `epm.kpi.updated`          | CH reads, PG writes           |
+| sustainability-ehs                    | Relational             | Incidents, audits, emissions | REST            | `ehs.incident.logged`      | CH reporting                  |
+| iot-platform-integration              | Ingest                 | Telemetry streams            | REST/Webhooks   | `iot.telemetry.ingested`   | CH downsampling               |
 
 ### Tier-4 (Verticals & Enablers - Phase 8+)
-| Module | Context | Data Ownership | Notes |
-|--------|---------|----------------|-------|
-| fnb | Vertical | Menus, recipes, CoGS models | Inventory/Accounting integration |
-| plantation | Vertical | Plots, harvests, traceability | IoT + Quality + Inventory |
-| asset-management | Relational | Assets, depreciation | Accounting integration |
-| project-management | Relational | Projects, tasks, timesheets | Cost allocation to Accounting |
-| rnd | Relational | Experiments, approvals | Minimal dependencies, CH reporting |
-| mobile-platform | BFF/Clients | Device auth, sync | Shared IAM & GraphQL |
-| integration | Gateways | Partner connectors | Payment, e-invoicing, 3PL |
+
+| Module             | Context     | Data Ownership                | Notes                              |
+| ------------------ | ----------- | ----------------------------- | ---------------------------------- |
+| fnb                | Vertical    | Menus, recipes, CoGS models   | Inventory/Accounting integration   |
+| plantation         | Vertical    | Plots, harvests, traceability | IoT + Quality + Inventory          |
+| asset-management   | Relational  | Assets, depreciation          | Accounting integration             |
+| project-management | Relational  | Projects, tasks, timesheets   | Cost allocation to Accounting      |
+| rnd                | Relational  | Experiments, approvals        | Minimal dependencies, CH reporting |
+| mobile-platform    | BFF/Clients | Device auth, sync             | Shared IAM & GraphQL               |
+| integration        | Gateways    | Partner connectors            | Payment, e-invoicing, 3PL          |
 
 ---
 
 ## 14) Event Taxonomy & Schema
 
 ### Domain Events
+
 - `accounting.journal.posted/reversed`
 - `inventory.stock.received/issued/adjusted/transferred`
 - `procurement.po.created/approved/received/invoiced`
@@ -575,6 +616,7 @@ CREATE TABLE idempotency (
 - `epm.kpi.updated`, `ehs.incident.logged`
 
 ### Event Envelope Schema
+
 ```typescript
 interface DomainEvent {
   tenant_id: string;
@@ -592,6 +634,7 @@ interface DomainEvent {
 ## 15) API & Contract Conventions
 
 ### REST API Standards
+
 - **Versioning:** URL-based `/v1/...`, `/v2/...`
 - **Idempotency:** Every write accepts `Idempotency-Key` header
 - **Authentication:** OIDC JWT → gateway → service
@@ -600,6 +643,7 @@ interface DomainEvent {
 - **Pagination:** Cursor-based pagination for large datasets
 
 ### GraphQL BFF Schema
+
 ```graphql
 type Query {
   invoiceSummary(id: ID!): InvoiceSummary!
@@ -620,6 +664,7 @@ type Subscription {
 ```
 
 ### Contract-First Development
+
 - **OpenAPI 3.0** specifications for all REST services
 - **GraphQL Schema** definitions for BFF layer
 - **Code Generation** for TypeScript clients and types
@@ -631,6 +676,7 @@ type Subscription {
 ## 16) DevOps & CI/CD Pipeline
 
 ### GitHub Actions Workflow
+
 ```yaml
 name: Quality Gates
 on: [push, pull_request]
@@ -642,36 +688,36 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
-      
+          node-version: "20"
+          cache: "pnpm"
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      
+
       - name: Lint
         run: pnpm run lint
-      
+
       - name: Type check
         run: pnpm run type-check
-      
+
       - name: Unit tests
         run: pnpm run test --coverage
-      
+
       - name: Contract tests
         run: pnpm run test:contract
-      
+
       - name: Security scan
         run: pnpm run security:scan
-      
+
       - name: Performance smoke test
         run: k6 run scripts/perf/smoke.js
-      
+
       - name: Build
         run: pnpm run build
-      
+
       - name: E2E tests
         run: pnpm run test:e2e
-      
+
       - name: Deploy to staging
         if: github.ref == 'refs/heads/main'
         run: |
@@ -680,6 +726,7 @@ jobs:
 ```
 
 ### Quality Gates
+
 - **Coverage:** ≥80% code coverage required
 - **Contract Tests:** Must pass in CI
 - **Security:** No critical vulnerabilities
@@ -687,6 +734,7 @@ jobs:
 - **E2E:** Critical path testing
 
 ### Deployment Strategy
+
 - **Environments:** dev (PR previews), staging, production
 - **GitOps:** Argo CD for automated deployments
 - **Rolling Updates:** Zero-downtime deployments
@@ -698,6 +746,7 @@ jobs:
 ## 17) Migration & Rollback Strategy
 
 ### Data Migration Runbook
+
 1. **T0 Agreement:** Freeze backfills, export COA & stock snapshots
 2. **Staging:** Import legacy data into `landing_*` schemas
 3. **Transformation:** Convert to `acc_event` and `inv_event` formats
@@ -707,21 +756,23 @@ jobs:
 7. **Cutover:** Switch to new system with audit trail
 
 ### Rollback Procedures
+
 - **PITR Bookmark:** Keep T-1 recovery point
 - **Idempotent Migrations:** Safe to re-run
 - **DNS Switch:** Quick traffic redirection
 - **Write Access:** Revoke if KPIs degrade
 
 ### Integrity Verification
+
 ```typescript
 // Automated reconciliation
 async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
   const trialBalance = await calculateTrialBalance(tenantId);
   const stockValuation = await calculateStockValuation(tenantId);
-  
+
   const tbDiff = Math.abs(trialBalance.debit - trialBalance.credit);
   const stockDiff = Math.abs(stockValuation.actual - stockValuation.expected);
-  
+
   return tbDiff <= 0.01 && stockDiff <= 0.01;
 }
 ```
@@ -731,6 +782,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 ## 18) Phased Delivery Plan (8-Week Sprint)
 
 ### Week 1-2: Platform & Developer Experience
+
 - [ ] Turborepo scaffold with pnpm workspaces
 - [ ] NestJS service templates and shared configs
 - [ ] Docker Compose for local development
@@ -739,6 +791,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] OpenTelemetry instrumentation
 
 ### Week 3: Identity & Master Data
+
 - [ ] IAM service with OIDC integration
 - [ ] Tenant management and RLS policies
 - [ ] Catalog service with Redis caching
@@ -746,6 +799,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] API key management
 
 ### Week 4-5: Core Financial & Inventory
+
 - [ ] Accounting service with Event Sourcing
 - [ ] General Ledger projections and reporting
 - [ ] Inventory service with stock management
@@ -753,6 +807,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] Outbox pattern implementation
 
 ### Week 6: Procurement & Warehouse
+
 - [ ] Procurement service (Req→PO→GRN→AP)
 - [ ] WMS service with pick/pack operations
 - [ ] Inventory and Accounting integrations
@@ -760,6 +815,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] Vendor management
 
 ### Week 7: Commercial Operations
+
 - [ ] CRM service with opportunity management
 - [ ] Retail service with POS integration
 - [ ] E-commerce service with payment webhooks
@@ -767,6 +823,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] Order management workflows
 
 ### Week 8: Manufacturing & Quality
+
 - [ ] Manufacturing service with MRP workflows
 - [ ] Quality management with inspection gates
 - [ ] Temporal workflows for production planning
@@ -778,6 +835,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 ## 19) SLOs & Error Budgets
 
 ### Service Level Objectives
+
 - **API Performance:**
   - Reads: p95 < 300ms
   - Writes: p95 < 1s
@@ -795,6 +853,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
   - Cross-tenant data leakage: 0
 
 ### Error Budget Policy
+
 - **Progressive Delivery:** Canary deployments with metrics
 - **Automatic Rollback:** On SLO violations
 - **Alert Escalation:** Based on error budget consumption
@@ -805,6 +864,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 ## 20) Risk Management & Mitigations
 
 ### High-Risk Areas
+
 1. **Event Sourcing Complexity**
    - **Risk:** Team learning curve and debugging
    - **Mitigation:** Start simple, comprehensive tooling, extensive testing
@@ -818,6 +878,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
    - **Mitigation:** Read replicas, connection pooling, query optimization
 
 ### Medium-Risk Areas
+
 1. **Temporal Workflow Complexity**
    - **Risk:** Workflow debugging and monitoring
    - **Mitigation:** Comprehensive logging, workflow visualization tools
@@ -835,6 +896,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 ## 21) Ready-to-Build Checklist (v1.2)
 
 ### Infrastructure & Platform
+
 - [ ] Turborepo scaffold with pnpm workspaces
 - [ ] Kong gateway declarative config with tenant rate limiting
 - [ ] OIDC provider (Keycloak/Auth0/Cognito) with RBAC policies
@@ -845,6 +907,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] Temporal cluster for workflow orchestration
 
 ### Security & Compliance
+
 - [ ] TLS certificates with automated rotation
 - [ ] External Secrets Operator with KMS integration
 - [ ] Audit logging enabled globally with partitioning
@@ -853,6 +916,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] Security scanning (Trivy/Snyk) in CI/CD
 
 ### Observability & Monitoring
+
 - [ ] OpenTelemetry collector deployed
 - [ ] Prometheus/Grafana dashboards with RED metrics
 - [ ] Jaeger for distributed tracing
@@ -861,6 +925,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] Log correlation and PII redaction
 
 ### Development & Testing
+
 - [ ] Contract tests (Pact) running in CI
 - [ ] Performance tests (k6) with SLO verification
 - [ ] Chaos engineering (Litmus) in nightly staging
@@ -869,6 +934,7 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 - [ ] Code coverage ≥80% enforced
 
 ### Operations & Deployment
+
 - [ ] Argo CD for GitOps deployment
 - [ ] Helm charts for all services
 - [ ] Terraform for infrastructure provisioning
@@ -881,18 +947,21 @@ async function verifyDataIntegrity(tenantId: string): Promise<boolean> {
 ## 22) Success Metrics & KPIs
 
 ### Technical Metrics
+
 - **Performance:** API response times, throughput, error rates
 - **Reliability:** Uptime, MTTR, MTBF
 - **Scalability:** Resource utilization, autoscaling effectiveness
 - **Security:** Vulnerability count, compliance score
 
 ### Business Metrics
+
 - **User Adoption:** Active users, feature usage
 - **Data Quality:** Accuracy, completeness, consistency
 - **Operational Efficiency:** Process automation, manual intervention reduction
 - **Cost Optimization:** Infrastructure costs, development velocity
 
 ### Developer Experience
+
 - **Time to Market:** Feature delivery speed
 - **Code Quality:** Maintainability, testability
 - **Onboarding:** New developer productivity

@@ -1,0 +1,128 @@
+<testsuites id="" name="" tests="35" failures="1" skipped="0" errors="0" time="95.88689500000001">
+<testsuite name="homepage.spec.ts" timestamp="2025-09-22T04:15:08.374Z" hostname="chromium" tests="7" failures="0" skipped="0" time="89.028" errors="0">
+<testcase name="AI-BOS ERP Homepage › should display the main heading" classname="homepage.spec.ts" time="27.83">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display the phase badge" classname="homepage.spec.ts" time="4.99">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display feature cards" classname="homepage.spec.ts" time="4.958">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display development status" classname="homepage.spec.ts" time="4.123">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have working buttons" classname="homepage.spec.ts" time="5.059">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should be responsive on mobile" classname="homepage.spec.ts" time="17.66">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have proper accessibility" classname="homepage.spec.ts" time="24.408">
+</testcase>
+</testsuite>
+<testsuite name="homepage.spec.ts" timestamp="2025-09-22T04:15:08.374Z" hostname="firefox" tests="7" failures="1" skipped="0" time="85.714" errors="0">
+<testcase name="AI-BOS ERP Homepage › should display the main heading" classname="homepage.spec.ts" time="9.644">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display the phase badge" classname="homepage.spec.ts" time="9.705">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display feature cards" classname="homepage.spec.ts" time="10.981">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display development status" classname="homepage.spec.ts" time="11.421">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have working buttons" classname="homepage.spec.ts" time="12.177">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should be responsive on mobile" classname="homepage.spec.ts" time="13.479">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have proper accessibility" classname="homepage.spec.ts" time="18.307">
+<failure message="homepage.spec.ts:66:7 should have proper accessibility" type="FAILURE">
+<![CDATA[  [firefox] › homepage.spec.ts:66:7 › AI-BOS ERP Homepage › should have proper accessibility ───────
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  getByRole('button')
+    Expected: 2
+    Received: 3
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 5000ms
+      - waiting for getByRole('button')
+        8 × locator resolved to 3 elements
+          - unexpected value "3"
+
+
+      78 |     // Check for proper button roles
+      79 |     const buttons = page.getByRole('button');
+    > 80 |     await expect(buttons).toHaveCount(2);
+         |                           ^
+      81 |   });
+      82 | });
+      83 |
+        at C:\AI-BOS\aibos-erp\tests\e2e\homepage.spec.ts:80:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\test-results\homepage-AI-BOS-ERP-Homepa-28d11-d-have-proper-accessibility-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\..\test-results\homepage-AI-BOS-ERP-Homepa-28d11-d-have-proper-accessibility-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\test-results\homepage-AI-BOS-ERP-Homepa-28d11-d-have-proper-accessibility-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|homepage-AI-BOS-ERP-Homepa-28d11-d-have-proper-accessibility-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|homepage-AI-BOS-ERP-Homepa-28d11-d-have-proper-accessibility-firefox\video.webm]]
+
+[[ATTACHMENT|homepage-AI-BOS-ERP-Homepa-28d11-d-have-proper-accessibility-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="homepage.spec.ts" timestamp="2025-09-22T04:15:08.374Z" hostname="webkit" tests="7" failures="0" skipped="0" time="60.902" errors="0">
+<testcase name="AI-BOS ERP Homepage › should display the main heading" classname="homepage.spec.ts" time="10.509">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display the phase badge" classname="homepage.spec.ts" time="6.999">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display feature cards" classname="homepage.spec.ts" time="8.875">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display development status" classname="homepage.spec.ts" time="7.306">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have working buttons" classname="homepage.spec.ts" time="11.548">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should be responsive on mobile" classname="homepage.spec.ts" time="5.89">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have proper accessibility" classname="homepage.spec.ts" time="9.775">
+</testcase>
+</testsuite>
+<testsuite name="homepage.spec.ts" timestamp="2025-09-22T04:15:08.374Z" hostname="Mobile Chrome" tests="7" failures="0" skipped="0" time="75.843" errors="0">
+<testcase name="AI-BOS ERP Homepage › should display the main heading" classname="homepage.spec.ts" time="13.005">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display the phase badge" classname="homepage.spec.ts" time="12.599">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display feature cards" classname="homepage.spec.ts" time="19.251">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display development status" classname="homepage.spec.ts" time="6.204">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have working buttons" classname="homepage.spec.ts" time="10.773">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should be responsive on mobile" classname="homepage.spec.ts" time="6.536">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have proper accessibility" classname="homepage.spec.ts" time="7.475">
+</testcase>
+</testsuite>
+<testsuite name="homepage.spec.ts" timestamp="2025-09-22T04:15:08.374Z" hostname="Mobile Safari" tests="7" failures="0" skipped="0" time="25.161" errors="0">
+<testcase name="AI-BOS ERP Homepage › should display the main heading" classname="homepage.spec.ts" time="6.067">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display the phase badge" classname="homepage.spec.ts" time="3.353">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display feature cards" classname="homepage.spec.ts" time="3.163">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should display development status" classname="homepage.spec.ts" time="3.193">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have working buttons" classname="homepage.spec.ts" time="3.016">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should be responsive on mobile" classname="homepage.spec.ts" time="3.42">
+</testcase>
+<testcase name="AI-BOS ERP Homepage › should have proper accessibility" classname="homepage.spec.ts" time="2.949">
+</testcase>
+</testsuite>
+</testsuites>

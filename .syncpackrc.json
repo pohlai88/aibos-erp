@@ -1,43 +1,72 @@
 {
-  "source": ["package.json", "apps/*/package.json", "packages/*/package.json", "services/*/package.json"],
-  "dependencyTypes": ["prod", "dev", "peer"],
+  "source": [
+    "package.json",
+    "apps/*/package.json",
+    "packages/*/package.json",
+    "services/*/package.json"
+  ],
+  "dependencyTypes": [
+    "prod",
+    "dev",
+    "peer"
+  ],
   "semverGroups": [
     {
       "label": "Use exact versions for workspace packages",
-      "packages": ["@aibos/*"],
+      "packages": [
+        "@aibos/*"
+      ],
       "range": ""
     },
     {
       "label": "Use caret ranges for external packages",
-      "packages": ["*"],
+      "packages": [
+        "*"
+      ],
       "range": "^"
     }
   ],
   "versionGroups": [
     {
       "label": "Use workspace:* for internal packages",
-      "packages": ["@aibos/*"],
-      "dependencies": ["@aibos/*"],
+      "packages": [
+        "@aibos/*"
+      ],
+      "dependencies": [
+        "@aibos/*"
+      ],
       "isIgnored": false,
       "isBanned": false,
       "pinVersion": "workspace:*"
     },
     {
       "label": "Enforce consistent TypeScript version",
-      "packages": ["*"],
-      "dependencies": ["typescript"],
+      "packages": [
+        "*"
+      ],
+      "dependencies": [
+        "typescript"
+      ],
       "pinVersion": "5.9.2"
     },
     {
       "label": "Enforce consistent ESLint version",
-      "packages": ["*"],
-      "dependencies": ["eslint"],
-      "pinVersion": "8.57.1"
+      "packages": [
+        "*"
+      ],
+      "dependencies": [
+        "eslint"
+      ],
+      "pinVersion": "9.36.0"
     },
     {
       "label": "Enforce consistent Prettier version",
-      "packages": ["*"],
-      "dependencies": ["prettier"],
+      "packages": [
+        "*"
+      ],
+      "dependencies": [
+        "prettier"
+      ],
       "pinVersion": "3.6.2"
     }
   ],

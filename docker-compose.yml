@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   # PostgreSQL Database with RLS enabled
@@ -63,7 +63,15 @@ services:
       - clickhouse_data:/var/lib/clickhouse
       - ./scripts/clickhouse-init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8123/ping",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -84,8 +92,8 @@ services:
       KONG_ADMIN_LISTEN: 0.0.0.0:8001
       KONG_PROXY_LISTEN: 0.0.0.0:8000
     ports:
-      - "8000:8000"  # Proxy
-      - "8001:8001"  # Admin API
+      - "8000:8000" # Proxy
+      - "8001:8001" # Admin API
     volumes:
       - ./scripts/kong.yml:/kong/declarative/kong.yml
     depends_on:
@@ -107,10 +115,10 @@ services:
     volumes:
       - ./scripts/otel-collector-config.yaml:/etc/otel-collector-config.yaml
     ports:
-      - "4317:4317"   # OTLP gRPC receiver
-      - "4318:4318"   # OTLP HTTP receiver
-      - "8888:8888"   # Prometheus metrics
-      - "8889:8889"   # Prometheus exporter metrics
+      - "4317:4317" # OTLP gRPC receiver
+      - "4318:4318" # OTLP HTTP receiver
+      - "8888:8888" # Prometheus metrics
+      - "8889:8889" # Prometheus exporter metrics
     depends_on:
       - jaeger
       - prometheus
@@ -124,9 +132,9 @@ services:
     environment:
       COLLECTOR_OTLP_ENABLED: true
     ports:
-      - "16686:16686"  # Jaeger UI
-      - "14268:14268"  # Jaeger collector HTTP
-      - "14250:14250"  # Jaeger collector gRPC
+      - "16686:16686" # Jaeger UI
+      - "14268:14268" # Jaeger collector HTTP
+      - "14250:14250" # Jaeger collector gRPC
     volumes:
       - jaeger_data:/tmp
     networks:
@@ -137,12 +145,12 @@ services:
     image: prom/prometheus:v2.47.0
     container_name: aibos-prometheus
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--web.console.libraries=/etc/prometheus/console_libraries'
-      - '--web.console.templates=/etc/prometheus/consoles'
-      - '--storage.tsdb.retention.time=200h'
-      - '--web.enable-lifecycle'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
     ports:
       - "9090:9090"
     volumes:
@@ -160,7 +168,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: false
       GF_INSTALL_PLUGINS: grafana-clock-panel,grafana-simple-json-datasource
     ports:
-      - "3001:3000"  # Grafana UI (avoiding conflict with Next.js on 3000)
+      - "3001:3000" # Grafana UI (avoiding conflict with Next.js on 3000)
     volumes:
       - grafana_data:/var/lib/grafana
       - ./scripts/grafana-dashboards:/etc/grafana/provisioning/dashboards
