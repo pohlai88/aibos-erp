@@ -1,10 +1,10 @@
 // Test setup file
-import { vi } from 'vitest';
+import { vi } from "vitest";
 
 // Mock crypto.randomUUID for testing
-Object.defineProperty(global, 'crypto', {
+Object.defineProperty(global, "crypto", {
   value: {
-    randomUUID: vi.fn(() => 'test-uuid-123'),
+    randomUUID: vi.fn(() => "test-uuid-123"),
   },
 });
 

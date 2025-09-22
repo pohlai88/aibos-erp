@@ -61,8 +61,10 @@ export class IdempotencyKey {
       data.responseData as Record<string, unknown> | undefined,
     );
 
-    (key as any).createdAt = new Date(data.createdAt as string);
-    (key as any).expiresAt = new Date(data.expiresAt as string);
+    (key as unknown as { createdAt: Date; expiresAt: Date }).createdAt =
+      new Date(data.createdAt as string);
+    (key as unknown as { createdAt: Date; expiresAt: Date }).expiresAt =
+      new Date(data.expiresAt as string);
 
     return key;
   }

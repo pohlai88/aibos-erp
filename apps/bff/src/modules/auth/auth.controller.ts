@@ -15,20 +15,20 @@ import { AuthGuard } from "@nestjs/passport";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly _authService: AuthService) {}
 
   @Post("login")
   async login(
     @Body() loginDto: LoginDto,
   ): Promise<{ access_token: string; user: Partial<User> }> {
-    return this.authService.login(loginDto);
+    return this._authService.login(loginDto);
   }
 
   @Post("register")
   async register(
     @Body() registerDto: RegisterDto,
   ): Promise<{ access_token: string; user: Partial<User> }> {
-    return this.authService.register(registerDto);
+    return this._authService.register(registerDto);
   }
 
   @UseGuards(AuthGuard("jwt"))
@@ -55,6 +55,6 @@ export class AuthController {
   async refreshToken(
     @Request() req: { user: User },
   ): Promise<{ access_token: string }> {
-    return this.authService.refreshToken(req.user);
+    return this._authService.refreshToken(req.user);
   }
 }

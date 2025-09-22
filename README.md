@@ -74,14 +74,16 @@ pnpm dx  # Runs all quality checks
 
 ### **Development Commands**
 
-| Command          | Purpose            | Description                                 |
-| ---------------- | ------------------ | ------------------------------------------- |
-| `pnpm dx`        | Development check  | Format, lint, typecheck, test, dependencies |
-| `pnpm dev`       | Start development  | All services in development mode            |
-| `pnpm build`     | Build all packages | Production builds for all packages          |
-| `pnpm test`      | Run tests          | Unit, integration, and E2E tests            |
-| `pnpm lint`      | Code quality       | ESLint + dependency-cruiser checks          |
-| `pnpm typecheck` | Type safety        | TypeScript compilation checks               |
+| Command            | Purpose            | Description                                 |
+| ------------------ | ------------------ | ------------------------------------------- |
+| `pnpm dx`          | Development check  | Format, lint, typecheck, test, dependencies |
+| `pnpm dev`         | Start development  | All services in development mode            |
+| `pnpm build`       | Build all packages | Production builds for all packages          |
+| `pnpm test`        | Run tests          | Unit, integration, and E2E tests            |
+| `pnpm lint`        | Code quality       | ESLint + dependency-cruiser checks          |
+| `pnpm typecheck`   | Type safety        | TypeScript compilation checks               |
+| `pnpm debug`       | Debug diagnostics  | Comprehensive health check and diagnostics  |
+| `pnpm debug:quick` | Quick debug        | Fast diagnostic check for common issues     |
 
 ---
 
@@ -315,6 +317,51 @@ pnpm test:performance
 ## 📄 **License**
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🔧 **Debugging & Troubleshooting**
+
+Having issues? We've got comprehensive debugging tools and documentation to help you resolve problems quickly.
+
+### **Quick Diagnostics**
+
+```bash
+# Run comprehensive health check
+pnpm debug
+
+# Quick diagnostic check
+pnpm debug:quick
+
+# Full quality check
+pnpm dx
+```
+
+### **Documentation**
+
+- 📖 **[Debugging Guide](docs/DEBUGGING.md)** - Comprehensive troubleshooting guide with detailed solutions
+- 📋 **[Troubleshooting Checklist](docs/TROUBLESHOOTING_CHECKLIST.md)** - Quick reference for common issues
+
+### **Common Issues & Solutions**
+
+- **UI types not working**: `pnpm -w run clean && pnpm -r build`
+- **ESLint errors**: Check [ESLint configuration](docs/DEBUGGING.md#eslint-issues)
+- **Build failures**: Check [build order](docs/DEBUGGING.md#build-issues)
+- **Dependency conflicts**: `pnpm syncpack fix-mismatches`
+- **Cache issues**: `pnpm -w run clean`
+
+### **Emergency Fixes**
+
+```bash
+# Nuclear option - clean everything
+pnpm -w run clean
+pnpm install
+pnpm -r build
+
+# TypeScript cache issues
+rm -rf **/tsconfig.tsbuildinfo
+pnpm -r exec tsc --build --clean
+```
 
 ---
 

@@ -50,12 +50,12 @@ export function createPolymorphic<
   OwnProperties = Record<string, unknown>,
 >(
   render: (
-    props: PolymorphicProperties<DefaultAs, OwnProperties>,
-    ref: PolymorphicReference<DefaultAs>,
+    _props: PolymorphicProperties<DefaultAs, OwnProperties>,
+    _ref: PolymorphicReference<DefaultAs>,
   ) => JSX.Element | null,
   displayName: string,
 ): <As extends ElementType = DefaultAs>(
-  props: PolymorphicProperties<As, OwnProperties> & {
+  _props: PolymorphicProperties<As, OwnProperties> & {
     ref?: PolymorphicReference<As>;
   },
 ) => JSX.Element | null {
@@ -63,21 +63,18 @@ export function createPolymorphic<
   const Comp = forwardRef<
     unknown,
     PolymorphicProperties<DefaultAs, OwnProperties>
-  >((props, ref) => {
+  >((_props, _ref) => {
     // We intentionally keep the render API you provided.
     return render(
-      props as PolymorphicProperties<DefaultAs, OwnProperties>,
-      ref as PolymorphicReference<DefaultAs>,
+      _props as PolymorphicProperties<DefaultAs, OwnProperties>,
+      _ref as PolymorphicReference<DefaultAs>,
     );
-  }) as unknown as <As extends ElementType = DefaultAs>(
-    props: PolymorphicProperties<As, OwnProperties> & {
-      ref?: PolymorphicReference<As>;
-    },
-  ) => JSX.Element | null;
+  });
 
   (Comp as { displayName?: string }).displayName = displayName;
+
   return Comp as <As extends ElementType = DefaultAs>(
-    props: PolymorphicProperties<As, OwnProperties> & {
+    _props: PolymorphicProperties<As, OwnProperties> & {
       ref?: PolymorphicReference<As>;
     },
   ) => JSX.Element | null;

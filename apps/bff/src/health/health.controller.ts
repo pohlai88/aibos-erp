@@ -4,7 +4,7 @@ import { Controller, Get } from "@nestjs/common";
 
 @Controller("health")
 export class HealthController {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly _databaseService: DatabaseService) {}
 
   @Get()
   async check(): Promise<{
@@ -12,7 +12,7 @@ export class HealthController {
     timestamp: string;
     database: { status: string; timestamp: string };
   }> {
-    const databaseHealth = await this.databaseService.healthCheck();
+    const databaseHealth = await this._databaseService.healthCheck();
 
     return {
       status: databaseHealth.status === "healthy" ? "healthy" : "unhealthy",
@@ -23,7 +23,7 @@ export class HealthController {
 
   @Get("ready")
   async readiness(): Promise<{ status: string; timestamp: string }> {
-    const databaseHealth = await this.databaseService.healthCheck();
+    const databaseHealth = await this._databaseService.healthCheck();
 
     return {
       status: databaseHealth.status === "healthy" ? "ready" : "not ready",

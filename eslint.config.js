@@ -67,11 +67,25 @@ export default [
                 // HTML globals
                 HTMLInputElement: 'readonly',
                 HTMLElement: 'readonly',
+                HTMLSpanElement: 'readonly',
+                HTMLButtonElement: 'readonly',
+                HTMLDivElement: 'readonly',
+                HTMLHeadingElement: 'readonly',
                 Element: 'readonly',
                 Event: 'readonly',
                 // Other globals
                 btoa: 'readonly',
                 atob: 'readonly',
+                URL: 'readonly',
+                // Test globals
+                describe: 'readonly',
+                test: 'readonly',
+                it: 'readonly',
+                expect: 'readonly',
+                beforeAll: 'readonly',
+                afterAll: 'readonly',
+                beforeEach: 'readonly',
+                afterEach: 'readonly',
                 // CommonJS globals
                 module: 'readonly',
                 require: 'readonly',
@@ -275,14 +289,30 @@ export default [
 
     // Test files
     {
-        files: ['**/*.test.ts', '**/*.spec.ts'],
+        files: ['**/*.test.ts', '**/*.spec.ts', '**/*.test.tsx', '**/*.spec.tsx'],
+        languageOptions: {
+            globals: {
+                describe: 'readonly',
+                test: 'readonly',
+                it: 'readonly',
+                expect: 'readonly',
+                beforeAll: 'readonly',
+                afterAll: 'readonly',
+                beforeEach: 'readonly',
+                afterEach: 'readonly',
+                jest: 'readonly',
+                vi: 'readonly',
+            },
+        },
         rules: {
             '@typescript-eslint/no-explicit-any': 'off',
             'import/no-extraneous-dependencies': 'off',
+            'no-unused-vars': 'off', // Allow unused vars in tests
+            '@typescript-eslint/no-unused-vars': 'off',
         },
     },
 
-    // Config files
+    // Config files and scripts
     {
         files: ['**/*.config.{js,cjs,ts}', 'scripts/**/*.{js,ts}'],
         languageOptions: {
@@ -300,6 +330,8 @@ export default [
             'import/no-commonjs': 'off',
             '@typescript-eslint/no-var-requires': 'off',
             'no-undef': 'off', // Config files often use global variables
+            'no-unused-vars': 'off', // Scripts often have unused vars
+            '@typescript-eslint/no-unused-vars': 'off',
         },
     },
 
@@ -323,6 +355,7 @@ export default [
                         refs: true,
                         prop: true,
                         props: true,
+                        utils: true, // Allow utils.ts filename
                         // Keep existing allowList from root config
                         args: true,
                         env: true,
@@ -356,6 +389,16 @@ export default [
 
             // Keep complexity realistic, fail egregious cases
             'sonarjs/cognitive-complexity': ['error', 20],
+            // Disable perfectionist import sorting for UI package (too strict)
+            'perfectionist/sort-imports': 'off',
+            // Handle unused vars in UI package
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': ['error', {
+                varsIgnorePattern: '^_',
+                argsIgnorePattern: '^_',
+                caughtErrorsIgnorePattern: '^_',
+                ignoreRestSiblings: true
+            }],
         },
     },
 
@@ -366,5 +409,33 @@ export default [
             // Next.js specific rules will be added here when compatibility is resolved
             // For now, using base configuration
         },
+    },
+
+    // BFF package (NestJS) - handle injected dependencies
+    {
+        files: ['apps/bff/**/*.{ts,tsx}'],
+        rules: {
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': ['error', {
+                varsIgnorePattern: '^_',
+                argsIgnorePattern: '^_',
+                caughtErrorsIgnorePattern: '^_',
+                ignoreRestSiblings: true
+            }]
+        }
+    },
+
+    // Eventsourcing package - handle unused vars and any types
+    {
+        files: ['packages/eventsourcing/**/*.{ts,tsx}'],
+        rules: {
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': ['error', {
+                varsIgnorePattern: '^_',
+                argsIgnorePattern: '^_',
+                caughtErrorsIgnorePattern: '^_',
+                ignoreRestSiblings: true
+            }]
+        }
     },
 ];

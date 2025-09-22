@@ -68,7 +68,7 @@ export abstract class AggregateRoot {
 
     for (const event of events) {
       aggregate.apply(event);
-      (aggregate as any).version = event.version;
+      (aggregate as unknown as { version: number }).version = event.version;
     }
 
     return aggregate;

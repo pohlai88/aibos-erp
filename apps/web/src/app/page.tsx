@@ -34,7 +34,9 @@ export default function HomePage(): JSX.Element {
               <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <span className="text-primary-600 text-xl">🚀</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Modern Architecture</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Modern Architecture
+              </h3>
               <p className="text-secondary-600 text-sm">
                 Built with Next.js, NestJS, and cloud-native technologies
               </p>
@@ -44,7 +46,9 @@ export default function HomePage(): JSX.Element {
               <div className="w-12 h-12 bg-success-100 rounded-lg flex items-center justify-center mx-auto mb-4">
                 <span className="text-success-600 text-xl">🛡️</span>
               </div>
-              <h3 className="text-lg font-semibold mb-2">Enterprise Security</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                Enterprise Security
+              </h3>
               <p className="text-secondary-600 text-sm">
                 Multi-tenant architecture with Row Level Security
               </p>

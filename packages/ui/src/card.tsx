@@ -1,12 +1,13 @@
-import type { ReactNode } from "react";
+import type { ReactNode, HTMLAttributes } from "react";
 
-import { cn, variants, createPolymorphic } from "./utils";
+import { forwardRef } from "react";
 
-export interface CardProperties {
+import { cn, variants } from "./utils";
+
+export interface CardProperties extends HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "elevated" | "outlined";
   padding?: "sm" | "md" | "lg";
   children?: ReactNode;
-  className?: string;
 }
 
 const cardVariants = variants({
@@ -26,12 +27,10 @@ const cardVariants = variants({
   defaultVariants: { variant: "default", padding: "md" },
 });
 
-export const Card = createPolymorphic<"div", CardProperties>(
-  ({ as, variant, padding, children, className, ...props }, ref) => {
-    const Component = as || "div";
-
+export const Card = forwardRef<HTMLDivElement, CardProperties>(
+  ({ variant, padding, children, className, ...props }, ref) => {
     return (
-      <Component
+      <div
         ref={ref}
         className={cn(
           cardVariants({
@@ -43,46 +42,43 @@ export const Card = createPolymorphic<"div", CardProperties>(
         {...props}
       >
         {children}
-      </Component>
+      </div>
     );
   },
-  "Card",
 );
 
+Card.displayName = "Card";
+
 // Card sub-components
-export interface CardHeaderProperties {
+export interface CardHeaderProperties extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
-  className?: string;
 }
 
-export const CardHeader = createPolymorphic<"div", CardHeaderProperties>(
-  ({ as, children, className, ...props }, ref) => {
-    const Component = as || "div";
-
+export const CardHeader = forwardRef<HTMLDivElement, CardHeaderProperties>(
+  ({ children, className, ...props }, ref) => {
     return (
-      <Component
+      <div
         ref={ref}
         className={cn("flex flex-col space-y-1.5 pb-2", className)}
         {...props}
       >
         {children}
-      </Component>
+      </div>
     );
   },
-  "CardHeader",
 );
 
-export interface CardTitleProperties {
+CardHeader.displayName = "CardHeader";
+
+export interface CardTitleProperties
+  extends HTMLAttributes<HTMLHeadingElement> {
   children?: ReactNode;
-  className?: string;
 }
 
-export const CardTitle = createPolymorphic<"h3", CardTitleProperties>(
-  ({ as, children, className, ...props }, ref) => {
-    const Component = as || "h3";
-
+export const CardTitle = forwardRef<HTMLHeadingElement, CardTitleProperties>(
+  ({ children, className, ...props }, ref) => {
     return (
-      <Component
+      <h3
         ref={ref}
         className={cn(
           "text-lg font-semibold leading-none tracking-tight",
@@ -91,26 +87,25 @@ export const CardTitle = createPolymorphic<"h3", CardTitleProperties>(
         {...props}
       >
         {children}
-      </Component>
+      </h3>
     );
   },
-  "CardTitle",
 );
 
-export interface CardContentProperties {
+CardTitle.displayName = "CardTitle";
+
+export interface CardContentProperties extends HTMLAttributes<HTMLDivElement> {
   children?: ReactNode;
-  className?: string;
 }
 
-export const CardContent = createPolymorphic<"div", CardContentProperties>(
-  ({ as, children, className, ...props }, ref) => {
-    const Component = as || "div";
-
+export const CardContent = forwardRef<HTMLDivElement, CardContentProperties>(
+  ({ children, className, ...props }, ref) => {
     return (
-      <Component ref={ref} className={cn("pt-0", className)} {...props}>
+      <div ref={ref} className={cn("pt-0", className)} {...props}>
         {children}
-      </Component>
+      </div>
     );
   },
-  "CardContent",
 );
+
+CardContent.displayName = "CardContent";

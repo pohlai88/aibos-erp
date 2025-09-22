@@ -1,14 +1,14 @@
-import type { ReactNode } from "react";
+import type { ReactNode, ButtonHTMLAttributes } from "react";
 
-import { cn, variants, createPolymorphic } from "./utils";
+import { forwardRef } from "react";
 
-export interface ButtonProperties {
+import { cn, variants } from "./utils";
+
+export interface ButtonProperties
+  extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "destructive";
   size?: "sm" | "md" | "lg";
-  disabled?: boolean;
   children?: ReactNode;
-  className?: string;
-  onClick?: () => void;
 }
 
 const buttonVariants = variants({
@@ -30,15 +30,10 @@ const buttonVariants = variants({
   defaultVariants: { variant: "primary", size: "md" },
 });
 
-export const Button = createPolymorphic<"button", ButtonProperties>(
-  (
-    { as, variant, size, disabled, children, className, onClick, ...props },
-    ref,
-  ) => {
-    const Component = as || "button";
-
+export const Button = forwardRef<HTMLButtonElement, ButtonProperties>(
+  ({ variant, size, children, className, ...props }, ref) => {
     return (
-      <Component
+      <button
         ref={ref}
         className={cn(
           buttonVariants({
@@ -47,13 +42,12 @@ export const Button = createPolymorphic<"button", ButtonProperties>(
           }),
           className,
         )}
-        disabled={disabled}
-        onClick={onClick}
         {...props}
       >
         {children}
-      </Component>
+      </button>
     );
   },
-  "Button",
 );
+
+Button.displayName = "Button";

@@ -1,168 +1,203 @@
-import type { Pool } from 'pg';
-
-import { IdempotencyKey, IdempotencyKeyGenerator } from './idempotency-key';
+import { IdempotencyKey } from "./idempotency-key";
 
 /**
- * Idempotency middleware for ensuring operations are only executed once
+ * Middleware for handling idempotency in event sourcing
+ * Ensures that duplicate requests are handled gracefully
  */
 export class IdempotencyMiddleware {
-    constructor(private pool: Pool) {}
+  private idempotencyKeys: Map<string, IdempotencyKey> = new Map();
 
-    /**
-     * Execute an operation with idempotency protection
-     */
-    async execute<T>(
-        key: string,
-        operation: () => Promise<T>,
-        ttlMinutes: number = 60
-    ): Promise<T> {
-        const client = await this.pool.connect();
+  /**
+   * Check if a request is idempotent
+   * @param requestId - Unique identifier for the request
+   * @returns Promise<IdempotencyKey | null> - Returns existing key if found, null otherwise
+   */
+  async checkIdempotency(requestId: string): Promise<IdempotencyKey | null> {
+    const key = this.idempotencyKeys.get(requestId);
 
-        try {
-            // Check if key exists
-            const existingKey = await this.getKey(client, key);
-
-            if (existingKey && !existingKey.isExpired()) {
-                // Return cached response
-                return existingKey.responseData as T;
-            }
-
-            // Execute operation
-            const result = await operation();
-
-            // Store the result
-            const idempotencyKey = new IdempotencyKey(
-                key,
-                crypto.randomUUID(),
-                ttlMinutes,
-                result as Record<string, unknown>
-            );
-
-            await this.storeKey(client, idempotencyKey);
-
-            return result;
-        } finally {
-            client.release();
-        }
+    if (key && !key.isExpired()) {
+      return key;
     }
 
-    /**
-     * Check if a key exists and is valid
-     */
-    async isKeyValid(key: string): Promise<boolean> {
-        const client = await this.pool.connect();
+    return null;
+  }
 
-        try {
-            const existingKey = await this.getKey(client, key);
-            return existingKey !== null && !existingKey.isExpired();
-        } finally {
-            client.release();
-        }
+  /**
+   * Create a new idempotency key for a request
+   * @param requestId - Unique identifier for the request
+   * @param ttlMinutes - Time to live in minutes
+   * @param responseData - Optional response data to cache
+   * @returns Promise<IdempotencyKey> - The created idempotency key
+   */
+  async createIdempotencyKey(
+    requestId: string,
+    ttlMinutes: number = 60, // 1 hour default
+    responseData?: Record<string, unknown>,
+  ): Promise<IdempotencyKey> {
+    const key = new IdempotencyKey(
+      requestId,
+      requestId,
+      ttlMinutes,
+      responseData,
+    );
+    this.idempotencyKeys.set(requestId, key);
+    return key;
+  }
+
+  /**
+   * Update an existing idempotency key with response data
+   * @param requestId - Unique identifier for the request
+   * @param responseData - Response data to cache
+   * @returns Promise<boolean> - True if key was updated, false if not found
+   */
+  async updateIdempotencyKey(
+    requestId: string,
+    responseData: Record<string, unknown>,
+  ): Promise<boolean> {
+    const existingKey = this.idempotencyKeys.get(requestId);
+
+    if (existingKey) {
+      // Create a new key with updated response data
+      const updatedKey = new IdempotencyKey(
+        existingKey.key,
+        existingKey.requestId,
+        existingKey.getTimeUntilExpiration() / (60 * 1000), // Convert to minutes
+        responseData,
+      );
+      this.idempotencyKeys.set(requestId, updatedKey);
+      return true;
     }
 
-    /**
-     * Get cached response for a key
-     */
-    async getCachedResponse<T>(key: string): Promise<T | null> {
-        const client = await this.pool.connect();
+    return false;
+  }
 
-        try {
-            const existingKey = await this.getKey(client, key);
+  /**
+   * Remove an idempotency key
+   * @param requestId - Unique identifier for the request
+   * @returns Promise<boolean> - True if key was removed, false if not found
+   */
+  async removeIdempotencyKey(requestId: string): Promise<boolean> {
+    return this.idempotencyKeys.delete(requestId);
+  }
 
-            if (existingKey && !existingKey.isExpired()) {
-                return existingKey.responseData as T;
-            }
+  /**
+   * Clean up expired idempotency keys
+   * @returns Promise<number> - Number of keys cleaned up
+   */
+  async cleanupExpiredKeys(): Promise<number> {
+    let cleanedCount = 0;
 
-            return undefined;
-        } finally {
-            client.release();
-        }
+    for (const [requestId, key] of this.idempotencyKeys.entries()) {
+      if (key.isExpired()) {
+        this.idempotencyKeys.delete(requestId);
+        cleanedCount++;
+      }
     }
 
-    /**
-     * Store a key in the database
-     */
-    private async storeKey(client: unknown, key: IdempotencyKey): Promise<void> {
-        await client.query(
-            `INSERT INTO eventsourcing.idempotency_keys 
-       (key, request_id, response_data, created_at, expires_at)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (key) DO UPDATE SET
-       request_id = EXCLUDED.request_id,
-       response_data = EXCLUDED.response_data,
-       created_at = EXCLUDED.created_at,
-       expires_at = EXCLUDED.expires_at`,
-            [
-                key.key,
-                key.requestId,
-                JSON.stringify(key.responseData),
-                key.createdAt,
-                key.expiresAt,
-            ]
-        );
+    return cleanedCount;
+  }
+
+  /**
+   * Get all active idempotency keys
+   * @returns Promise<IdempotencyKey[]> - Array of active keys
+   */
+  async getActiveKeys(): Promise<IdempotencyKey[]> {
+    const activeKeys: IdempotencyKey[] = [];
+
+    for (const key of this.idempotencyKeys.values()) {
+      if (!key.isExpired()) {
+        activeKeys.push(key);
+      }
     }
 
-    /**
-     * Get a key from the database
-     */
-    private async getKey(client: unknown, key: string): Promise<IdempotencyKey | null> {
-        const result = await client.query(
-            `SELECT key, request_id, response_data, created_at, expires_at
-       FROM eventsourcing.idempotency_keys
-       WHERE key = $1`,
-            [key]
-        );
+    return activeKeys;
+  }
 
-        if (result.rows.length === 0) {
-            return undefined;
-        }
+  /**
+   * Get statistics about idempotency keys
+   * @returns Promise<{total: number, active: number, expired: number}> - Key statistics
+   */
+  async getStatistics(): Promise<{
+    total: number;
+    active: number;
+    expired: number;
+  }> {
+    let active = 0;
+    let expired = 0;
 
-        const row = result.rows[0];
-        return IdempotencyKey.deserialize({
-            key: row.key,
-            requestId: row.request_id,
-            responseData: row.response_data,
-            createdAt: row.created_at,
-            expiresAt: row.expires_at,
-        });
+    for (const key of this.idempotencyKeys.values()) {
+      if (key.isExpired()) {
+        expired++;
+      } else {
+        active++;
+      }
     }
 
-    /**
-     * Clean up expired keys
-     */
-    async cleanupExpiredKeys(): Promise<void> {
-        const client = await this.pool.connect();
+    return {
+      total: this.idempotencyKeys.size,
+      active,
+      expired,
+    };
+  }
 
-        try {
-            await client.query(
-                `DELETE FROM eventsourcing.idempotency_keys 
-         WHERE expires_at < NOW()`
-            );
-        } finally {
-            client.release();
-        }
-    }
+  /**
+   * Clear all idempotency keys
+   * @returns Promise<void>
+   */
+  async clearAll(): Promise<void> {
+    this.idempotencyKeys.clear();
+  }
+}
 
-    /**
-     * Generate key from HTTP request
-     */
-    static generateFromRequest(
-        method: string,
-        path: string,
-        body?: Record<string, unknown>,
-        headers?: Record<string, string>
-    ): string {
-        return IdempotencyKeyGenerator.generate(method, path, body, headers);
-    }
+/**
+ * Factory function to create an idempotency middleware instance
+ * @returns IdempotencyMiddleware - New middleware instance
+ */
+export function createIdempotencyMiddleware(): IdempotencyMiddleware {
+  return new IdempotencyMiddleware();
+}
 
-    /**
-     * Generate key from operation
-     */
-    static generateFromOperation(
-        operation: string,
-        tenantId: string,
-        resourceId?: string
-    ): string {
-        return IdempotencyKeyGenerator.generateForOperation(operation, tenantId, resourceId);
-    }
+/**
+ * Decorator for making methods idempotent
+ * @param requestIdExtractor - Function to extract request ID from method arguments
+ * @returns Method decorator
+ */
+export function Idempotent(requestIdExtractor: (...args: unknown[]) => string) {
+  return function (
+    target: unknown,
+    propertyName: string,
+    descriptor: PropertyDescriptor,
+  ): PropertyDescriptor {
+    const method = descriptor.value;
+
+    descriptor.value = async function (...args: unknown[]) {
+      const requestId = requestIdExtractor(...args);
+      const middleware = new IdempotencyMiddleware();
+
+      // Check if request is already processed
+      const existingKey = await middleware.checkIdempotency(requestId);
+      if (existingKey && existingKey.responseData) {
+        return existingKey.responseData;
+      }
+
+      // Create new idempotency key
+      const _key = await middleware.createIdempotencyKey(requestId);
+
+      try {
+        // Execute the original method
+        const result = await method.apply(this, args);
+
+        // Update key with response data
+        await middleware.updateIdempotencyKey(requestId, result);
+
+        return result;
+      } catch (error) {
+        // Remove key on error
+        await middleware.removeIdempotencyKey(requestId);
+        throw error;
+      }
+    };
+
+    return descriptor;
+  };
 }

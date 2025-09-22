@@ -12,15 +12,15 @@ import * as bcrypt from "bcryptjs";
 export class AuthService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    private readonly jwtService: JwtService,
+    private readonly _userRepository: Repository<User>,
+    private readonly _jwtService: JwtService,
   ) {}
 
   async validateUser(
     email: string,
     password: string,
   ): Promise<User | undefined> {
-    const user = await this.userRepository.findOne({
+    const user = await this._userRepository.findOne({
       where: { email, is_active: true, is_deleted: false },
       relations: ["user_roles", "user_roles.role"],
     });
@@ -41,7 +41,7 @@ export class AuthService {
     }
 
     // Update last login
-    await this.userRepository.update(user.id, {
+    await this._userRepository.update(user.id, {
       last_login_at: new Date(),
       last_login_ip: loginDto.ip_address,
     });
@@ -54,7 +54,7 @@ export class AuthService {
     };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this._jwtService.sign(payload),
       user: {
         id: user.id,
         username: user.username,
@@ -71,7 +71,7 @@ export class AuthService {
     registerDto: RegisterDto,
   ): Promise<{ access_token: string; user: Partial<User> }> {
     // Check if user already exists
-    const existingUser = await this.userRepository.findOne({
+    const existingUser = await this._userRepository.findOne({
       where: { email: registerDto.email },
     });
 
@@ -84,13 +84,13 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(registerDto.password, saltRounds);
 
     // Create user
-    const user = this.userRepository.create({
+    const user = this._userRepository.create({
       ...registerDto,
       password_hash: passwordHash,
       tenant_id: registerDto.tenant_id,
     });
 
-    const savedUser = await this.userRepository.save(user);
+    const savedUser = await this._userRepository.save(user);
 
     // Generate JWT
     const payload = {
@@ -101,7 +101,7 @@ export class AuthService {
     };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this._jwtService.sign(payload),
       user: {
         id: savedUser.id,
         username: savedUser.username,
@@ -122,7 +122,7 @@ export class AuthService {
     };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token: this._jwtService.sign(payload),
     };
   }
 }

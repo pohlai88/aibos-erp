@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly configService: ConfigService,
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly _userRepository: Repository<User>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -31,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<User> {
-    const user = await this.userRepository.findOne({
+    const user = await this._userRepository.findOne({
       where: {
         id: payload.sub,
         tenant_id: payload.tenant_id,

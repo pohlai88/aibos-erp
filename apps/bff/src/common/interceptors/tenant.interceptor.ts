@@ -11,7 +11,7 @@ import { tap } from "rxjs/operators";
 
 @Injectable()
 export class TenantInterceptor implements NestInterceptor {
-  constructor(private readonly databaseService: DatabaseService) {}
+  constructor(private readonly _databaseService: DatabaseService) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest();
@@ -21,7 +21,7 @@ export class TenantInterceptor implements NestInterceptor {
     if (user && user.tenant_id) {
       return next.handle().pipe(
         tap(async () => {
-          await this.databaseService.setTenantContext(user.tenant_id);
+          await this._databaseService.setTenantContext(user.tenant_id);
         }),
       );
     }
