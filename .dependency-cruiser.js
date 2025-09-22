@@ -1,4 +1,4 @@
-module.exports = {
+export default {
   forbidden: [
     // Forbid dependencies from packages to apps
     {
