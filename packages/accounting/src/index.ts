@@ -5,6 +5,38 @@ export * from './domain/journal-entry';
 export * from './domain/journal-entry-line';
 export * from './domain/journal-entry-status';
 export * from './domain/Money';
+export * from './domain/safe-objects';
+
+// API Schemas
+export {
+  CreateAccountRequestSchema,
+  UpdateAccountRequestSchema,
+  JournalEntryLineSchema,
+  CreateJournalEntryRequestSchema,
+  PostJournalEntryRequestSchema,
+  SetCompanionLinksRequestSchema,
+  AccountQuerySchema,
+  JournalEntryQuerySchema,
+  AccountResponseSchema,
+  JournalEntryResponseSchema,
+  ErrorResponseSchema,
+  SuccessResponseSchema,
+} from './schemas/api-schemas';
+export type {
+  CreateAccountRequest,
+  UpdateAccountRequest,
+  CreateJournalEntryRequest,
+  PostJournalEntryRequest,
+  SetCompanionLinksRequest,
+  AccountQuery,
+  JournalEntryQuery,
+  AccountResponse,
+  JournalEntryResponse,
+  ErrorResponse,
+  SuccessResponse,
+} from './schemas/api-schemas';
+export { JournalEntryLine as JournalEntryLineClass } from './domain/journal-entry-line';
+export * from './schemas/import-schemas';
 
 // Accounting Events
 export * from './events/account-created-event';

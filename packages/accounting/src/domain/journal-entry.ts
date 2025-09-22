@@ -188,7 +188,7 @@ export class JournalEntry extends AggregateRoot {
   }
 
   private applyJournalEntryPosted(event: JournalEntryPostedEvent): void {
-    this.entries = event.entries;
+    this.entries = [...event.entries];
     this.reference = event.reference;
     this.description = event.description;
     this.status = JournalEntryStatus.POSTED;

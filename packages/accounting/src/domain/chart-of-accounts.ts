@@ -563,7 +563,7 @@ export class ChartOfAccounts extends AggregateRoot {
 
   private whenAccountCompanionLinksSet(event: AccountCompanionLinksSetEvent): void {
     // Validate existence/types if provided
-    const check = (code?: string) => (code ? this.accounts.get(code) : undefined);
+    const check = (code?: string | null) => (code ? this.accounts.get(code) : undefined);
     const accumulatorDep = check(event.accumulatedDepreciationCode);
     const depExp = check(event.depreciationExpenseCode);
     if (event.accumulatedDepreciationCode && !accumulatorDep) {
@@ -603,9 +603,9 @@ export class ChartOfAccounts extends AggregateRoot {
       specialAccountType: accumulator.specialAccountType,
       postingAllowed: accumulator.postingAllowed,
       companionLinks: {
-        accumulatedDepreciationCode: event.accumulatedDepreciationCode,
-        depreciationExpenseCode: event.depreciationExpenseCode,
-        allowanceAccountCode: event.allowanceAccountCode,
+        accumulatedDepreciationCode: event.accumulatedDepreciationCode ?? undefined,
+        depreciationExpenseCode: event.depreciationExpenseCode ?? undefined,
+        allowanceAccountCode: event.allowanceAccountCode ?? undefined,
       },
     });
     this.accounts.set(event.accountCode, updated);

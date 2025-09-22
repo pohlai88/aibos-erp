@@ -10,6 +10,23 @@ import * as path from 'node:path';
 import { parse as parseYaml } from 'yaml';
 
 /**
+ * Validates that a file path is safe and within the allowed base directory.
+ * Prevents directory traversal attacks by ensuring the resolved path is within the base.
+ */
+function validatePath(filePath: string, basePath: string): string {
+  const resolvedPath = path.resolve(filePath);
+  const resolvedBase = path.resolve(basePath);
+
+  if (!resolvedPath.startsWith(resolvedBase)) {
+    throw new Error(
+      `Path traversal detected: ${filePath} is outside allowed directory ${basePath}`,
+    );
+  }
+
+  return resolvedPath;
+}
+
+/**
  * Manages the loading and parsing of Chart of Accounts template bundles
  * from the file system. These templates define standard COA structures
  * aligned with various accounting standards (e.g., MFRS, IFRS).
@@ -36,17 +53,26 @@ export class TemplateRegistry {
     const indexPath = path.join(bundlePath, 'index.yaml');
 
     try {
-      const indexContent = await fs.readFile(indexPath, 'utf8');
+      const validatedIndexPath = validatePath(indexPath, TemplateRegistry.TEMPLATE_BASE_PATH);
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const indexContent = await fs.readFile(validatedIndexPath, 'utf8');
       const template = parseYaml(indexContent) as CoaTemplate;
 
       const accountsDirectory = path.join(bundlePath, 'accounts');
-      const accountFiles = await fs.readdir(accountsDirectory);
+      const validatedAccountsDirectory = validatePath(
+        accountsDirectory,
+        TemplateRegistry.TEMPLATE_BASE_PATH,
+      );
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const accountFiles = await fs.readdir(validatedAccountsDirectory);
 
       const accountPromises = accountFiles
         .filter((file) => file.endsWith('.yaml'))
         .map(async (file) => {
           const filePath = path.join(accountsDirectory, file);
-          const fileContent = await fs.readFile(filePath, 'utf8');
+          const validatedFilePath = validatePath(filePath, TemplateRegistry.TEMPLATE_BASE_PATH);
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
+          const fileContent = await fs.readFile(validatedFilePath, 'utf8');
           return this.normalizeAccount(parseYaml(fileContent));
         });
 
@@ -107,16 +133,25 @@ export class TemplateRegistry {
       name: string;
       description?: string;
     }> = [];
-    const jurisdictions = await fs.readdir(TemplateRegistry.TEMPLATE_BASE_PATH);
+    const validatedBasePath = validatePath(TemplateRegistry.TEMPLATE_BASE_PATH, process.cwd());
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const jurisdictions = await fs.readdir(validatedBasePath);
 
     for (const jurisdiction of jurisdictions) {
       const jurisdictionPath = path.join(TemplateRegistry.TEMPLATE_BASE_PATH, jurisdiction);
-      const versions = await fs.readdir(jurisdictionPath);
+      const validatedJurisdictionPath = validatePath(
+        jurisdictionPath,
+        TemplateRegistry.TEMPLATE_BASE_PATH,
+      );
+      // eslint-disable-next-line security/detect-non-literal-fs-filename
+      const versions = await fs.readdir(validatedJurisdictionPath);
 
       for (const version of versions) {
         const indexPath = path.join(jurisdictionPath, version, 'index.yaml');
         try {
-          const indexContent = await fs.readFile(indexPath, 'utf8');
+          const validatedIndexPath = validatePath(indexPath, TemplateRegistry.TEMPLATE_BASE_PATH);
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
+          const indexContent = await fs.readFile(validatedIndexPath, 'utf8');
           const template = parseYaml(indexContent) as CoaTemplate;
           bundles.push({
             jurisdiction: template.jurisdiction,
@@ -146,7 +181,12 @@ export class TemplateRegistry {
       TemplateRegistry.TEMPLATE_BASE_PATH,
       jurisdiction.toLowerCase(),
     );
-    const versions = await fs.readdir(jurisdictionPath);
+    const validatedJurisdictionPath = validatePath(
+      jurisdictionPath,
+      TemplateRegistry.TEMPLATE_BASE_PATH,
+    );
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const versions = await fs.readdir(validatedJurisdictionPath);
     if (versions.length === 0) {
       throw new Error(`No template versions found for jurisdiction ${jurisdiction}`);
     }
