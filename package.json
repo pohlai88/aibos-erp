@@ -1,0 +1,85 @@
+{
+  "name": "aibos-erp",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "turbo run dev --no-daemon",
+    "dx": "turbo run format lint typecheck test dep:check --log-order=stream",
+    "build": "turbo run build --log-order=stream",
+    "ci": "turbo run format lint typecheck test dep:check build --no-daemon --log-order=stream",
+    "prepare": "simple-git-hooks",
+    "clean": "turbo run clean",
+    "setup:db": "node scripts/setup-database.js",
+    "db:migrate": "cd apps/bff && pnpm run typeorm migration:run",
+    "db:seed": "cd apps/bff && pnpm run typeorm migration:run && node -e \"require('./dist/seeds/development.seed.js').seedDevelopmentData(require('typeorm').DataSource)\"",
+    "check:all": "pnpm -r typecheck && pnpm -r lint && pnpm lint:arch && pnpm lint:security && pnpm lint:licenses && pnpm lint:bundle && pnpm lint:accessibility && pnpm lint:performance && pnpm test:mutation && pnpm test:contract && pnpm test:chaos",
+    "lint:security": "pnpm add -D trufflehog && npx trufflehog filesystem .",
+    "lint:licenses": "pnpm add -D license-checker && npx license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;Unlicense'",
+    "lint:bundle": "pnpm add -D bundlesize && npx bundlesize",
+    "lint:accessibility": "pnpm add -D @axe-core/cli && npx @axe-core/cli http://localhost:3000",
+    "lint:performance": "pnpm add -D @lhci/cli && npx lhci autorun",
+    "test:mutation": "pnpm add -D @stryker-mutator/core @stryker-mutator/jest-runner && npx stryker run",
+    "test:contract": "pnpm add -D @pact-foundation/pact && npx pact-verifier",
+    "test:chaos": "pnpm add -D chaos-monkey && npx chaos-monkey",
+    "test:coverage": "pnpm -r test --coverage",
+    "lint:pii": "pnpm add -D pii-detector && npx pii-detector scan --path ./src",
+    "lint:data-retention": "pnpm add -D data-retention-checker && npx data-retention-checker --config .data-retention.json",
+    "lint:gdpr": "pnpm add -D gdpr-compliance-checker && npx gdpr-compliance-checker --audit",
+    "lint:audit-trail": "pnpm add -D audit-trail-validator && npx audit-trail-validator --verify",
+    "danger": "pnpm add -D danger && npx danger ci",
+    "syncpack:check": "syncpack list-mismatches",
+    "syncpack:fix": "syncpack fix-mismatches",
+    "syncpack:lint": "syncpack lint-semver-ranges",
+    "lint:arch": "dependency-cruiser --config .dependency-cruiser.js apps packages",
+    "lint:arch:graph": "dependency-cruiser --config .dependency-cruiser.js --output-type dot apps packages | dot -T svg > dependency-graph.svg",
+    "dep:check": "npx depcruise --validate --config .dependency-cruiser.js --include-only \"^(apps|packages|services)/\" --output-type text apps packages",
+    "dep:graph": "npx depcruise --config .dependency-cruiser.js --include-only \"^(apps|packages|services)/\" --output-type dot apps packages | dot -T svg > dep-graph.svg"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "pnpm lint-staged",
+    "pre-push": "pnpm run dx"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --max-warnings=0 --fix"
+    ],
+    "*.{md,json,yml,yaml,css,scss}": [
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "dependency-cruiser": "^16.0.0",
+    "eslint": "8.57.1",
+    "eslint-config-next": "^15.5.3",
+    "eslint-plugin-boundaries": "^2.10.2",
+    "eslint-plugin-import": "^2.29.0",
+    "eslint-plugin-jest-dom": "^5.5.0",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-perfectionist": "^3.9.1",
+    "eslint-plugin-promise": "^6.1.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-security": "^1.7.0",
+    "eslint-plugin-sonarjs": "^0.23.0",
+    "eslint-plugin-testing-library": "^6.5.0",
+    "eslint-plugin-unicorn": "^55.0.0",
+    "lint-staged": "^16.1.6",
+    "prettier": "3.6.2",
+    "rimraf": "^5.0.0",
+    "simple-git-hooks": "^2.13.1",
+    "syncpack": "^13.0.4",
+    "turbo": "^2.5.6",
+    "typescript": "5.9.2"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "services/*"
+  ],
+  "engines": {
+    "node": ">=18.18.0",
+    "pnpm": ">=9.0.0"
+  }
+}

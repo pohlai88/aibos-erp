@@ -1,0 +1,39 @@
+{
+  "name": "@aibos/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": true,
+  "scripts": {
+    "format": "prettier -w .",
+    "lint": "next lint",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'No tests yet'",
+    "build": "next build",
+    "dep:check": "depcruise --validate --config ../../.dependency-cruiser.js --output-type text src",
+    "dev": "next dev",
+    "clean": "rimraf .next"
+  },
+  "dependencies": {
+    "next": "15.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "@aibos/ui": "workspace:*",
+    "@aibos/utils": "workspace:*",
+    "@aibos/contracts": "workspace:*",
+    "@tanstack/react-query": "^5.0.0",
+    "@tanstack/react-query-devtools": "^5.0.0",
+    "zustand": "^4.4.0",
+    "zod": "^3.22.0",
+    "recharts": "^2.8.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.0.0",
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

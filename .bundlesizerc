@@ -1,0 +1,27 @@
+{
+  "files": [
+    {
+      "path": "apps/web/.next/static/chunks/*.js",
+      "maxSize": "500 kB"
+    },
+    {
+      "path": "apps/bff/dist/**/*.js",
+      "maxSize": "1 MB"
+    },
+    {
+      "path": "packages/ui/dist/**/*.js",
+      "maxSize": "100 kB"
+    },
+    {
+      "path": "packages/contracts/dist/**/*.js",
+      "maxSize": "50 kB"
+    },
+    {
+      "path": "packages/utils/dist/**/*.js",
+      "maxSize": "50 kB"
+    }
+  ],
+  "ci": {
+    "trackBranches": ["main", "develop"]
+  }
+}

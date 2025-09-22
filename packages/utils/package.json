@@ -1,0 +1,41 @@
+{
+  "name": "@aibos/utils",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "format": "prettier -w .",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'No tests yet'",
+    "build": "tsup",
+    "dep:check": "depcruise --validate --config ../../.dependency-cruiser.js --output-type text src",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "tsup": "8.0.0",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=18.18.0"
+  }
+}

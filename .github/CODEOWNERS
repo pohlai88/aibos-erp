@@ -1,0 +1,57 @@
+# AI-BOS ERP Code Owners
+# This file defines who is responsible for different parts of the codebase
+
+# Global owners (require approval from at least one)
+* @aibos-erp/platform-team
+
+# Critical security and infrastructure components
+/.github/workflows/ @aibos-erp/devops-team @aibos-erp/platform-team
+/.github/CODEOWNERS @aibos-erp/platform-team
+/.github/pull_request_template.md @aibos-erp/platform-team
+
+# Database and migrations
+/apps/bff/src/migrations/ @aibos-erp/platform-team @aibos-erp/backend-team
+/apps/bff/src/seeds/ @aibos-erp/platform-team @aibos-erp/backend-team
+/apps/bff/src/config/database.config.ts @aibos-erp/platform-team @aibos-erp/backend-team
+
+# Authentication and security
+/apps/bff/src/modules/auth/ @aibos-erp/platform-team @aibos-erp/security-team
+/apps/bff/src/common/interceptors/ @aibos-erp/platform-team @aibos-erp/backend-team
+
+# Anti-drift guardrails
+/.eslintrc.js @aibos-erp/platform-team
+/.dependency-cruiser.js @aibos-erp/platform-team
+/turbo.json @aibos-erp/platform-team
+/tsconfig.json @aibos-erp/platform-team
+
+# Package configurations
+/package.json @aibos-erp/platform-team
+/packages/*/package.json @aibos-erp/platform-team
+/apps/*/package.json @aibos-erp/platform-team
+
+# Frontend components
+/apps/web/ @aibos-erp/frontend-team
+/packages/ui/ @aibos-erp/frontend-team @aibos-erp/design-team
+
+# Backend services
+/apps/bff/ @aibos-erp/backend-team
+/services/*/ @aibos-erp/backend-team
+
+# Contracts and API definitions
+/packages/contracts/ @aibos-erp/backend-team @aibos-erp/frontend-team
+
+# Documentation
+/docs/ @aibos-erp/platform-team
+/*.md @aibos-erp/platform-team
+
+# Configuration files
+/.env* @aibos-erp/devops-team
+/docker-compose.yml @aibos-erp/devops-team
+/Dockerfile* @aibos-erp/devops-team
+
+# Quality and testing
+/.bundlesizerc @aibos-erp/frontend-team @aibos-erp/platform-team
+/.lighthouserc.json @aibos-erp/frontend-team @aibos-erp/platform-team
+/.axerc.json @aibos-erp/frontend-team @aibos-erp/platform-team
+/.piirc.json @aibos-erp/platform-team @aibos-erp/security-team
+/.data-retention.json @aibos-erp/platform-team @aibos-erp/security-team
