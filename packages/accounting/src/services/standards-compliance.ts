@@ -3,6 +3,7 @@
  *
  * Provides comprehensive standards compliance reporting, validation,
  * and crosswalk functionality for multi-standard accounting systems.
+ * Enhanced with regulatory reporting capabilities for SEA markets.
  */
 
 import type {
@@ -10,6 +11,52 @@ import type {
   StandardsValidationResult,
   TenantCoaAccount,
 } from '../types/standards';
+
+export interface RegulatoryReport {
+  reportId: string;
+  reportType: 'TAX_RETURN' | 'AUDIT_PACKAGE' | 'STATISTICAL' | 'COMPLIANCE';
+  jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH';
+  reportingPeriod: string; // "2024-01", "2024-Q1", "2024"
+  generatedAt: Date;
+  status: 'DRAFT' | 'REVIEW' | 'APPROVED' | 'SUBMITTED';
+  data: Record<string, unknown>;
+  attachments: string[];
+}
+
+export interface TaxFormData {
+  formType: string;
+  jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH';
+  reportingPeriod: string;
+  companyInfo: {
+    name: string;
+    registrationNumber: string;
+    address: string;
+    contactInfo: string;
+  };
+  financialData: Record<string, number>;
+  taxCalculations: Record<string, number>;
+  supportingDocuments: string[];
+}
+
+export interface AuditPackage {
+  packageId: string;
+  jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH';
+  reportingPeriod: string;
+  generatedAt: Date;
+  includes: {
+    trialBalance: boolean;
+    generalLedger: boolean;
+    journalEntries: boolean;
+    supportingDocuments: boolean;
+    complianceReports: boolean;
+  };
+  files: Array<{
+    fileName: string;
+    fileType: string;
+    size: number;
+    checksum: string;
+  }>;
+}
 
 export class StandardsComplianceService {
   /**
@@ -407,5 +454,315 @@ export class StandardsComplianceService {
     }
 
     return crosswalkMap;
+  }
+
+  /**
+   * Generate tax form data for Malaysian SST
+   */
+  async generateMalaysianSSTForm(
+    tenantId: string,
+    reportingPeriod: string,
+    companyInfo: TaxFormData['companyInfo'],
+  ): Promise<TaxFormData> {
+    // This would typically fetch data from the accounting system
+    const financialData = await this.getFinancialDataForPeriod(tenantId, reportingPeriod);
+    const taxCalculations = this.calculateSSTTax(financialData);
+
+    return {
+      formType: 'SST-02',
+      jurisdiction: 'MY',
+      reportingPeriod,
+      companyInfo,
+      financialData,
+      taxCalculations,
+      supportingDocuments: [],
+    };
+  }
+
+  /**
+   * Generate Singapore GST form
+   */
+  async generateSingaporeGSTForm(
+    tenantId: string,
+    reportingPeriod: string,
+    companyInfo: TaxFormData['companyInfo'],
+  ): Promise<TaxFormData> {
+    const financialData = await this.getFinancialDataForPeriod(tenantId, reportingPeriod);
+    const taxCalculations = this.calculateGSTTax(financialData);
+
+    return {
+      formType: 'GST-03',
+      jurisdiction: 'SG',
+      reportingPeriod,
+      companyInfo,
+      financialData,
+      taxCalculations,
+      supportingDocuments: [],
+    };
+  }
+
+  /**
+   * Generate audit package for compliance
+   */
+  async generateAuditPackage(
+    tenantId: string,
+    reportingPeriod: string,
+    jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH',
+  ): Promise<AuditPackage> {
+    const packageId = `audit-${tenantId}-${reportingPeriod}-${Date.now()}`;
+
+    // Generate various audit files
+    const files = await this.generateAuditFiles(tenantId, reportingPeriod, jurisdiction);
+
+    return {
+      packageId,
+      jurisdiction,
+      reportingPeriod,
+      generatedAt: new Date(),
+      includes: {
+        trialBalance: true,
+        generalLedger: true,
+        journalEntries: true,
+        supportingDocuments: true,
+        complianceReports: true,
+      },
+      files,
+    };
+  }
+
+  /**
+   * Generate regulatory compliance report
+   */
+  async generateRegulatoryReport(
+    tenantId: string,
+    reportType: 'TAX_RETURN' | 'AUDIT_PACKAGE' | 'STATISTICAL' | 'COMPLIANCE',
+    jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH',
+    reportingPeriod: string,
+  ): Promise<RegulatoryReport> {
+    const reportId = `${reportType.toLowerCase()}-${tenantId}-${reportingPeriod}-${Date.now()}`;
+
+    let data: Record<string, unknown> = {};
+
+    switch (reportType) {
+      case 'TAX_RETURN':
+        data = await this.generateTaxReturnData(tenantId, jurisdiction, reportingPeriod);
+        break;
+      case 'AUDIT_PACKAGE':
+        data = await this.generateAuditPackageData(tenantId, jurisdiction, reportingPeriod);
+        break;
+      case 'STATISTICAL':
+        data = await this.generateStatisticalData(tenantId, jurisdiction, reportingPeriod);
+        break;
+      case 'COMPLIANCE':
+        data = await this.generateComplianceData(tenantId, jurisdiction, reportingPeriod);
+        break;
+    }
+
+    return {
+      reportId,
+      reportType,
+      jurisdiction,
+      reportingPeriod,
+      generatedAt: new Date(),
+      status: 'DRAFT',
+      data,
+      attachments: [],
+    };
+  }
+
+  /**
+   * Get financial data for a specific period
+   */
+  private async getFinancialDataForPeriod(
+    _tenantId: string,
+    _reportingPeriod: string,
+  ): Promise<Record<string, number>> {
+    // This would typically query the accounting database
+    // For now, return mock data
+    return {
+      totalRevenue: 100000,
+      totalExpenses: 80000,
+      netProfit: 20000,
+      totalAssets: 500000,
+      totalLiabilities: 300000,
+      totalEquity: 200000,
+    };
+  }
+
+  /**
+   * Calculate SST tax for Malaysian compliance
+   */
+  private calculateSSTTax(financialData: Record<string, number>): Record<string, number> {
+    const taxableRevenue = (financialData.totalRevenue ?? 0) * 0.8; // Assume 80% is taxable
+    const sstRate = 0.06; // 6% SST rate
+    const sstAmount = taxableRevenue * sstRate;
+
+    return {
+      taxableRevenue,
+      sstRate,
+      sstAmount,
+      exemptRevenue: (financialData.totalRevenue ?? 0) * 0.2,
+    };
+  }
+
+  /**
+   * Calculate GST tax for Singapore compliance
+   */
+  private calculateGSTTax(financialData: Record<string, number>): Record<string, number> {
+    const taxableRevenue = (financialData.totalRevenue ?? 0) * 0.9; // Assume 90% is taxable
+    const gstRate = 0.07; // 7% GST rate
+    const gstAmount = taxableRevenue * gstRate;
+
+    return {
+      taxableRevenue,
+      gstRate,
+      gstAmount,
+      zeroRatedRevenue: (financialData.totalRevenue ?? 0) * 0.1,
+    };
+  }
+
+  /**
+   * Generate audit files
+   */
+  private async generateAuditFiles(
+    _tenantId: string,
+    reportingPeriod: string,
+    _jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH',
+  ): Promise<Array<{ fileName: string; fileType: string; size: number; checksum: string }>> {
+    // This would generate actual audit files
+    return [
+      {
+        fileName: `trial-balance-${reportingPeriod}.xlsx`,
+        fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        size: 1024000,
+        checksum: 'sha256:abc123...',
+      },
+      {
+        fileName: `general-ledger-${reportingPeriod}.pdf`,
+        fileType: 'application/pdf',
+        size: 2048000,
+        checksum: 'sha256:def456...',
+      },
+      {
+        fileName: `journal-entries-${reportingPeriod}.csv`,
+        fileType: 'text/csv',
+        size: 512000,
+        checksum: 'sha256:ghi789...',
+      },
+    ];
+  }
+
+  /**
+   * Generate tax return data
+   */
+  private async generateTaxReturnData(
+    tenantId: string,
+    jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH',
+    reportingPeriod: string,
+  ): Promise<Record<string, unknown>> {
+    const financialData = await this.getFinancialDataForPeriod(tenantId, reportingPeriod);
+
+    switch (jurisdiction) {
+      case 'MY':
+        return this.calculateSSTTax(financialData);
+      case 'SG':
+        return this.calculateGSTTax(financialData);
+      default:
+        return financialData;
+    }
+  }
+
+  /**
+   * Generate audit package data
+   */
+  private async generateAuditPackageData(
+    tenantId: string,
+    jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH',
+    reportingPeriod: string,
+  ): Promise<Record<string, unknown>> {
+    return {
+      trialBalance: await this.getTrialBalance(tenantId, reportingPeriod),
+      generalLedger: await this.getGeneralLedger(tenantId, reportingPeriod),
+      journalEntries: await this.getJournalEntries(tenantId, reportingPeriod),
+      complianceStatus: await this.getComplianceStatus(tenantId, jurisdiction),
+    };
+  }
+
+  /**
+   * Generate statistical data
+   */
+  private async generateStatisticalData(
+    tenantId: string,
+    jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH',
+    reportingPeriod: string,
+  ): Promise<Record<string, unknown>> {
+    return {
+      revenueByMonth: await this.getRevenueByMonth(tenantId, reportingPeriod),
+      expenseByCategory: await this.getExpenseByCategory(tenantId, reportingPeriod),
+      assetBreakdown: await this.getAssetBreakdown(tenantId, reportingPeriod),
+      liabilityBreakdown: await this.getLiabilityBreakdown(tenantId, reportingPeriod),
+    };
+  }
+
+  /**
+   * Generate compliance data
+   */
+  private async generateComplianceData(
+    tenantId: string,
+    _jurisdiction: 'MY' | 'SG' | 'VN' | 'ID' | 'TH' | 'PH',
+    _reportingPeriod: string,
+  ): Promise<Record<string, unknown>> {
+    const accounts = await this.getTenantAccounts(tenantId);
+    const complianceReport = await this.generateComplianceReport(tenantId, accounts);
+
+    return {
+      compliancePercentage: complianceReport.compliancePercentage,
+      standardsCoverage: complianceReport.standardsCoverage,
+      unmappedAccounts: complianceReport.unmappedAccounts,
+      recommendations: complianceReport.recommendations,
+    };
+  }
+
+  // Mock methods for data retrieval (these would typically query the database)
+  private async getTrialBalance(_tenantId: string, _reportingPeriod: string): Promise<unknown> {
+    return { mock: 'trial balance data' };
+  }
+
+  private async getGeneralLedger(_tenantId: string, _reportingPeriod: string): Promise<unknown> {
+    return { mock: 'general ledger data' };
+  }
+
+  private async getJournalEntries(_tenantId: string, _reportingPeriod: string): Promise<unknown> {
+    return { mock: 'journal entries data' };
+  }
+
+  private async getComplianceStatus(_tenantId: string, _jurisdiction: string): Promise<unknown> {
+    return { mock: 'compliance status data' };
+  }
+
+  private async getRevenueByMonth(_tenantId: string, _reportingPeriod: string): Promise<unknown> {
+    return { mock: 'revenue by month data' };
+  }
+
+  private async getExpenseByCategory(
+    _tenantId: string,
+    _reportingPeriod: string,
+  ): Promise<unknown> {
+    return { mock: 'expense by category data' };
+  }
+
+  private async getAssetBreakdown(_tenantId: string, _reportingPeriod: string): Promise<unknown> {
+    return { mock: 'asset breakdown data' };
+  }
+
+  private async getLiabilityBreakdown(
+    _tenantId: string,
+    _reportingPeriod: string,
+  ): Promise<unknown> {
+    return { mock: 'liability breakdown data' };
+  }
+
+  private async getTenantAccounts(_tenantId: string): Promise<TenantCoaAccount[]> {
+    return []; // Mock empty array
   }
 }

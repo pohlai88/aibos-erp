@@ -476,10 +476,16 @@ export default [
         'error',
         {
           // keep in sync with .prettierrc.json
-          singleQuote: true,
-          trailingComma: 'all',
           printWidth: 100,
+          singleQuote: true,
+          semi: true,
+          trailingComma: 'all',
+          arrowParens: 'always',
+          bracketSpacing: true,
+          bracketSameLine: false,
+          tabWidth: 2,
           endOfLine: 'lf',
+          plugins: ['prettier-plugin-tailwindcss'],
         },
       ],
     },

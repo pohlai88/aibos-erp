@@ -21,7 +21,7 @@ export {
   JournalEntryResponseSchema,
   ErrorResponseSchema,
   SuccessResponseSchema,
-} from './schemas/api-schemas';
+} from './validation/api-schemas';
 export type {
   CreateAccountRequest,
   UpdateAccountRequest,
@@ -34,9 +34,9 @@ export type {
   JournalEntryResponse,
   ErrorResponse,
   SuccessResponse,
-} from './schemas/api-schemas';
+} from './validation/api-schemas';
 export { JournalEntryLine as JournalEntryLineClass } from './domain/journal-entry-line';
-export * from './schemas/import-schemas';
+export * from './validation/import-schemas';
 
 // Accounting Events
 export * from './events/account-created-event';
