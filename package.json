@@ -8,6 +8,8 @@
     "dev": "turbo run dev --no-daemon",
     "dx": "turbo run format lint typecheck test dep:check --log-order=stream",
     "build": "turbo run build --log-order=stream",
+    "build:types": "turbo run build:types --log-order=stream",
+    "tsc:solution": "tsc -b tsconfig.json",
     "ci": "turbo run format lint typecheck test dep:check build --no-daemon --log-order=stream",
     "format": "prettier --cache --write .",
     "format:check": "prettier --check .",

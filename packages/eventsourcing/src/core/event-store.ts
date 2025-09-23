@@ -83,7 +83,7 @@ export class StreamNotFoundError extends Error {
 export class EventStoreError extends Error {
   constructor(
     message: string,
-    public readonly cause?: Error,
+    public override readonly cause?: Error,
   ) {
     super(message);
     this.name = 'EventStoreError';

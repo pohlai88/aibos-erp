@@ -88,6 +88,19 @@
         "!**/.next/**"
       ]
     },
+    "build:types": {
+      "dependsOn": ["^build:types"],
+      "outputs": ["dist/types/**"],
+      "cache": true,
+      "inputs": [
+        "src/**/*",
+        "package.json",
+        "tsconfig.json",
+        "tsconfig.*.json",
+        "!**/dist/**",
+        "!**/build/**"
+      ]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**", ".next/**", "!.next/cache/**"],

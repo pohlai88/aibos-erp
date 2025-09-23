@@ -137,6 +137,9 @@ export class KafkaEventProducer {
       });
 
       const messageResult = result[0];
+      if (!messageResult) {
+        throw new Error('No message result returned from Kafka producer');
+      }
       return {
         topicName: messageResult.topicName,
         partition: messageResult.partition,

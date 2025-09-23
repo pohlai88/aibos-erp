@@ -6,7 +6,7 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/types/src/index.d.ts",
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs",
       "default": "./dist/index.mjs"
@@ -15,19 +15,21 @@
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
-  "types": "./dist/index.d.ts",
+  "types": "./dist/types/src/index.d.ts",
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
   "scripts": {
+    "build:types": "tsc -p tsconfig.types.json",
+    "build:js": "tsup",
+    "build": "pnpm run build:types && pnpm run build:js",
     "format": "prettier -w .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "echo 'No tests yet'",
-    "build": "tsup",
     "dep:check": "depcruise --validate --config ../../.dependency-cruiser.js --output-type text src",
     "dev": "tsup --watch",
     "clean": "rimraf dist"

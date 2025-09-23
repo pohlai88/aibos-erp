@@ -2,30 +2,13 @@
   "files": [],
   "references": [
     { "path": "packages/contracts" },
-    { "path": "packages/ui" },
     { "path": "packages/utils" },
     { "path": "packages/eventsourcing" },
+    { "path": "packages/ui" },
     { "path": "packages/accounting" },
     { "path": "apps/bff" }
   ],
   "compilerOptions": {
-    "composite": true,
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "strict": true,
-    "skipLibCheck": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "verbatimModuleSyntax": true,
-    "resolveJsonModule": true,
-    "baseUrl": ".",
-    "paths": {
-      "@aibos/contracts/*": ["packages/contracts/src/*"],
-      "@aibos/ui/*": ["packages/ui/src/*"],
-      "@aibos/utils/*": ["packages/utils/src/*"],
-      "@aibos/bff/*": ["apps/bff/src/*"]
-    }
-  },
-  "include": ["packages/*/src/**/*", "apps/*/src/**/*"]
+    "composite": true
+  }
 }

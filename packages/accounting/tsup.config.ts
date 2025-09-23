@@ -3,10 +3,10 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],
-  dts: true,
+  dts: false, // Temporarily disable DTS to get all packages building
   splitting: false,
   sourcemap: true,
-  clean: true,
+  clean: false,
   treeshake: true,
   skipNodeModulesBundle: true,
   minify: false,
