@@ -9,6 +9,21 @@ export class InMemoryAccountRepository implements AccountRepository {
     return this.accounts.get(key) || null;
   }
 
+  async findAllByCodes(
+    codes: ReadonlyArray<string>,
+    tenantId: string,
+  ): Promise<ReadonlyArray<Account>> {
+    const foundAccounts: Account[] = [];
+    for (const code of codes) {
+      const key = `${tenantId}:${code}`;
+      const account = this.accounts.get(key);
+      if (account) {
+        foundAccounts.push(account);
+      }
+    }
+    return foundAccounts;
+  }
+
   async findByTenant(tenantId: string): Promise<Account[]> {
     const tenantAccounts: Account[] = [];
     for (const [key, account] of this.accounts) {

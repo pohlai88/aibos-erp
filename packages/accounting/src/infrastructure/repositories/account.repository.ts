@@ -4,7 +4,7 @@ import type { AccountRepository } from '../../domain/interfaces/repositories.int
 import { AccountEntity } from '../database/entities/account.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { type Repository, type DataSource } from 'typeorm';
+import { type Repository, type DataSource, In } from 'typeorm';
 
 @Injectable()
 export class PostgreSQLAccountRepository implements AccountRepository {
@@ -29,6 +29,28 @@ export class PostgreSQLAccountRepository implements AccountRepository {
       return entity ? this.toDomain(entity) : null;
     } catch (error) {
       this.logger.error(`Failed to find account by code ${accountCode}:`, error);
+      throw error;
+    }
+  }
+
+  async findAllByCodes(
+    codes: ReadonlyArray<string>,
+    tenantId: string,
+  ): Promise<ReadonlyArray<Account>> {
+    try {
+      // Set tenant context for RLS
+      await this.dataSource.query(PostgreSQLAccountRepository.SET_TENANT_CONTEXT_QUERY, [tenantId]);
+
+      const entities = await this.accountRepository.find({
+        where: {
+          accountCode: In(codes),
+          tenantId,
+        },
+      });
+
+      return entities.map(this.toDomain);
+    } catch (error) {
+      this.logger.error(`Failed to find accounts by codes ${codes.join(', ')}:`, error);
       throw error;
     }
   }

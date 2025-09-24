@@ -1,6 +1,6 @@
 import type { DomainEvent } from '../../domain/events/domain-events';
 import type { EventStore } from '../../domain/interfaces/repositories.interface';
-import type { DataSource, QueryRunner } from 'typeorm';
+import type { DataSource, QueryRunner, EntityManager } from 'typeorm';
 
 import { AccountCreatedEvent, JournalEntryPostedEvent } from '../../domain/events/domain-events';
 import { AccountingEventEntity } from '../database/entities/accounting-event.entity';
@@ -88,6 +88,93 @@ export class PostgreSQLEventStore implements EventStore {
         if (pgError.constraint?.includes('idempotency_key')) {
           this.logger.debug(`Idempotency key conflict for ${idempotencyKey}, treating as success`);
           return; // Treat as success for idempotency
+        }
+        if (pgError.constraint?.includes('tenant_id_stream_id_version')) {
+          throw new Error(`Concurrency conflict: version ${expectedVersion} already exists`);
+        }
+      }
+
+      this.logger.error(`Failed to append events to stream ${streamId}:`, error);
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async appendWithTransaction(
+    streamId: string,
+    events: DomainEvent[],
+    expectedVersion: number,
+    tenantId: string,
+    idempotencyKey?: string,
+  ): Promise<EntityManager> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // Set tenant context
+      await queryRunner.query('SELECT set_tenant_context($1)', [tenantId]);
+
+      // Check current version for optimistic concurrency
+      const currentVersion = await this.getCurrentVersion(streamId, tenantId, queryRunner);
+      if (currentVersion !== expectedVersion) {
+        throw new Error(
+          `Concurrency conflict. Expected version ${expectedVersion}, but current version is ${currentVersion}`,
+        );
+      }
+
+      // Check for idempotency if key provided
+      if (idempotencyKey) {
+        const existingEvent = await queryRunner.query(
+          'SELECT id FROM acc_event WHERE idempotency_key = $1 AND tenant_id = $2',
+          [idempotencyKey, tenantId],
+        );
+        if (existingEvent.length > 0) {
+          this.logger.debug(
+            `Event with idempotency key ${idempotencyKey} already exists, skipping`,
+          );
+          await queryRunner.commitTransaction();
+          return queryRunner.manager;
+        }
+      }
+
+      // Insert events
+      const eventEntities = events.map((event, index) => ({
+        tenantId,
+        streamId,
+        version: expectedVersion + index + 1,
+        eventType: event.constructor.name,
+        eventData: event.toJSON(),
+        metadata: {
+          correlationId: event.correlationId,
+          causationId: event.causationId,
+          userId: event.userId,
+        },
+        occurredAt: event.occurredAt,
+        correlationId: event.correlationId,
+        causationId: event.causationId,
+        idempotencyKey: index === 0 ? idempotencyKey : undefined, // Only first event gets the key
+      }));
+
+      await queryRunner.manager.save(AccountingEventEntity, eventEntities);
+      await queryRunner.commitTransaction();
+
+      this.logger.debug(
+        `Successfully appended ${events.length} events to stream ${streamId} with transaction`,
+      );
+      return queryRunner.manager;
+    } catch (error: unknown) {
+      await queryRunner.rollbackTransaction();
+
+      // Handle specific PostgreSQL errors
+      if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
+        // Unique violation
+        const pgError = error as { code: string; constraint?: string };
+        if (pgError.constraint?.includes('idempotency_key')) {
+          this.logger.debug(`Idempotency key conflict for ${idempotencyKey}, treating as success`);
+          await queryRunner.commitTransaction();
+          return queryRunner.manager; // Treat as success for idempotency
         }
         if (pgError.constraint?.includes('tenant_id_stream_id_version')) {
           throw new Error(`Concurrency conflict: version ${expectedVersion} already exists`);

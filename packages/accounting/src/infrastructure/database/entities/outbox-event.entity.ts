@@ -1,32 +1,46 @@
-import { Entity, Column, PrimaryGeneratedColumn, Index } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity('outbox_event')
-@Index(['tenantId', 'status', 'createdAt'])
+@Entity({ name: 'outbox_events' })
 export class OutboxEventEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'tenant_id', type: 'uuid' })
+  @Column({ type: 'text' })
   tenantId!: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'text' })
   topic!: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'text' })
   key!: string;
 
   @Column({ type: 'jsonb' })
-  payload!: Record<string, unknown>;
+  payload!: unknown;
 
-  @Column({ type: 'varchar', length: 50, default: 'READY' })
-  status!: string;
+  @Column({ type: 'text' })
+  status!: 'READY' | 'PROCESSING' | 'PUBLISHED' | 'FAILED';
 
-  @Column({ name: 'retry_count', type: 'integer', default: 0 })
+  @Column({ type: 'int', default: 0 })
   retryCount!: number;
 
-  @Column({ name: 'created_at', type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'timestamptz', nullable: true })
+  nextAttemptAt?: Date | null;
+
+  @Column({ type: 'text', nullable: true })
+  errorReason?: string | null;
+
+  @CreateDateColumn({ type: 'timestamptz' })
   createdAt!: Date;
 
-  @Column({ name: 'processed_at', type: 'timestamptz', nullable: true })
-  processedAt?: Date;
+  @UpdateDateColumn({ type: 'timestamptz' })
+  updatedAt!: Date;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  processedAt?: Date | null;
 }

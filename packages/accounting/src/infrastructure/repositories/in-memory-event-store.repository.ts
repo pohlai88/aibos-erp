@@ -1,5 +1,6 @@
 import type { DomainEvent } from '../../domain/events/domain-events';
 import type { EventStore } from '../../domain/interfaces/repositories.interface';
+import type { EntityManager } from 'typeorm';
 
 export class InMemoryEventStore implements EventStore {
   private events: Map<string, DomainEvent[]> = new Map();
@@ -9,6 +10,7 @@ export class InMemoryEventStore implements EventStore {
     events: DomainEvent[],
     expectedVersion: number,
     tenantId: string,
+    _idempotencyKey?: string,
   ): Promise<void> {
     const key = `${tenantId}:${streamId}`;
     const existingEvents = this.events.get(key) || [];
@@ -23,6 +25,21 @@ export class InMemoryEventStore implements EventStore {
     // Add new events
     const newEvents = [...existingEvents, ...events];
     this.events.set(key, newEvents);
+  }
+
+  async appendWithTransaction(
+    streamId: string,
+    events: DomainEvent[],
+    expectedVersion: number,
+    tenantId: string,
+    idempotencyKey?: string,
+  ): Promise<EntityManager> {
+    // For in-memory store, just call append and return a mock EntityManager
+    await this.append(streamId, events, expectedVersion, tenantId, idempotencyKey);
+
+    // Return a mock EntityManager that can be used for outbox co-commit
+    // In a real implementation, this would be the actual EntityManager from the transaction
+    return {} as EntityManager;
   }
 
   async getEvents(

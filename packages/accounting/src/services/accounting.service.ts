@@ -2,71 +2,91 @@ import type {
   CreateAccountCommand,
   PostJournalEntryCommand,
 } from '../domain/commands/accounting.commands';
+import type { JournalEntryRepository } from '../domain/interfaces/journal-entry-repository.interface';
 import type { EventStore } from '../domain/interfaces/repositories.interface';
 import type { AccountRepository } from '../domain/interfaces/repositories.interface';
 
 import { ChartOfAccounts } from '../domain/aggregates/chart-of-accounts.aggregate';
 import { JournalEntry } from '../domain/aggregates/journal-entry.aggregate';
+import { CircuitBreaker } from '../infrastructure/resilience/circuit-breaker';
+import { OutboxService } from './outbox.service';
 import { Injectable, Logger, Inject } from '@nestjs/common';
+// Remove JournalEntryLine import as we'll use the command interface types
 
 @Injectable()
 export class AccountingService {
   private readonly logger = new Logger(AccountingService.name);
+  private readonly circuitBreaker = new CircuitBreaker({
+    failureThreshold: 5,
+    recoveryTimeout: 30000,
+    monitoringPeriod: 60000,
+  });
 
   constructor(
     @Inject('EventStore')
     private readonly eventStore: EventStore,
     @Inject('AccountRepository')
     private readonly accountRepository: AccountRepository,
+    @Inject('JournalEntryRepository')
+    private readonly journalEntryRepository: JournalEntryRepository,
+    @Inject(OutboxService)
+    private readonly outboxService: OutboxService,
   ) {}
 
   async createAccount(command: CreateAccountCommand): Promise<void> {
-    this.logger.log(`Creating account: ${command.accountCode} for tenant: ${command.tenantId}`);
+    return this.circuitBreaker.execute(async () => {
+      this.logger.log(`Creating account: ${command.accountCode} for tenant: ${command.tenantId}`);
 
-    const chartOfAccounts = await this.loadChartOfAccounts(command.tenantId);
-    chartOfAccounts.createAccount(command);
+      const chartOfAccounts = await this.loadChartOfAccounts(command.tenantId);
+      chartOfAccounts.createAccount(command);
 
-    const events = chartOfAccounts.getUncommittedEvents();
-    await this.eventStore.append(
-      `chart-of-accounts-${command.tenantId}`,
-      events,
-      chartOfAccounts.getVersion() - events.length,
-      command.tenantId,
-    );
+      const events = chartOfAccounts.getUncommittedEvents();
+      const manager = await this.eventStore.appendWithTransaction(
+        `chart-of-accounts-${command.tenantId}`,
+        events,
+        chartOfAccounts.getVersion() - events.length,
+        command.tenantId,
+      );
 
-    chartOfAccounts.markEventsAsCommitted();
+      chartOfAccounts.markEventsAsCommitted();
 
-    // Update read model
-    await this.updateAccountReadModel(command);
+      // Update read model
+      await this.updateAccountReadModel(command);
 
-    this.logger.log(`Account created successfully: ${command.accountCode}`);
+      // Publish events via outbox (co-transactional with append for exactly-once write)
+      await this.outboxService.publishEvents(events, command.tenantId, manager);
+
+      this.logger.log(`Account created successfully: ${command.accountCode}`);
+    });
   }
 
   async postJournalEntry(command: PostJournalEntryCommand): Promise<void> {
-    this.logger.log(
-      `Posting journal entry: ${command.journalEntryId} for tenant: ${command.tenantId}`,
-    );
+    return this.circuitBreaker.execute(async () => {
+      this.logger.log(
+        `Posting journal entry: ${command.journalEntryId} for tenant: ${command.tenantId}`,
+      );
 
-    // Validate accounts exist
-    await this.validateAccountsExist(command.entries, command.tenantId);
+      // Validate accounts exist
+      await this.validateAccountsExist(command.entries, command.tenantId);
 
-    const journalEntry = new JournalEntry(command.journalEntryId, command.tenantId);
-    journalEntry.postEntry(command);
+      const journalEntry = new JournalEntry(command.journalEntryId, command.tenantId);
+      journalEntry.postEntry(command);
 
-    const events = journalEntry.getUncommittedEvents();
-    await this.eventStore.append(
-      `journal-entry-${command.journalEntryId}`,
-      events,
-      journalEntry.getVersion() - events.length,
-      command.tenantId,
-    );
+      const events = journalEntry.getUncommittedEvents();
+      const manager = await this.eventStore.appendWithTransaction(
+        `journal-entry-${command.journalEntryId}`,
+        events,
+        journalEntry.getVersion() - events.length,
+        command.tenantId,
+      );
 
-    journalEntry.markEventsAsCommitted();
+      journalEntry.markEventsAsCommitted();
 
-    // Update read models
-    await this.updateGeneralLedger(command);
+      // Publish events via outbox (co-transactional with append for exactly-once write)
+      await this.outboxService.publishEvents(events, command.tenantId, manager);
 
-    this.logger.log(`Journal entry posted successfully: ${command.journalEntryId}`);
+      this.logger.log(`Journal entry posted successfully: ${command.journalEntryId}`);
+    });
   }
 
   private async loadChartOfAccounts(tenantId: string): Promise<ChartOfAccounts> {
@@ -83,7 +103,7 @@ export class AccountingService {
   }
 
   private async validateAccountsExist(
-    entries: Array<{
+    entries: ReadonlyArray<{
       accountCode: string;
       debitAmount: number;
       creditAmount: number;
@@ -92,34 +112,12 @@ export class AccountingService {
     }>,
     tenantId: string,
   ): Promise<void> {
-    const accountCodes = entries.map((entry) => entry.accountCode);
-    const accounts = await Promise.all(
-      accountCodes.map((code) => this.accountRepository.findByCode(code, tenantId)),
-    );
-
-    const missingAccounts: string[] = [];
-    for (let index = 0; index < accountCodes.length; index++) {
-      // eslint-disable-next-line security/detect-object-injection
-      const accountCode = accountCodes[index];
-      // eslint-disable-next-line security/detect-object-injection
-      const account = accounts[index];
-      if (!account && accountCode) {
-        missingAccounts.push(accountCode);
-      }
-    }
+    const accountCodes = Array.from(new Set(entries.map((entry) => entry.accountCode)));
+    const foundAccounts = await this.accountRepository.findAllByCodes(accountCodes, tenantId);
+    const foundSet = new Set(foundAccounts.map((a) => a.accountCode));
+    const missingAccounts = accountCodes.filter((code) => !foundSet.has(code));
     if (missingAccounts.length > 0) {
-      const missingAccountsList = missingAccounts.join(', ');
-      throw new Error(`Accounts not found: ${missingAccountsList}`);
-    }
-  }
-
-  private async updateGeneralLedger(command: PostJournalEntryCommand): Promise<void> {
-    for (const entry of command.entries) {
-      await this.accountRepository.updateBalance(
-        entry.accountCode,
-        entry.debitAmount - entry.creditAmount,
-        command.tenantId,
-      );
+      throw new Error(`Accounts not found: ${missingAccounts.join(', ')}`);
     }
   }
 
