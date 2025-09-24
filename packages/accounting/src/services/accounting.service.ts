@@ -9,8 +9,10 @@ import type { AccountRepository } from '../domain/interfaces/repositories.interf
 import { ChartOfAccounts } from '../domain/aggregates/chart-of-accounts.aggregate';
 import { JournalEntry } from '../domain/aggregates/journal-entry.aggregate';
 import { CircuitBreaker } from '../infrastructure/resilience/circuit-breaker';
+import { MultiCurrencyService } from './multi-currency-service';
 import { OutboxService } from './outbox.service';
 import { Injectable, Logger, Inject } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 // Remove JournalEntryLine import as we'll use the command interface types
 
 @Injectable()
@@ -31,6 +33,10 @@ export class AccountingService {
     private readonly journalEntryRepository: JournalEntryRepository,
     @Inject(OutboxService)
     private readonly outboxService: OutboxService,
+    @Inject(MultiCurrencyService)
+    private readonly multiCurrency: MultiCurrencyService,
+    @Inject(ConfigService)
+    private readonly config: ConfigService,
   ) {}
 
   async createAccount(command: CreateAccountCommand): Promise<void> {
@@ -69,23 +75,130 @@ export class AccountingService {
       // Validate accounts exist
       await this.validateAccountsExist(command.entries, command.tenantId);
 
-      const journalEntry = new JournalEntry(command.journalEntryId, command.tenantId);
-      journalEntry.postEntry(command);
+      // Validate currency presence & sane values
+      for (const [index, entry] of command.entries.entries()) {
+        if (!entry.currency || typeof entry.currency !== 'string') {
+          throw new Error(`Entry[${index}] missing currency`);
+        }
+        if ((entry.debitAmount ?? 0) < 0 || (entry.creditAmount ?? 0) < 0) {
+          throw new Error(`Entry[${index}] amounts cannot be negative`);
+        }
+      }
+
+      // Validate balanced (original currency per line), then we'll enforce again post-conversion
+      const sumDebit = command.entries.reduce((s, entry) => s + Number(entry.debitAmount || 0), 0);
+      const sumCredit = command.entries.reduce(
+        (s, entry) => s + Number(entry.creditAmount || 0),
+        0,
+      );
+      if (Math.round((sumDebit - sumCredit) * 100) !== 0) {
+        throw new Error('Journal not balanced in original amounts (sum debits != sum credits)');
+      }
+
+      // Determine base ledger currency
+      const baseCurrency =
+        command.baseCurrency || this.config.get<string>('BASE_CURRENCY') || 'MYR';
+
+      // Convert each line to functional/base currency for ledger posting
+      const converted = [];
+      for (const entry of command.entries) {
+        if (entry.currency === baseCurrency) {
+          converted.push({
+            ...entry,
+            fxRate: 1,
+            fxDate: command.postingDate,
+            functionalCurrency: baseCurrency,
+            functionalDebit: entry.debitAmount,
+            functionalCredit: entry.creditAmount,
+          });
+          continue;
+        }
+        const rate = await this.multiCurrency.convertAmount(
+          1,
+          entry.currency,
+          baseCurrency,
+          command.postingDate,
+        );
+        const fxDebit =
+          (entry.debitAmount ?? 0) > 0
+            ? await this.multiCurrency.convertAmount(
+                entry.debitAmount ?? 0,
+                entry.currency,
+                baseCurrency,
+                command.postingDate,
+              )
+            : 0;
+        const fxCredit =
+          (entry.creditAmount ?? 0) > 0
+            ? await this.multiCurrency.convertAmount(
+                entry.creditAmount ?? 0,
+                entry.currency,
+                baseCurrency,
+                command.postingDate,
+              )
+            : 0;
+        converted.push({
+          ...entry,
+          fxRate: rate,
+          fxDate: command.postingDate,
+          functionalCurrency: baseCurrency,
+          functionalDebit: fxDebit,
+          functionalCredit: fxCredit,
+        });
+      }
+
+      // Re-check balance after rounding in functional currency
+      const fDebit = converted.reduce((s, entry) => s + Number(entry.functionalDebit || 0), 0);
+      const fCredit = converted.reduce((s, entry) => s + Number(entry.functionalCredit || 0), 0);
+      if (Math.round((fDebit - fCredit) * 100) !== 0) {
+        // Let MultiCurrencyService distribute rounding residue if needed
+        const rebalanced = await this.multiCurrency.convertJournalEntry(
+          command.entries.map((entry) => ({
+            accountCode: entry.accountCode,
+            currency: entry.currency,
+            debitAmount: entry.debitAmount,
+            creditAmount: entry.creditAmount,
+          })),
+          baseCurrency,
+          command.postingDate,
+        );
+        // merge back functional values
+        for (let index = 0; index < converted.length; index++) {
+          // eslint-disable-next-line security/detect-object-injection
+          converted[index].functionalDebit = rebalanced[index].debitAmount;
+          // eslint-disable-next-line security/detect-object-injection
+          converted[index].functionalCredit = rebalanced[index].creditAmount;
+          // eslint-disable-next-line security/detect-object-injection
+          converted[index].functionalCurrency = baseCurrency;
+        }
+      }
+
+      const enrichedCommand: PostJournalEntryCommand = {
+        ...command,
+        baseCurrency,
+        entries: converted,
+      };
+
+      const journalEntry = new JournalEntry(
+        enrichedCommand.journalEntryId,
+        enrichedCommand.tenantId,
+      );
+      journalEntry.postEntry(enrichedCommand);
 
       const events = journalEntry.getUncommittedEvents();
-      const manager = await this.eventStore.appendWithTransaction(
-        `journal-entry-${command.journalEntryId}`,
+      await this.eventStore.append(
+        `journal-entry-${enrichedCommand.journalEntryId}`,
         events,
         journalEntry.getVersion() - events.length,
-        command.tenantId,
+        enrichedCommand.tenantId,
       );
 
       journalEntry.markEventsAsCommitted();
 
-      // Publish events via outbox (co-transactional with append for exactly-once write)
-      await this.outboxService.publishEvents(events, command.tenantId, manager);
+      // Publish events via outbox (TIP: co-transactional with append for exactly-once write)
+      await this.outboxService.publishEvents(events, enrichedCommand.tenantId);
 
-      this.logger.log(`Journal entry posted successfully: ${command.journalEntryId}`);
+      this.logger.log(`Journal entry posted successfully: ${enrichedCommand.journalEntryId}`);
     });
   }
 

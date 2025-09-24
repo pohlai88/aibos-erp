@@ -7,7 +7,9 @@ import { KafkaProducerService } from '../infrastructure/messaging/kafka-producer
 import { InMemoryAccountRepository } from '../infrastructure/repositories/in-memory-account.repository';
 import { InMemoryEventStore } from '../infrastructure/repositories/in-memory-event-store.repository';
 import { AccountingService } from '../services/accounting.service';
+import { MultiCurrencyService } from '../services/multi-currency-service';
 import { OutboxService } from '../services/outbox.service';
+import { ConfigService } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { vi } from 'vitest';
 
@@ -43,6 +45,24 @@ describe('AccountingService', () => {
         {
           provide: 'JournalEntryRepository',
           useClass: InMemoryAccountRepository, // Using same implementation for testing
+        },
+        {
+          provide: MultiCurrencyService,
+          useValue: {
+            convertAmount: vi
+              .fn()
+              .mockImplementation(async (amount: number, from: string, to: string) => {
+                if (from === to) return amount;
+                return amount * 1; // 1:1 rate for testing
+              }),
+            convertJournalEntry: vi.fn().mockImplementation(async (entries: any[]) => entries),
+          },
+        },
+        {
+          provide: ConfigService,
+          useValue: {
+            get: vi.fn().mockReturnValue('MYR'),
+          },
         },
       ],
     }).compile();
@@ -162,7 +182,7 @@ describe('AccountingService', () => {
       };
 
       await expect(service.postJournalEntry(command)).rejects.toThrow(
-        'Journal entry is not balanced',
+        'Journal not balanced in original amounts',
       );
     });
   });
