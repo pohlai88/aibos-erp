@@ -101,3 +101,9 @@ yarn.lock
 
 # Turbo
 .turbo
+
+# Test reports and results
+playwright-report/
+test-results/
+coverage/
+*.lcov
