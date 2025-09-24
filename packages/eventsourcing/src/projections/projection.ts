@@ -1,11 +1,11 @@
 import type { DomainEvent } from '../core/domain-event';
 
 /**
- * Base interface for projections
+ * Base interface for projections in the event sourcing system
  */
 export interface Projection {
   /**
-   * Get the projection name
+   * Get the name of this projection
    */
   getName(): string;
 
@@ -20,73 +20,43 @@ export interface Projection {
   process(event: DomainEvent): Promise<void>;
 
   /**
-   * Rebuild the projection from events
+   * Reset the projection state
    */
-  rebuild(events: DomainEvent[]): Promise<void>;
+  reset(): Promise<void>;
 
   /**
    * Get the current state of the projection
    */
-  getState(): Record<string, unknown>;
+  getState(): unknown;
 
   /**
-   * Reset the projection
+   * Get the last processed event version
    */
-  reset(): Promise<void>;
+  getLastProcessedVersion(): number;
+
+  /**
+   * Set the last processed event version
+   */
+  setLastProcessedVersion(version: number): void;
 }
 
 /**
  * Abstract base class for projections
  */
 export abstract class BaseProjection implements Projection {
-  protected state: Record<string, unknown> = {};
+  private lastProcessedVersion = 0;
 
-  /**
-   * Get the projection name
-   */
   abstract getName(): string;
-
-  /**
-   * Get the event types this projection handles
-   */
   abstract getEventTypes(): string[];
-
-  /**
-   * Process a domain event
-   */
   abstract process(event: DomainEvent): Promise<void>;
+  abstract reset(): Promise<void>;
+  abstract getState(): unknown;
 
-  /**
-   * Rebuild the projection from events
-   */
-  async rebuild(events: DomainEvent[]): Promise<void> {
-    this.reset();
-
-    for (const event of events) {
-      if (this.getEventTypes().includes(event.eventType)) {
-        await this.process(event);
-      }
-    }
+  getLastProcessedVersion(): number {
+    return this.lastProcessedVersion;
   }
 
-  /**
-   * Get the current state of the projection
-   */
-  getState(): Record<string, unknown> {
-    return { ...this.state };
-  }
-
-  /**
-   * Reset the projection
-   */
-  async reset(): Promise<void> {
-    this.state = {};
-  }
-
-  /**
-   * Check if this projection can handle the event
-   */
-  canHandle(event: DomainEvent): boolean {
-    return this.getEventTypes().includes(event.eventType);
+  setLastProcessedVersion(version: number): void {
+    this.lastProcessedVersion = version;
   }
 }

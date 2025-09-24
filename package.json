@@ -91,7 +91,7 @@
     "ts-node": "^10.9.2",
     "ts-prune": "^0.10.3",
     "turbo": "^2.5.6",
-    "typescript": "5.4.5"
+    "typescript": "5.9.2"
   },
   "workspaces": [
     "apps/*",
