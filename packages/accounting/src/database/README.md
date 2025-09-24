@@ -5,7 +5,6 @@ This directory contains database schema definitions and migration scripts for th
 ## Purpose
 
 - **Database Schema**: SQL DDL statements for creating database tables
-- **Standards Compliance**: Schema for MFRS/IFRS compliance tracking
 - **Migration Scripts**: Database versioning and migration files
 
 ## Files
@@ -16,8 +15,7 @@ This directory contains database schema definitions and migration scripts for th
 
 These SQL files are used to:
 
-- Create database tables for standards compliance
-- Track MFRS/IFRS standard references
+- Create database tables for accounting operations
 - Manage Chart of Accounts templates
 - Audit compliance changes
 

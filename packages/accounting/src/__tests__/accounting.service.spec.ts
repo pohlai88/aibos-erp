@@ -3,11 +3,14 @@ import type { AccountRepository } from '../domain/interfaces/repositories.interf
 import { CreateAccountCommand } from '../commands/create-account-command';
 import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
 import { AccountCreatedEvent } from '../events/account-created-event';
+import { GeneralLedgerProjection } from '../projections/general-ledger-projection';
 import { InMemoryEventStore } from '../services/__tests__/doubles/in-memory-event-store';
 import { AccountingService } from '../services/accounting.service';
+import { FinancialReportingService } from '../services/financial-reporting.service';
 import { KafkaProducerService } from '../services/kafka-producer.service';
 import { MultiCurrencyService } from '../services/multi-currency.service';
 import { OutboxService } from '../services/outbox.service';
+import { TrialBalanceService } from '../services/trial-balance.service';
 import { EVENT_STORE, ACCOUNT_REPOSITORY, JOURNAL_ENTRY_REPOSITORY } from '../tokens';
 import { ConfigService } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
@@ -100,6 +103,30 @@ describe('AccountingService', () => {
           provide: ConfigService,
           useValue: {
             get: vi.fn().mockReturnValue('MYR'),
+          },
+        },
+        {
+          provide: FinancialReportingService,
+          useValue: {
+            generateProfitAndLoss: vi.fn().mockResolvedValue({}),
+            generateBalanceSheet: vi.fn().mockResolvedValue({}),
+            generateCashFlowStatement: vi.fn().mockResolvedValue({}),
+            calculateFinancialRatios: vi.fn().mockResolvedValue({}),
+            generateComprehensiveReport: vi.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: TrialBalanceService,
+          useValue: {
+            generateTrialBalance: vi.fn().mockResolvedValue({}),
+            reconcileVariances: vi.fn().mockResolvedValue({}),
+            generateExceptionReport: vi.fn().mockResolvedValue({}),
+          },
+        },
+        {
+          provide: GeneralLedgerProjection,
+          useValue: {
+            validateGLIntegrity: vi.fn().mockResolvedValue({}),
           },
         },
       ],

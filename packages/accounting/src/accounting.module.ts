@@ -4,15 +4,18 @@ import { OutboxEventEntity } from './infrastructure/database/entities/outbox-eve
 import { TypeormAccountRepository } from './infrastructure/database/repositories/typeorm-account.repository';
 import { InMemoryAccountRepository } from './infrastructure/repositories/in-memory-account.repository';
 import { InMemoryEventStore } from './infrastructure/repositories/in-memory-event-store.repository';
+import { GeneralLedgerProjection } from './projections/general-ledger-projection';
 import { AccountingHealthService } from './services/accounting-health.service';
 import { AccountingService } from './services/accounting.service';
 import { ExchangeRateService } from './services/exchange-rate.service';
+import { FinancialReportingService } from './services/financial-reporting.service';
 import { KafkaProducerService } from './services/kafka-producer.service';
 import { MultiCurrencyService } from './services/multi-currency.service';
 import { OutboxService } from './services/outbox.service';
 import { DefaultTaxAccountsMap } from './services/tax-account.mapper';
 import { TaxComplianceService } from './services/tax-compliance.service';
 import { TaxLineCalculatorService } from './services/tax-line-calculator.service';
+import { TrialBalanceService } from './services/trial-balance.service';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -32,6 +35,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TaxLineCalculatorService,
     DefaultTaxAccountsMap,
     KafkaProducerService,
+    FinancialReportingService,
+    TrialBalanceService,
+    GeneralLedgerProjection,
     {
       provide: 'EventStore',
       useClass: InMemoryEventStore,
@@ -54,6 +60,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     TaxComplianceService,
     TaxLineCalculatorService,
     DefaultTaxAccountsMap,
+    FinancialReportingService,
+    TrialBalanceService,
+    GeneralLedgerProjection,
   ],
 })
 export class AccountingModule {}

@@ -7,9 +7,12 @@ import { PostJournalEntryCommand } from '../commands/post-journal-entry-command'
 import { ChartOfAccounts } from '../domain/chart-of-accounts';
 import { JournalEntry } from '../domain/journal-entry';
 import { CircuitBreaker } from '../infrastructure/resilience/circuit-breaker';
+import { GeneralLedgerProjection } from '../projections/general-ledger-projection';
 import { EVENT_STORE, ACCOUNT_REPOSITORY, JOURNAL_ENTRY_REPOSITORY } from '../tokens';
+import { FinancialReportingService } from './financial-reporting.service';
 import { MultiCurrencyService } from './multi-currency.service';
 import { OutboxService } from './outbox.service';
+import { TrialBalanceService } from './trial-balance.service';
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 // Remove JournalEntryLine import as we'll use the command interface types
@@ -36,6 +39,12 @@ export class AccountingService {
     private readonly multiCurrency: MultiCurrencyService,
     @Inject(ConfigService)
     private readonly config: ConfigService,
+    @Inject(FinancialReportingService)
+    private readonly financialReporting: FinancialReportingService,
+    @Inject(TrialBalanceService)
+    private readonly trialBalance: TrialBalanceService,
+    @Inject(GeneralLedgerProjection)
+    private readonly glProjection: GeneralLedgerProjection,
   ) {}
 
   async createAccount(command: CreateAccountCommand): Promise<void> {
@@ -268,98 +277,162 @@ export class AccountingService {
   // Additional methods required by the controller
   async reverseJournalEntry(
     journalEntryId: string,
-    _reason: string,
-    _reversedBy: string,
-    _tenantId: string,
+    reason: string,
+    reversedBy: string,
+    tenantId: string,
   ): Promise<void> {
     this.logger.log(`Reversing journal entry: ${journalEntryId}`);
-    // TODO: Implement journal entry reversal logic
-    throw new Error('Journal entry reversal not yet implemented');
+
+    // Get the original journal entry from the repository
+    const originalEntry = await this.journalEntryRepository.findById(journalEntryId, tenantId);
+    if (!originalEntry) {
+      throw new Error(`Journal entry ${journalEntryId} not found`);
+    }
+
+    if (originalEntry.status !== 'POSTED') {
+      throw new Error(`Cannot reverse journal entry in ${originalEntry.status} status`);
+    }
+
+    // Create a reversal journal entry with opposite amounts
+    const reversalEntries = originalEntry.entries.map((entry) => ({
+      accountCode: entry.accountCode,
+      debitAmount: entry.creditAmount, // Swap debit/credit
+      creditAmount: entry.debitAmount,
+      currency: entry.currency,
+      description: `Reversal: ${entry.description || ''}`,
+    }));
+
+    const reversalCommand = new PostJournalEntryCommand({
+      journalEntryId: `REV-${journalEntryId}`,
+      entries: reversalEntries,
+      reference: `REV-${originalEntry.reference || journalEntryId}`,
+      description: `Reversal: ${originalEntry.description || ''} - ${reason}`,
+      userId: reversedBy,
+      postingDate: new Date(),
+      baseCurrency: 'MYR',
+      tenantId,
+    });
+
+    // Post the reversal entry
+    await this.postJournalEntry(reversalCommand);
+
+    // Update the original entry status to REVERSED
+    const reversedEntry = {
+      ...originalEntry,
+      status: 'REVERSED' as const,
+    };
+    await this.journalEntryRepository.save(reversedEntry);
   }
 
   async getTrialBalance(
     tenantId: string,
-    _period: string,
-    _asOfDate?: Date,
+    period: string,
+    asOfDate?: Date,
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Getting trial balance for tenant: ${tenantId}`);
-    // TODO: Implement trial balance logic
-    throw new Error('Trial balance not yet implemented');
+    return (await this.trialBalance.generateTrialBalance(
+      tenantId,
+      period,
+      asOfDate,
+    )) as unknown as Record<string, unknown>;
   }
 
   async getProfitAndLoss(
     tenantId: string,
-    _period: string,
-    _currencyCode: string = 'MYR',
+    period: string,
+    currencyCode: string = 'MYR',
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Getting P&L for tenant: ${tenantId}`);
-    // TODO: Implement P&L logic
-    throw new Error('Profit and Loss not yet implemented');
+    return (await this.financialReporting.generateProfitAndLoss(
+      tenantId,
+      period,
+      currencyCode,
+    )) as unknown as Record<string, unknown>;
   }
 
   async getBalanceSheet(
     tenantId: string,
-    _asOfDate: Date,
-    _currencyCode: string = 'MYR',
+    asOfDate: Date,
+    currencyCode: string = 'MYR',
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Getting balance sheet for tenant: ${tenantId}`);
-    // TODO: Implement balance sheet logic
-    throw new Error('Balance sheet not yet implemented');
+    return (await this.financialReporting.generateBalanceSheet(
+      tenantId,
+      asOfDate,
+      currencyCode,
+    )) as unknown as Record<string, unknown>;
   }
 
   async getCashFlowStatement(
     tenantId: string,
-    _period: string,
-    _currencyCode: string = 'MYR',
+    period: string,
+    currencyCode: string = 'MYR',
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Getting cash flow statement for tenant: ${tenantId}`);
-    // TODO: Implement cash flow logic
-    throw new Error('Cash flow statement not yet implemented');
+    return (await this.financialReporting.generateCashFlowStatement(
+      tenantId,
+      period,
+      currencyCode,
+    )) as unknown as Record<string, unknown>;
   }
 
   async getFinancialRatios(
     tenantId: string,
-    _asOfDate: Date,
-    _currencyCode: string = 'MYR',
+    asOfDate: Date,
+    currencyCode: string = 'MYR',
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Getting financial ratios for tenant: ${tenantId}`);
-    // TODO: Implement financial ratios logic
-    throw new Error('Financial ratios not yet implemented');
+    return (await this.financialReporting.calculateFinancialRatios(
+      tenantId,
+      asOfDate,
+      currencyCode,
+    )) as unknown as Record<string, unknown>;
   }
 
   async getComprehensiveReport(
     tenantId: string,
-    _period: string,
-    _asOfDate: Date,
-    _currencyCode: string = 'MYR',
+    period: string,
+    asOfDate: Date,
+    currencyCode: string = 'MYR',
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Getting comprehensive report for tenant: ${tenantId}`);
-    // TODO: Implement comprehensive report logic
-    throw new Error('Comprehensive report not yet implemented');
+    return (await this.financialReporting.generateComprehensiveReport(
+      tenantId,
+      period,
+      asOfDate,
+      currencyCode,
+    )) as unknown as Record<string, unknown>;
   }
 
   async validateGLIntegrity(tenantId: string): Promise<Record<string, unknown>> {
     this.logger.log(`Validating GL integrity for tenant: ${tenantId}`);
-    // TODO: Implement GL integrity validation
-    throw new Error('GL integrity validation not yet implemented');
+    return (await this.glProjection.validateGLIntegrity(tenantId)) as unknown as Record<
+      string,
+      unknown
+    >;
   }
 
   async reconcileTrialBalance(
     tenantId: string,
-    _period: string,
-    _expectedBalances?: Map<string, number>,
+    period: string,
+    expectedBalances?: Map<string, number>,
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Reconciling trial balance for tenant: ${tenantId}`);
-    // TODO: Implement trial balance reconciliation
-    throw new Error('Trial balance reconciliation not yet implemented');
+    return (await this.trialBalance.reconcileVariances(
+      tenantId,
+      period,
+      expectedBalances,
+    )) as unknown as Record<string, unknown>;
   }
 
   async generateExceptionReport(
     tenantId: string,
-    _period: string,
+    period: string,
   ): Promise<Record<string, unknown>> {
     this.logger.log(`Generating exception report for tenant: ${tenantId}`);
-    // TODO: Implement exception report generation
-    throw new Error('Exception report generation not yet implemented');
+    return (await this.trialBalance.generateExceptionReport(tenantId, period)) as unknown as Record<
+      string,
+      unknown
+    >;
   }
 }
