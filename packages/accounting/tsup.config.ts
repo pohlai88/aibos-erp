@@ -2,13 +2,13 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: ['src/index.ts'],
-  format: ['esm', 'cjs'],
-  dts: false, // Temporarily disable DTS to get all packages building
-  splitting: false,
+  format: ['cjs'],
+  dts: false,
   sourcemap: true,
-  clean: false,
+  clean: true,
   treeshake: true,
   skipNodeModulesBundle: true,
   minify: false,
   target: 'es2022',
+  tsconfig: 'tsconfig.json',
 });
