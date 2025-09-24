@@ -7,6 +7,7 @@ import { PostJournalEntryCommand } from '../commands/post-journal-entry-command'
 import { ChartOfAccounts } from '../domain/chart-of-accounts';
 import { JournalEntry } from '../domain/journal-entry';
 import { CircuitBreaker } from '../infrastructure/resilience/circuit-breaker';
+import { EVENT_STORE, ACCOUNT_REPOSITORY, JOURNAL_ENTRY_REPOSITORY } from '../tokens';
 import { MultiCurrencyService } from './multi-currency.service';
 import { OutboxService } from './outbox.service';
 import { Injectable, Logger, Inject } from '@nestjs/common';
@@ -23,11 +24,11 @@ export class AccountingService {
   });
 
   constructor(
-    @Inject('EventStore')
+    @Inject(EVENT_STORE)
     private readonly eventStore: EventStore,
-    @Inject('AccountRepository')
+    @Inject(ACCOUNT_REPOSITORY)
     private readonly accountRepository: AccountRepository,
-    @Inject('JournalEntryRepository')
+    @Inject(JOURNAL_ENTRY_REPOSITORY)
     private readonly journalEntryRepository: JournalEntryRepository,
     @Inject(OutboxService)
     private readonly outboxService: OutboxService,

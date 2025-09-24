@@ -1,21 +1,62 @@
+import type { AccountRepository } from '../domain/interfaces/repositories.interface';
+
 import { CreateAccountCommand } from '../commands/create-account-command';
 import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
-import { InMemoryAccountRepository } from '../infrastructure/repositories/in-memory-account.repository';
-import { InMemoryEventStore } from '../infrastructure/repositories/in-memory-event-store.repository';
+import { AccountCreatedEvent } from '../events/account-created-event';
+import { InMemoryEventStore } from '../services/__tests__/doubles/in-memory-event-store';
 import { AccountingService } from '../services/accounting.service';
 import { KafkaProducerService } from '../services/kafka-producer.service';
 import { MultiCurrencyService } from '../services/multi-currency.service';
 import { OutboxService } from '../services/outbox.service';
+import { EVENT_STORE, ACCOUNT_REPOSITORY, JOURNAL_ENTRY_REPOSITORY } from '../tokens';
 import { ConfigService } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
+import { randomUUID } from 'node:crypto';
 import { vi } from 'vitest';
 
 describe('AccountingService', () => {
   let service: AccountingService;
-  let _eventStore: InMemoryEventStore;
-  let accountRepository: InMemoryAccountRepository;
+  let eventStore: InMemoryEventStore;
+  let accountRepository: AccountRepository;
+
+  const TENANT_1 = 'tenant-1';
+  const ACCOUNTS_PAYABLE = 'Accounts Payable';
+  const CASH_ACCOUNT = {
+    accountCode: '1000',
+    accountName: 'Cash',
+    accountType: 'Asset',
+    balance: 0,
+    isActive: true,
+  };
+  const PAYABLE_ACCOUNT = {
+    accountCode: '2000',
+    accountName: ACCOUNTS_PAYABLE,
+    accountType: 'Liability',
+    balance: 0,
+    isActive: true,
+  };
 
   beforeEach(async () => {
+    const mockAccountRepository = {
+      findByCode: vi.fn().mockImplementation((code: string, tenantId: string) => {
+        if (code === '1000' && tenantId.includes('tenant')) {
+          return Promise.resolve({ ...CASH_ACCOUNT, tenantId });
+        }
+        if (code === '2000' && tenantId.includes('tenant')) {
+          return Promise.resolve({ ...PAYABLE_ACCOUNT, tenantId });
+        }
+        return Promise.resolve(undefined);
+      }),
+      save: vi.fn(),
+      updateBalance: vi.fn(),
+      findAllByCodes: vi.fn().mockResolvedValue([
+        { ...CASH_ACCOUNT, tenantId: TENANT_1 },
+        { ...PAYABLE_ACCOUNT, tenantId: TENANT_1 },
+      ]),
+    };
+
+    eventStore = new InMemoryEventStore();
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AccountingService,
@@ -32,16 +73,16 @@ describe('AccountingService', () => {
           },
         },
         {
-          provide: 'EventStore',
-          useClass: InMemoryEventStore,
+          provide: EVENT_STORE,
+          useValue: eventStore,
         },
         {
-          provide: 'AccountRepository',
-          useClass: InMemoryAccountRepository,
+          provide: ACCOUNT_REPOSITORY,
+          useValue: mockAccountRepository,
         },
         {
-          provide: 'JournalEntryRepository',
-          useClass: InMemoryAccountRepository, // Using same implementation for testing
+          provide: JOURNAL_ENTRY_REPOSITORY,
+          useValue: mockAccountRepository, // Using same implementation for testing
         },
         {
           provide: MultiCurrencyService,
@@ -65,8 +106,7 @@ describe('AccountingService', () => {
     }).compile();
 
     service = module.get<AccountingService>(AccountingService);
-    _eventStore = module.get<InMemoryEventStore>('EventStore');
-    accountRepository = module.get<InMemoryAccountRepository>('AccountRepository');
+    accountRepository = module.get(ACCOUNT_REPOSITORY);
   });
 
   describe('createAccount', () => {
@@ -75,36 +115,89 @@ describe('AccountingService', () => {
         accountCode: '1000',
         accountName: 'Cash',
         accountType: 'Asset',
-        tenantId: `tenant-${Date.now()}-1`,
+        tenantId: TENANT_1,
         userId: 'user-1',
       });
 
       await service.createAccount(command);
 
-      // Verify account was created
-      const account = await accountRepository.findByCode('1000', command.tenantId);
-      expect(account).toBeDefined();
-      expect(account?.accountCode).toBe('1000');
-      expect(account?.accountName).toBe('Cash');
+      const streamId = `chart-of-accounts-${TENANT_1}`;
+      const events = await eventStore.getEvents(streamId, undefined, TENANT_1);
+      expect(events).toHaveLength(1);
+      expect(events[0].eventType).toBe('AccountCreated');
+      expect(events[0]).toMatchObject({
+        accountCode: '1000',
+        accountName: 'Cash',
+        accountType: 'Asset',
+      });
     });
 
     it('should throw error for duplicate account code', async () => {
-      const tenantId = `tenant-${Date.now()}-2`;
       const command = new CreateAccountCommand({
         accountCode: '1000',
         accountName: 'Cash',
         accountType: 'Asset',
-        tenantId,
+        tenantId: TENANT_1,
         userId: 'user-1',
       });
 
-      // Create account first time
-      await service.createAccount(command);
+      // Seed prior event in same tenant
+      const existingEvent = new AccountCreatedEvent(
+        '1000',
+        'Cash',
+        'Asset',
+        undefined,
+        TENANT_1,
+        1,
+        undefined,
+        undefined,
+        { id: randomUUID() },
+      );
+      await eventStore.append(`chart-of-accounts-${TENANT_1}`, [existingEvent], 0, TENANT_1);
 
-      // Try to create duplicate
       await expect(service.createAccount(command)).rejects.toThrow(
         'Account code 1000 already exists',
       );
+    });
+
+    it('should reject duplicate account creation', async () => {
+      const command = new CreateAccountCommand({
+        accountCode: '1200',
+        accountName: 'Bank',
+        accountType: 'Asset',
+        tenantId: TENANT_1,
+        userId: 'user-1',
+      });
+      await service.createAccount(command);
+      // Second call should throw error for duplicate
+      await expect(service.createAccount(command)).rejects.toThrow(
+        'Account code 1200 already exists',
+      );
+    });
+
+    it('should isolate tenants', async () => {
+      await service.createAccount(
+        new CreateAccountCommand({
+          accountCode: '2000',
+          accountName: 'AP',
+          accountType: 'Liability',
+          tenantId: 'tenant-A',
+          userId: 'user-A',
+        }),
+      );
+      await service.createAccount(
+        new CreateAccountCommand({
+          accountCode: '2000',
+          accountName: 'AP',
+          accountType: 'Liability',
+          tenantId: 'tenant-B',
+          userId: 'user-B',
+        }),
+      );
+      const a = await eventStore.getEvents('chart-of-accounts-tenant-A', undefined, 'tenant-A');
+      const b = await eventStore.getEvents('chart-of-accounts-tenant-B', undefined, 'tenant-B');
+      expect(a).toHaveLength(1);
+      expect(b).toHaveLength(1);
     });
   });
 
@@ -125,7 +218,7 @@ describe('AccountingService', () => {
       await service.createAccount(
         new CreateAccountCommand({
           accountCode: '2000',
-          accountName: 'Accounts Payable',
+          accountName: ACCOUNTS_PAYABLE,
           accountType: 'Liability',
           tenantId,
           userId: 'user-1',
@@ -171,7 +264,7 @@ describe('AccountingService', () => {
       await service.createAccount(
         new CreateAccountCommand({
           accountCode: '2000',
-          accountName: 'Accounts Payable',
+          accountName: ACCOUNTS_PAYABLE,
           accountType: 'Liability',
           tenantId,
           userId: 'user-1',
