@@ -26,13 +26,15 @@ describe('Accounting Integration Tests', () => {
             database: db.getDatabase(),
             autoLoadEntities: true,
             synchronize: false,
+            // Run real migrations like production (no schema drift)
+            migrationsRun: true,
+            migrations: ['src/infrastructure/database/migrations/*{.ts,.js}'],
           }),
           AccountingModule,
         ],
       }).compile();
 
       service = module.get<AccountingService>(AccountingService);
-      // TODO: run real migrations here (recommended)
     } catch (error) {
       console.warn('Docker not available, skipping integration tests:', error);
       // Skip all tests in this suite

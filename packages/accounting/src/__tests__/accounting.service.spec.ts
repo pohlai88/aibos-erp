@@ -199,6 +199,47 @@ describe('AccountingService', () => {
       expect(a).toHaveLength(1);
       expect(b).toHaveLength(1);
     });
+
+    it('should enforce optimistic concurrency in the EventStore', async () => {
+      // Seed stream with one event at version 0
+      await eventStore.append(
+        'chart-of-accounts-tenant-C',
+        [
+          {
+            id: randomUUID(),
+            eventType: 'AccountCreated',
+            accountCode: '3000',
+            accountName: 'Equity',
+            accountType: 'Equity',
+            occurredAt: new Date(),
+            version: 1,
+            tenantId: 'tenant-C',
+          },
+        ],
+        0,
+        'tenant-C',
+      );
+      // A second writer incorrectly thinks stream version is still 0 → should throw
+      await expect(
+        eventStore.append(
+          'chart-of-accounts-tenant-C',
+          [
+            {
+              id: randomUUID(),
+              eventType: 'AccountCreated',
+              accountCode: '3100',
+              accountName: 'Other Equity',
+              accountType: 'Equity',
+              occurredAt: new Date(),
+              version: 2,
+              tenantId: 'tenant-C',
+            },
+          ],
+          0, // wrong expectedVersion (actual is 1)
+          'tenant-C',
+        ),
+      ).rejects.toThrow(/ConcurrencyError/);
+    });
   });
 
   describe('postJournalEntry', () => {
