@@ -2,7 +2,6 @@
 const nextConfig = {
   // Experimental features
   experimental: {
-    appDir: true,
     optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
   },
 
