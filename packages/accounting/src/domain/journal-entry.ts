@@ -27,9 +27,18 @@ export class JournalEntry extends AggregateRoot {
   public postEntry(command: PostJournalEntryCommand): void {
     this.validatePosting(command);
 
-    this.entries = command.entries;
-    this.reference = command.reference;
-    this.description = command.description;
+    // Convert command entries to JournalEntryLine objects
+    this.entries = command.entries.map(
+      (entry) =>
+        new JournalEntryLine({
+          accountCode: entry.accountCode,
+          debitAmount: entry.debitAmount,
+          creditAmount: entry.creditAmount,
+          description: entry.description || '',
+        }),
+    );
+    this.reference = command.reference || '';
+    this.description = command.description || '';
     this.status = JournalEntryStatus.POSTED;
     this.postedAt = new Date();
     this.postedBy = command.userId;
@@ -158,8 +167,8 @@ export class JournalEntry extends AggregateRoot {
       }
     }
 
-    // Validate reference format (business rule)
-    if (!/^[A-Z0-9-]{3,20}$/.test(command.reference)) {
+    // Validate reference format (business rule) - only if reference is provided
+    if (command.reference && !/^[A-Z0-9-]{3,20}$/.test(command.reference)) {
       throw new Error('Reference must be 3-20 alphanumeric characters with hyphens');
     }
   }

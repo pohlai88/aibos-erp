@@ -21,6 +21,7 @@ export interface PostJournalEntryCommand {
   postingDate: Date;
   tenantId: string;
   userId: string;
+  baseCurrency?: string;
 }
 
 export interface GetTrialBalanceCommand {

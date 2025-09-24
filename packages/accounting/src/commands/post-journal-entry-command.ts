@@ -1,10 +1,17 @@
-import type { JournalEntryLine } from '../domain/journal-entry-line';
+// import type { JournalEntryLine } from '../domain/journal-entry-line'; // No longer needed
 
 export interface PostJournalEntryCommandProperties {
   readonly journalEntryId: string;
-  readonly entries: JournalEntryLine[];
-  readonly reference: string;
-  readonly description: string;
+  readonly entries: Array<{
+    accountCode: string;
+    debitAmount: number;
+    creditAmount: number;
+    currency: string;
+    description?: string;
+  }>;
+  readonly reference?: string;
+  readonly description?: string;
+  readonly postingDate: Date;
   readonly tenantId: string;
   readonly userId: string;
   readonly baseCurrency?: string;
@@ -12,9 +19,16 @@ export interface PostJournalEntryCommandProperties {
 
 export class PostJournalEntryCommand {
   public readonly journalEntryId: string;
-  public readonly entries: JournalEntryLine[];
-  public readonly reference: string;
-  public readonly description: string;
+  public readonly entries: Array<{
+    accountCode: string;
+    debitAmount: number;
+    creditAmount: number;
+    currency: string;
+    description?: string;
+  }>;
+  public readonly reference?: string;
+  public readonly description?: string;
+  public readonly postingDate: Date;
   public readonly tenantId: string;
   public readonly userId: string;
   public readonly baseCurrency?: string;
@@ -25,6 +39,7 @@ export class PostJournalEntryCommand {
     this.entries = [...properties.entries];
     this.reference = properties.reference?.trim();
     this.description = properties.description?.trim();
+    this.postingDate = properties.postingDate;
     this.tenantId = properties.tenantId?.trim();
     this.userId = properties.userId?.trim();
     this.baseCurrency = properties.baseCurrency?.trim();
@@ -48,13 +63,7 @@ export class PostJournalEntryCommand {
       throw new Error('Journal entry must have at least two lines (double-entry)');
     }
 
-    if (!isNonEmpty(this.reference)) {
-      throw new Error('Reference is required');
-    }
-
-    if (!isNonEmpty(this.description)) {
-      throw new Error('Description is required');
-    }
+    // Reference and description are optional
 
     if (!isNonEmpty(this.tenantId)) {
       throw new Error('Tenant ID is required');

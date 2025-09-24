@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 
 import { CreateAccountCommand } from '../../commands/create-account-command';
 import { PostJournalEntryCommand } from '../../commands/post-journal-entry-command';
-import { JournalEntryLine } from '../../domain/journal-entry-line';
+// import { JournalEntryLine } from '../../domain/journal-entry-line'; // No longer needed
 
 // Types
 interface JournalEntryLineData {
@@ -146,17 +146,16 @@ export class AccountingController {
         journalEntryId,
         tenantId,
         userId: postedBy,
-        entries: entries.map(
-          (entry: JournalEntryLineData) =>
-            new JournalEntryLine({
-              accountCode: entry.accountCode,
-              debitAmount: entry.debitAmount || 0,
-              creditAmount: entry.creditAmount || 0,
-              description: entry.description || '',
-            }),
-        ),
+        entries: entries.map((entry: JournalEntryLineData) => ({
+          accountCode: entry.accountCode,
+          debitAmount: entry.debitAmount || 0,
+          creditAmount: entry.creditAmount || 0,
+          currency: DEFAULT_CURRENCY,
+          description: entry.description || '',
+        })),
         reference,
         description,
+        postingDate: new Date(),
       });
 
       await this.accountingService.postJournalEntry(command);

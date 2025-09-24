@@ -1,7 +1,7 @@
 import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
 import { AccountType, SpecialAccountType } from '../domain/account';
 import { type ChartOfAccounts } from '../domain/chart-of-accounts';
-import { JournalEntryLine } from '../domain/journal-entry-line';
+// import { JournalEntryLine } from '../domain/journal-entry-line'; // No longer needed
 
 export interface IntercompanyJournalLine {
   accountCode: string;
@@ -223,21 +223,20 @@ export class IntercompanyValidator {
     counterpartyTenantId: string,
   ): PostJournalEntryCommand {
     // Create mirrored entries with swapped debit/credit amounts
-    const mirroredEntries = originalCommand.entries.map(
-      (entry) =>
-        new JournalEntryLine({
-          accountCode: entry.accountCode, // Would be mapped to counterparty's equivalent account
-          debitAmount: entry.creditAmount,
-          creditAmount: entry.debitAmount,
-          description: `Mirror: ${entry.description || 'Intercompany entry'}`,
-        }),
-    );
+    const mirroredEntries = originalCommand.entries.map((entry) => ({
+      accountCode: entry.accountCode, // Would be mapped to counterparty's equivalent account
+      debitAmount: entry.creditAmount,
+      creditAmount: entry.debitAmount,
+      currency: entry.currency,
+      description: `Mirror: ${entry.description || 'Intercompany entry'}`,
+    }));
 
     return new PostJournalEntryCommand({
       journalEntryId: `mirror-${Date.now()}-${counterpartyCompanyId}`,
       entries: mirroredEntries,
       description: `Intercompany mirror for ${counterpartyCompanyId}`,
       reference: `IC-MIRROR-${originalCommand.reference || 'UNKNOWN'}`,
+      postingDate: new Date(),
       tenantId: counterpartyTenantId,
       userId: 'system', // System-generated mirror entry
     });

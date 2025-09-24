@@ -165,11 +165,14 @@ export class AccountingService {
         // merge back functional values
         for (let index = 0; index < converted.length; index++) {
           // eslint-disable-next-line security/detect-object-injection
-          converted[index].functionalDebit = rebalanced[index].debitAmount;
+          const convertedEntry = converted[index];
           // eslint-disable-next-line security/detect-object-injection
-          converted[index].functionalCredit = rebalanced[index].creditAmount;
-          // eslint-disable-next-line security/detect-object-injection
-          converted[index].functionalCurrency = baseCurrency;
+          const rebalancedEntry = rebalanced[index];
+          if (convertedEntry && rebalancedEntry) {
+            convertedEntry.functionalDebit = rebalancedEntry.debitAmount;
+            convertedEntry.functionalCredit = rebalancedEntry.creditAmount;
+            convertedEntry.functionalCurrency = baseCurrency;
+          }
         }
       }
 

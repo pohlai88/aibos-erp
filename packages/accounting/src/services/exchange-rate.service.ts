@@ -56,8 +56,9 @@ export class ExchangeRateService {
     });
 
     if (cachedRate) {
-      this.cache.set(cacheKey, { rate: cachedRate.rate, expiresAt: Date.now() + this.cacheTtlMs });
-      return cachedRate.rate;
+      const rateValue = Number(cachedRate.rate);
+      this.cache.set(cacheKey, { rate: rateValue, expiresAt: Date.now() + this.cacheTtlMs });
+      return rateValue;
     }
 
     // Fetch from external API
