@@ -7,6 +7,7 @@ export interface PostJournalEntryCommandProperties {
   readonly description: string;
   readonly tenantId: string;
   readonly userId: string;
+  readonly baseCurrency?: string;
 }
 
 export class PostJournalEntryCommand {
@@ -16,6 +17,7 @@ export class PostJournalEntryCommand {
   public readonly description: string;
   public readonly tenantId: string;
   public readonly userId: string;
+  public readonly baseCurrency?: string;
 
   constructor(properties: PostJournalEntryCommandProperties) {
     // Normalize & defensively copy
@@ -25,6 +27,7 @@ export class PostJournalEntryCommand {
     this.description = properties.description?.trim();
     this.tenantId = properties.tenantId?.trim();
     this.userId = properties.userId?.trim();
+    this.baseCurrency = properties.baseCurrency?.trim();
 
     this.validate();
     // Freeze array to avoid mutation after construction (lines themselves should be treated immutable at source)

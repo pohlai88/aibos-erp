@@ -173,11 +173,11 @@ export class AccountingService {
         }
       }
 
-      const enrichedCommand: PostJournalEntryCommand = {
+      const enrichedCommand = {
         ...command,
         baseCurrency,
         entries: converted,
-      };
+      } as PostJournalEntryCommand;
 
       const journalEntry = new JournalEntry(
         enrichedCommand.journalEntryId,

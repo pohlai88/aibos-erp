@@ -67,7 +67,7 @@ export class ExchangeRateService {
     await this.exchangeRateRepository.save({
       fromCurrency,
       toCurrency,
-      rate,
+      rate: String(rate),
       date: dayStart,
     });
     this.cache.set(cacheKey, { rate, expiresAt: Date.now() + this.cacheTtlMs });
@@ -154,7 +154,7 @@ export class ExchangeRateService {
         await this.exchangeRateRepository.save({
           fromCurrency: baseCurrency,
           toCurrency: currency,
-          rate,
+          rate: String(rate),
           date: dayStart,
         });
         // Warm in-memory cache for this hour
