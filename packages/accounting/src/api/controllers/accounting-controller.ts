@@ -1,4 +1,4 @@
-import type { AccountingService } from '../../services/accounting-service';
+import type { AccountingService } from '../../services/accounting.service';
 import type { Request, Response } from 'express';
 
 import { CreateAccountCommand } from '../../commands/create-account-command';

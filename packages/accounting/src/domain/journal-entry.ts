@@ -24,6 +24,13 @@ export class JournalEntry extends AggregateRoot {
     super(id, version);
   }
 
+  public approve(): void {
+    if (this.status !== JournalEntryStatus.DRAFT) {
+      throw new Error(`Cannot approve journal entry in ${this.status} status`);
+    }
+    this.status = JournalEntryStatus.APPROVED;
+  }
+
   public postEntry(command: PostJournalEntryCommand): void {
     this.validatePosting(command);
 
@@ -34,7 +41,7 @@ export class JournalEntry extends AggregateRoot {
           accountCode: entry.accountCode,
           debitAmount: entry.debitAmount,
           creditAmount: entry.creditAmount,
-          description: entry.description || '',
+          description: entry.description || command.description || 'Journal entry line',
         }),
     );
     this.reference = command.reference || '';

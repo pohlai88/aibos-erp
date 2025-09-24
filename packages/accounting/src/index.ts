@@ -62,7 +62,7 @@ export * from './services/tax-compliance-service';
 export * from './services/multi-currency-service';
 export * from './services/trial-balance-service';
 export * from './services/financial-reporting-service';
-export * from './services/accounting-service';
+export * from './services/accounting.service';
 
 // Accounting Projections
 export * from './projections/general-ledger-projection';

@@ -1,8 +1,5 @@
-import type {
-  CreateAccountCommand,
-  PostJournalEntryCommand,
-} from '../domain/commands/accounting.commands';
-
+import { CreateAccountCommand } from '../commands/create-account-command';
+import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
 import { KafkaProducerService } from '../infrastructure/messaging/kafka-producer.service';
 import { InMemoryAccountRepository } from '../infrastructure/repositories/in-memory-account.repository';
 import { InMemoryEventStore } from '../infrastructure/repositories/in-memory-event-store.repository';
@@ -74,60 +71,68 @@ describe('AccountingService', () => {
 
   describe('createAccount', () => {
     it('should create account successfully', async () => {
-      const command: CreateAccountCommand = {
+      const command = new CreateAccountCommand({
         accountCode: '1000',
         accountName: 'Cash',
         accountType: 'Asset',
-        tenantId: 'tenant-1',
+        tenantId: `tenant-${Date.now()}-1`,
         userId: 'user-1',
-      };
+      });
 
       await service.createAccount(command);
 
       // Verify account was created
-      const account = await accountRepository.findByCode('1000', 'tenant-1');
+      const account = await accountRepository.findByCode('1000', command.tenantId);
       expect(account).toBeDefined();
       expect(account?.accountCode).toBe('1000');
       expect(account?.accountName).toBe('Cash');
     });
 
     it('should throw error for duplicate account code', async () => {
-      const command: CreateAccountCommand = {
+      const tenantId = `tenant-${Date.now()}-2`;
+      const command = new CreateAccountCommand({
         accountCode: '1000',
         accountName: 'Cash',
         accountType: 'Asset',
-        tenantId: 'tenant-1',
+        tenantId,
         userId: 'user-1',
-      };
+      });
 
       // Create account first time
       await service.createAccount(command);
 
       // Try to create duplicate
-      await expect(service.createAccount(command)).rejects.toThrow('Account code already exists');
+      await expect(service.createAccount(command)).rejects.toThrow(
+        'Account code 1000 already exists',
+      );
     });
   });
 
   describe('postJournalEntry', () => {
     it('should post balanced journal entry', async () => {
+      const tenantId = `tenant-${Date.now()}-3`;
       // First create accounts
-      await service.createAccount({
-        accountCode: '1000',
-        accountName: 'Cash',
-        accountType: 'Asset',
-        tenantId: 'tenant-1',
-        userId: 'user-1',
-      });
+      await service.createAccount(
+        new CreateAccountCommand({
+          accountCode: '1000',
+          accountName: 'Cash',
+          accountType: 'Asset',
+          tenantId,
+          userId: 'user-1',
+        }),
+      );
 
-      await service.createAccount({
-        accountCode: '2000',
-        accountName: 'Accounts Payable',
-        accountType: 'Liability',
-        tenantId: 'tenant-1',
-        userId: 'user-1',
-      });
+      await service.createAccount(
+        new CreateAccountCommand({
+          accountCode: '2000',
+          accountName: 'Accounts Payable',
+          accountType: 'Liability',
+          tenantId,
+          userId: 'user-1',
+        }),
+      );
 
-      const command: PostJournalEntryCommand = {
+      const command = new PostJournalEntryCommand({
         journalEntryId: 'JE-001',
         entries: [
           { accountCode: '1000', debitAmount: 1000, creditAmount: 0, currency: 'USD' },
@@ -136,53 +141,58 @@ describe('AccountingService', () => {
         reference: 'INV-001',
         description: 'Inventory purchase',
         postingDate: new Date(),
-        tenantId: 'tenant-1',
+        tenantId,
         userId: 'user-1',
-      };
+      });
 
       await service.postJournalEntry(command);
 
       // Verify accounts exist (balance updates now happen in projection)
-      const cashAccount = await accountRepository.findByCode('1000', 'tenant-1');
-      const payableAccount = await accountRepository.findByCode('2000', 'tenant-1');
+      const cashAccount = await accountRepository.findByCode('1000', tenantId);
+      const payableAccount = await accountRepository.findByCode('2000', tenantId);
 
       expect(cashAccount).toBeTruthy();
       expect(payableAccount).toBeTruthy();
     });
 
     it('should reject unbalanced journal entry', async () => {
+      const tenantId = `tenant-${Date.now()}-4`;
       // First create accounts
-      await service.createAccount({
-        accountCode: '1000',
-        accountName: 'Cash',
-        accountType: 'Asset',
-        tenantId: 'tenant-1',
-        userId: 'user-1',
-      });
+      await service.createAccount(
+        new CreateAccountCommand({
+          accountCode: '1000',
+          accountName: 'Cash',
+          accountType: 'Asset',
+          tenantId,
+          userId: 'user-1',
+        }),
+      );
 
-      await service.createAccount({
-        accountCode: '2000',
-        accountName: 'Accounts Payable',
-        accountType: 'Liability',
-        tenantId: 'tenant-1',
-        userId: 'user-1',
-      });
+      await service.createAccount(
+        new CreateAccountCommand({
+          accountCode: '2000',
+          accountName: 'Accounts Payable',
+          accountType: 'Liability',
+          tenantId,
+          userId: 'user-1',
+        }),
+      );
 
-      const command: PostJournalEntryCommand = {
-        journalEntryId: 'JE-001',
-        entries: [
-          { accountCode: '1000', debitAmount: 1000, creditAmount: 0, currency: 'USD' },
-          { accountCode: '2000', debitAmount: 0, creditAmount: 500, currency: 'USD' },
-        ],
-        reference: 'INV-001',
-        description: 'Inventory purchase',
-        postingDate: new Date(),
-        tenantId: 'tenant-1',
-        userId: 'user-1',
-      };
-
-      await expect(service.postJournalEntry(command)).rejects.toThrow(
-        'Journal not balanced in original amounts',
+      expect(() => {
+        new PostJournalEntryCommand({
+          journalEntryId: 'JE-001',
+          entries: [
+            { accountCode: '1000', debitAmount: 1000, creditAmount: 0, currency: 'USD' },
+            { accountCode: '2000', debitAmount: 0, creditAmount: 500, currency: 'USD' },
+          ],
+          reference: 'INV-001',
+          description: 'Inventory purchase',
+          postingDate: new Date(),
+          tenantId,
+          userId: 'user-1',
+        });
+      }).toThrow(
+        'Journal entry is not balanced. Debit: 1000.00, Credit: 500.00, Difference: 500.00',
       );
     });
   });

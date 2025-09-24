@@ -460,6 +460,8 @@ export class ChartOfAccounts extends AggregateRoot {
     for (const event of events) {
       chartOfAccounts.replay(event);
     }
+    // Set the version to the number of events replayed
+    (chartOfAccounts as unknown as { version: number }).version = events.length;
     return chartOfAccounts;
   }
 

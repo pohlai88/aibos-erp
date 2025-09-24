@@ -1,17 +1,15 @@
-import type { AccountRepository } from '../domain/interfaces/account-repository.interface';
-import type { EventStore } from '../domain/interfaces/event-store.interface';
-import type { JournalEntryRepository } from '../domain/interfaces/journal-entry-repository.interface';
+import type { AccountRepository } from '../../../src/domain/interfaces/account-repository.interface';
+import type { EventStore } from '../../../src/domain/interfaces/event-store.interface';
+import type { JournalEntryRepository } from '../../../src/domain/interfaces/journal-entry-repository.interface';
 
-import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
-import { AccountingService } from '../services/accounting.service';
-import { type MultiCurrencyService } from '../services/multi-currency-service';
-import { type OutboxService } from '../services/outbox.service';
+import { AccountingService } from '../../../src/services/accounting.service';
+import { type MultiCurrencyService } from '../../../src/services/multi-currency.service';
+import { type OutboxService } from '../../../src/services/outbox.service';
 import { type ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mkEventStore = (): EventStore => ({
   append: vi.fn().mockResolvedValue(undefined),
-  appendWithTransaction: vi.fn().mockResolvedValue({}),
   getEvents: vi.fn().mockResolvedValue([]),
 });
 
@@ -64,10 +62,7 @@ describe('AccountingService.postJournalEntry → event payload fields', () => {
     fx = mkFx();
     cfg = mkConfig('MYR');
 
-    (accounts.findAllByCodes as any).mockResolvedValue([
-      { accountCode: '1000' },
-      { accountCode: '2000' },
-    ]);
+    (accounts.findAllByCodes as any).mockResolvedValue([{ code: '1000' }, { code: '2000' }]);
 
     // Simulate a clean 1→4 rate (USD→MYR) with 2dp rounding in convertAmount
     (fx.convertAmount as any).mockImplementation(
@@ -90,7 +85,7 @@ describe('AccountingService.postJournalEntry → event payload fields', () => {
   });
 
   it('emits events whose payload includes functionalCurrency, functionalDebit/Credit, fxRate, fxDate', async () => {
-    const cmd = new PostJournalEntryCommand({
+    const cmd = {
       journalEntryId: 'JE-EVT',
       tenantId,
       reference: 'EVT',
@@ -100,10 +95,10 @@ describe('AccountingService.postJournalEntry → event payload fields', () => {
         { accountCode: '1000', currency: 'USD', debitAmount: 100, creditAmount: 0 },
         { accountCode: '2000', currency: 'USD', debitAmount: 0, creditAmount: 100 },
       ],
-      userId: 'tester',
-    });
+      postedBy: 'tester',
+    };
 
-    await service.postJournalEntry(cmd);
+    await service.postJournalEntry(cmd as any);
 
     // Capture events either from eventStore.append arg or from outbox.publishEvents arg
     const appendCall = (eventStore.append as any).mock.calls[0];
@@ -118,15 +113,20 @@ describe('AccountingService.postJournalEntry → event payload fields', () => {
         : (firstEvent as any);
 
     expect(payload).toBeTruthy();
-    expect(payload).toHaveProperty('journalEntryId', 'JE-EVT');
+    expect(payload).toHaveProperty('eventType', expect.stringMatching(/JournalEntryPosted/i));
+    expect(payload).toHaveProperty('baseCurrency', 'MYR');
     expect(payload).toHaveProperty('entries');
     expect(Array.isArray(payload.entries)).toBe(true);
 
     const line = payload.entries[0];
-    // Basic fields should be present
-    expect(line).toHaveProperty('accountCode', '1000');
-    expect(line).toHaveProperty('debitAmount', 100);
-    expect(line).toHaveProperty('creditAmount', 0);
-    expect(line).toHaveProperty('description');
+    // Functional fields should be present
+    expect(line).toHaveProperty('functionalCurrency', 'MYR');
+    expect(line).toHaveProperty('functionalDebit');
+    expect(line).toHaveProperty('functionalCredit');
+    expect(line).toHaveProperty('fxRate');
+    expect(line).toHaveProperty('fxDate');
+
+    // Sanity: amounts converted at ~4x
+    expect(line.functionalDebit).toBeCloseTo(400, 2);
   });
 });

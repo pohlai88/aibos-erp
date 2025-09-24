@@ -1,4 +1,4 @@
-import type { AccountingService } from '../services/accounting-service';
+import type { AccountingService } from '../services/accounting.service';
 import type { Express, Request, Response } from 'express';
 
 import { AccountingController } from './controllers/accounting-controller';

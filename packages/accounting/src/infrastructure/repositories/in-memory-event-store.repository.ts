@@ -5,6 +5,10 @@ import type { EntityManager } from 'typeorm';
 export class InMemoryEventStore implements EventStore {
   private events: Map<string, DomainEvent[]> = new Map();
 
+  reset(): void {
+    this.events.clear();
+  }
+
   async append(
     streamId: string,
     events: DomainEvent[],

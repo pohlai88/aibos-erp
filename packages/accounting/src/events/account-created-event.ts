@@ -88,7 +88,7 @@ export class AccountCreatedEvent implements DomainEvent {
     return this.version === 1;
   }
 
-  public serialize(): Record<string, unknown> {
+  public toJSON(): Record<string, unknown> {
     const out: Record<string, unknown> = {
       id: this.id,
       aggregateId: this.aggregateId,
@@ -105,6 +105,10 @@ export class AccountCreatedEvent implements DomainEvent {
     if (this.causationId !== undefined) out.causationId = this.causationId;
     if (this.parentAccountCode !== undefined) out.parentAccountCode = this.parentAccountCode;
     return out;
+  }
+
+  public serialize(): Record<string, unknown> {
+    return this.toJSON();
   }
 
   public static deserialize(data: Record<string, unknown>): AccountCreatedEvent {

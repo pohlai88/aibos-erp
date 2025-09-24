@@ -1,4 +1,4 @@
-import type { DomainEvent } from '../domain/events/domain-events';
+import type { DomainEvent } from '@aibos/eventsourcing';
 
 import { OutboxEventEntity } from '../infrastructure/database/entities/outbox-event.entity';
 import { type KafkaProducerService } from '../infrastructure/messaging/kafka-producer.service';
@@ -32,7 +32,9 @@ export class OutboxService {
           tenantId,
           topic: this.getTopicForEvent(event),
           key: event.aggregateId,
-          payload: event.toJSON(),
+          payload: (event as { serialize?: () => Record<string, unknown> }).serialize
+            ? (event as { serialize: () => Record<string, unknown> }).serialize()
+            : event,
           status: 'READY',
           retryCount: 0,
           createdAt: now,
@@ -42,7 +44,9 @@ export class OutboxService {
           tenantId,
           topic: this.getTopicForEvent(event),
           key: event.aggregateId,
-          payload: event.toJSON(),
+          payload: (event as { serialize?: () => Record<string, unknown> }).serialize
+            ? (event as { serialize: () => Record<string, unknown> }).serialize()
+            : event,
           status: 'READY',
           retryCount: 0,
           createdAt: now,
