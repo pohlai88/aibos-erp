@@ -1,4 +1,4 @@
-import type { JournalEntryRepository } from '../domain/interfaces/journal-entry-repository.interface';
+import type { JournalEntryRepository } from '../domain/interfaces/repositories.interface';
 import type { AccountRepository } from '../domain/interfaces/repositories.interface';
 import type { EventStore } from '../domain/interfaces/repositories.interface';
 
@@ -7,7 +7,7 @@ import { PostJournalEntryCommand } from '../commands/post-journal-entry-command'
 import { ChartOfAccounts } from '../domain/chart-of-accounts';
 import { JournalEntry } from '../domain/journal-entry';
 import { CircuitBreaker } from '../infrastructure/resilience/circuit-breaker';
-import { MultiCurrencyService } from './multi-currency-service';
+import { MultiCurrencyService } from './multi-currency.service';
 import { OutboxService } from './outbox.service';
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';

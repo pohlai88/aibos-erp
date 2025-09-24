@@ -1,8 +1,9 @@
-import type { DomainEvent } from '../../domain/events/domain-events';
 import type { EventStore } from '../../domain/interfaces/repositories.interface';
+import type { DomainEvent } from '@aibos/eventsourcing';
 import type { DataSource, QueryRunner, EntityManager } from 'typeorm';
 
-import { AccountCreatedEvent, JournalEntryPostedEvent } from '../../domain/events/domain-events';
+import { AccountCreatedEvent } from '../../events/account-created-event';
+import { JournalEntryPostedEvent } from '../../events/journal-entry-posted-event';
 import { AccountingEventEntity } from '../database/entities/accounting-event.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -62,11 +63,12 @@ export class PostgreSQLEventStore implements EventStore {
         streamId,
         version: expectedVersion + index + 1,
         eventType: event.constructor.name,
-        eventData: event.toJSON(),
+        eventData: (event as unknown as { toJSON?: () => Record<string, unknown> }).toJSON
+          ? (event as unknown as { toJSON: () => Record<string, unknown> }).toJSON()
+          : event.serialize(),
         metadata: {
           correlationId: event.correlationId,
           causationId: event.causationId,
-          userId: event.userId,
         },
         occurredAt: event.occurredAt,
         correlationId: event.correlationId,
@@ -145,11 +147,12 @@ export class PostgreSQLEventStore implements EventStore {
         streamId,
         version: expectedVersion + index + 1,
         eventType: event.constructor.name,
-        eventData: event.toJSON(),
+        eventData: (event as unknown as { toJSON?: () => Record<string, unknown> }).toJSON
+          ? (event as unknown as { toJSON: () => Record<string, unknown> }).toJSON()
+          : event.serialize(),
         metadata: {
           correlationId: event.correlationId,
           causationId: event.causationId,
-          userId: event.userId,
         },
         occurredAt: event.occurredAt,
         correlationId: event.correlationId,
@@ -224,13 +227,24 @@ export class PostgreSQLEventStore implements EventStore {
 
   private toDomainEvent(entity: AccountingEventEntity): DomainEvent {
     // Event reconstruction logic based on event type
-    const EventClass = this.getEventClass(entity.eventType) as typeof DomainEvent;
-    return EventClass.fromJSON(entity.eventData, {
-      id: entity.id,
-      occurredAt: entity.occurredAt,
-      correlationId: entity.correlationId || undefined,
-      causationId: entity.causationId || undefined,
-    });
+    const EventClass = this.getEventClass(entity.eventType);
+    if (
+      EventClass &&
+      typeof (EventClass as { fromJSON?: (...args: unknown[]) => DomainEvent }).fromJSON ===
+        'function'
+    ) {
+      return (EventClass as { fromJSON: (...args: unknown[]) => DomainEvent }).fromJSON(
+        entity.eventData,
+        {
+          id: entity.id,
+          occurredAt: entity.occurredAt,
+          correlationId: entity.correlationId || undefined,
+          causationId: entity.causationId || undefined,
+        },
+      );
+    }
+    // Fallback: create a basic domain event if reconstruction fails
+    throw new Error(`Cannot reconstruct event of type ${entity.eventType}`);
   }
 
   private getEventClass(eventType: string): unknown {

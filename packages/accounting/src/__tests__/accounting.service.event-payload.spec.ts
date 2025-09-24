@@ -4,7 +4,7 @@ import type { JournalEntryRepository } from '../domain/interfaces/journal-entry-
 
 import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
 import { AccountingService } from '../services/accounting.service';
-import { type MultiCurrencyService } from '../services/multi-currency-service';
+import { type MultiCurrencyService } from '../services/multi-currency.service';
 import { type OutboxService } from '../services/outbox.service';
 import { type ConfigService } from '@nestjs/config';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

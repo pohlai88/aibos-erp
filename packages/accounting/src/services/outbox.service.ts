@@ -1,7 +1,7 @@
 import type { DomainEvent } from '@aibos/eventsourcing';
 
 import { OutboxEventEntity } from '../infrastructure/database/entities/outbox-event.entity';
-import { type KafkaProducerService } from '../infrastructure/messaging/kafka-producer.service';
+import { type KafkaProducerService } from '../services/kafka-producer.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';

@@ -314,7 +314,7 @@ export default [
 
   // Config files and scripts
   {
-    files: ['**/*.config.{js,cjs,ts}', 'scripts/**/*.{js,ts}'],
+    files: ['**/*.config.{js,cjs,ts}', 'scripts/**/*.{js,ts,cjs,mjs}'],
     languageOptions: {
       globals: {
         module: 'readonly',
@@ -323,6 +323,7 @@ export default [
         __dirname: 'readonly',
         __filename: 'readonly',
         process: 'readonly',
+        console: 'readonly',
       },
     },
     rules: {

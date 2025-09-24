@@ -2,14 +2,17 @@ import { AccountEntity } from './infrastructure/database/entities/account.entity
 import { ExchangeRateEntity } from './infrastructure/database/entities/exchange-rate.entity';
 import { OutboxEventEntity } from './infrastructure/database/entities/outbox-event.entity';
 import { TypeormAccountRepository } from './infrastructure/database/repositories/typeorm-account.repository';
-import { KafkaProducerService } from './infrastructure/messaging/kafka-producer.service';
 import { InMemoryAccountRepository } from './infrastructure/repositories/in-memory-account.repository';
 import { InMemoryEventStore } from './infrastructure/repositories/in-memory-event-store.repository';
 import { AccountingHealthService } from './services/accounting-health.service';
 import { AccountingService } from './services/accounting.service';
 import { ExchangeRateService } from './services/exchange-rate.service';
-import { MultiCurrencyService } from './services/multi-currency-service';
+import { KafkaProducerService } from './services/kafka-producer.service';
+import { MultiCurrencyService } from './services/multi-currency.service';
 import { OutboxService } from './services/outbox.service';
+import { DefaultTaxAccountsMap } from './services/tax-account.mapper';
+import { TaxComplianceService } from './services/tax-compliance.service';
+import { TaxLineCalculatorService } from './services/tax-line-calculator.service';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -25,6 +28,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ExchangeRateService,
     MultiCurrencyService,
     OutboxService,
+    TaxComplianceService,
+    TaxLineCalculatorService,
+    DefaultTaxAccountsMap,
     KafkaProducerService,
     {
       provide: 'EventStore',
@@ -45,6 +51,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     ExchangeRateService,
     MultiCurrencyService,
     OutboxService,
+    TaxComplianceService,
+    TaxLineCalculatorService,
+    DefaultTaxAccountsMap,
   ],
 })
 export class AccountingModule {}

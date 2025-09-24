@@ -57,11 +57,11 @@ export * from './services/intercompany-validator';
 export * from './services/template-registry';
 export * from './services/template-importer';
 export * from './services/standards-compliance';
-export * from './services/accounting-period-service';
-export * from './services/tax-compliance-service';
-export * from './services/multi-currency-service';
-export * from './services/trial-balance-service';
-export * from './services/financial-reporting-service';
+export * from './services/accounting-period.service';
+export * from './services/tax-compliance.service';
+export * from './services/multi-currency.service';
+export * from './services/trial-balance.service';
+export * from './services/financial-reporting.service';
 export * from './services/accounting.service';
 
 // Accounting Projections

@@ -1,10 +1,10 @@
 import { CreateAccountCommand } from '../commands/create-account-command';
 import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
-import { KafkaProducerService } from '../infrastructure/messaging/kafka-producer.service';
 import { InMemoryAccountRepository } from '../infrastructure/repositories/in-memory-account.repository';
 import { InMemoryEventStore } from '../infrastructure/repositories/in-memory-event-store.repository';
 import { AccountingService } from '../services/accounting.service';
-import { MultiCurrencyService } from '../services/multi-currency-service';
+import { KafkaProducerService } from '../services/kafka-producer.service';
+import { MultiCurrencyService } from '../services/multi-currency.service';
 import { OutboxService } from '../services/outbox.service';
 import { ConfigService } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';

@@ -1,5 +1,5 @@
-import type { DomainEvent } from '../../domain/events/domain-events';
 import type { EventStore } from '../../domain/interfaces/repositories.interface';
+import type { DomainEvent } from '@aibos/eventsourcing';
 import type { EntityManager } from 'typeorm';
 
 export class InMemoryEventStore implements EventStore {
