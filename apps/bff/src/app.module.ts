@@ -3,6 +3,7 @@ import { DatabaseService } from './config/database.service.js';
 import { HealthModule } from './health/health.module.js';
 import { AccountingModule } from './modules/accounting/accounting.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { InventoryModule } from './modules/inventory/inventory.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -20,6 +21,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     HealthModule,
     AuthModule,
     AccountingModule,
+    InventoryModule,
   ],
   controllers: [],
   providers: [DatabaseService],

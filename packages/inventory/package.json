@@ -1,0 +1,65 @@
+{
+  "name": "@aibos/inventory",
+  "version": "0.1.0",
+  "description": "Inventory management domain for AI-BOS ERP",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/types/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/src/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build:types": "tsc -p tsconfig.types.json",
+    "build:js": "tsup",
+    "build": "pnpm run build:types && pnpm run build:js",
+    "dev": "tsup --watch",
+    "format": "prettier -w .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@aibos/eventsourcing": "workspace:*",
+    "@aibos/contracts": "workspace:*",
+    "@aibos/utils": "workspace:*",
+    "@nestjs/common": "10.4.16",
+    "@nestjs/config": "4.0.2",
+    "@nestjs/core": "10.4.16",
+    "@nestjs/typeorm": "11.0.0",
+    "@types/express": "^5.0.3",
+    "@types/pg": "8.10.0",
+    "class-validator": "^0.14.0",
+    "class-transformer": "^0.5.1",
+    "express": "^5.1.0",
+    "pg": "8.16.3",
+    "reflect-metadata": "0.1.13",
+    "typeorm": "0.3.27",
+    "typeorm-naming-strategies": "^4.1.0",
+    "uuid": "9.0.0",
+    "zod": "3.22.0"
+  },
+  "devDependencies": {
+    "@nestjs/testing": "^11.1.6",
+    "@types/uuid": "9.0.0",
+    "@vitest/ui": "2.0.0",
+    "eslint": "9.36.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-prettier": "5.5.4",
+    "prettier": "3.6.2",
+    "prettier-plugin-tailwindcss": "0.6.14",
+    "tsup": "8.5.0",
+    "typescript": "5.9.2",
+    "vitest": "2.0.0"
+  }
+}
