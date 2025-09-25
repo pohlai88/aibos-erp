@@ -26,7 +26,7 @@ export default function AccountingPage(): JSX.Element {
   const renderContent = (): JSX.Element => {
     switch (activeTab) {
       case 'dashboard':
-        return <FinancialDashboard />;
+        return <FinancialDashboard tenantId="dev-tenant-001" />;
       case 'journal':
         return (
           <JournalEntryForm
@@ -45,7 +45,7 @@ export default function AccountingPage(): JSX.Element {
         return <TrialBalance query={query} />;
       }
       default:
-        return <FinancialDashboard />;
+        return <FinancialDashboard tenantId="dev-tenant-001" />;
     }
   };
 

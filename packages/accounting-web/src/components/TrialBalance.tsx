@@ -1,48 +1,116 @@
 import type { TTrialBalanceQuery } from '@aibos/accounting-contracts';
+import type { VirtualTableColumn } from '@aibos/ui';
 
 import { useAccounting } from '../hooks/useAccounting';
+import { AsyncLoading, SkeletonTable, VirtualTable } from '@aibos/ui';
 import * as React from 'react';
 
-type Properties = { query: TTrialBalanceQuery };
+const RIGHT_ALIGN_CLASS = 'text-right';
 
-export function TrialBalance({ query }: Properties): JSX.Element {
+interface TrialBalanceProperties {
+  query: TTrialBalanceQuery;
+}
+
+interface TrialBalanceRow {
+  accountCode: string;
+  accountName: string;
+  debit: number;
+  credit: number;
+  balance: number;
+}
+
+export function TrialBalance({ query }: TrialBalanceProperties): JSX.Element {
   const { trialBalance, loadTrialBalance, loading, error } = useAccounting();
 
   React.useEffect(() => {
     void loadTrialBalance(query);
   }, [query, loadTrialBalance]);
 
-  if (loading && !trialBalance) return <div>Loading…</div>;
-  if (error) return <div className="text-red-600">Error: {error}</div>;
-  if (!trialBalance) return <div>No data available</div>;
+  const formatCurrency = (value: number): string => value.toLocaleString();
+
+  const columns: VirtualTableColumn<TrialBalanceRow>[] = React.useMemo(
+    () => [
+      {
+        key: 'account',
+        header: 'Account',
+        width: 300,
+        render: (_, row) => `${row.accountCode} — ${row.accountName}`,
+      },
+      {
+        key: 'debit',
+        header: 'Debit',
+        width: 150,
+        render: (value) => formatCurrency(value as number),
+        className: RIGHT_ALIGN_CLASS,
+      },
+      {
+        key: 'credit',
+        header: 'Credit',
+        width: 150,
+        render: (value) => formatCurrency(value as number),
+        className: RIGHT_ALIGN_CLASS,
+      },
+      {
+        key: 'balance',
+        header: 'Balance',
+        width: 150,
+        render: (value) => formatCurrency(value as number),
+        className: RIGHT_ALIGN_CLASS,
+      },
+    ],
+    [],
+  );
+
+  const handleRowClick = React.useCallback((row: TrialBalanceRow) => {
+    // TODO: Implement account detail navigation
+    console.log('Account clicked:', row.accountCode);
+  }, []);
 
   return (
-    <div className="w-full overflow-auto">
-      <div className="mb-2 text-sm text-gray-600">
-        As of {new Date(trialBalance.asOf).toLocaleDateString()}
+    <div className="w-full">
+      <div className="mb-4 text-sm text-gray-600">
+        {trialBalance ? `As of ${new Date(trialBalance.asOf).toLocaleDateString()}` : 'Loading...'}
       </div>
-      <table className="min-w-full border text-sm">
-        <thead>
-          <tr className="bg-gray-50">
-            <th className="border px-3 py-2 text-left">Account</th>
-            <th className="border px-3 py-2 text-right">Debit</th>
-            <th className="border px-3 py-2 text-right">Credit</th>
-            <th className="border px-3 py-2 text-right">Balance</th>
-          </tr>
-        </thead>
-        <tbody>
-          {trialBalance.rows.map((r, index) => (
-            <tr key={index}>
-              <td className="border px-3 py-1">
-                {r.accountCode} — {r.accountName}
-              </td>
-              <td className="border px-3 py-1 text-right">{r.debit.toLocaleString()}</td>
-              <td className="border px-3 py-1 text-right">{r.credit.toLocaleString()}</td>
-              <td className="border px-3 py-1 text-right">{r.balance.toLocaleString()}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+
+      <AsyncLoading
+        isLoading={loading}
+        error={error ? new Error(error) : undefined}
+        loadingComponent={<SkeletonTable rows={10} columns={4} className="h-96" />}
+        errorComponent={(error) => (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="mb-2 text-red-500">
+                <svg
+                  className="mx-auto h-8 w-8"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+                  />
+                </svg>
+              </div>
+              <p className="text-sm text-gray-600">{error.message}</p>
+            </div>
+          </div>
+        )}
+      >
+        <VirtualTable
+          data={(trialBalance?.rows || []) as unknown as Record<string, unknown>[]}
+          columns={columns as unknown as VirtualTableColumn<Record<string, unknown>>[]}
+          height={600}
+          rowHeight={40}
+          onRowClick={
+            handleRowClick as unknown as (row: Record<string, unknown>, index: number) => void
+          }
+          emptyMessage="No trial balance data available"
+          className="rounded-lg border border-gray-200"
+        />
+      </AsyncLoading>
     </div>
   );
 }

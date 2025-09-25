@@ -1,17 +1,28 @@
+import { CFODashboard } from '@aibos/ui';
 import * as React from 'react';
 
-export function FinancialDashboard(): JSX.Element {
-  // Placeholder for KPIs; you'll wire to BFF later
+interface FinancialDashboardProperties {
+  tenantId: string;
+}
+
+export function FinancialDashboard({ tenantId }: FinancialDashboardProperties): JSX.Element {
+  const handleMetricClick = React.useCallback((metric: unknown) => {
+    // TODO: Implement metric drill-down navigation
+    console.log('Metric clicked:', metric);
+  }, []);
+
+  const handleKPIClick = React.useCallback((kpi: unknown) => {
+    // TODO: Implement KPI detail view
+    console.log('KPI clicked:', kpi);
+  }, []);
+
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="rounded border p-4">
-        <div className="text-xs text-gray-500">Revenue (MTD)</div>
-        <div className="text-2xl font-semibold">—</div>
-      </div>
-      <div className="rounded border p-4">
-        <div className="text-xs text-gray-500">Expenses (MTD)</div>
-        <div className="text-2xl font-semibold">—</div>
-      </div>
-    </div>
+    <CFODashboard
+      tenantId={tenantId}
+      period="monthly"
+      onMetricClick={handleMetricClick}
+      onKPIClick={handleKPIClick}
+      className="w-full"
+    />
   );
 }

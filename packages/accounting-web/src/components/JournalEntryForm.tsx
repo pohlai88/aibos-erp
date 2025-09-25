@@ -1,10 +1,8 @@
+import type { TJournalEntry, TJournalEntryLine } from '@aibos/accounting-contracts';
+
 import { useAccounting } from '../hooks/useAccounting';
-import {
-  JournalEntry,
-  type TJournalEntry,
-  type TJournalEntryLine,
-} from '@aibos/accounting-contracts';
-import { cn } from '@aibos/ui';
+import { JournalEntry } from '@aibos/accounting-contracts';
+import { cn, LoadingButton } from '@aibos/ui';
 import * as React from 'react';
 
 type Properties = {
@@ -120,15 +118,34 @@ export function JournalEntryForm({
         </button>
       </div>
 
-      {error && <div className="text-sm text-red-600">{error}</div>}
+      {error && (
+        <div className="rounded-md bg-red-50 p-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">Error</h3>
+              <div className="mt-2 text-sm text-red-700">{error}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
-      <button
+      <LoadingButton
         type="submit"
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-        disabled={loading}
+        isLoading={loading}
+        loadingText="Posting..."
+        className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
       >
-        {loading ? 'Posting...' : 'Post Journal Entry'}
-      </button>
+        Post Journal Entry
+      </LoadingButton>
     </form>
   );
 }
