@@ -28,18 +28,21 @@ pnpm syncpack list-mismatches
 
 ### Common Error Patterns
 
-| Error Pattern                                 | Likely Cause                | Solution                                |
-| --------------------------------------------- | --------------------------- | --------------------------------------- |
-| `TS6307: File '...' not listed`               | Monorepo type resolution    | Use battle-tested TS6307 solution       |
-| `TS2305: Module has no exported member`       | Package type resolution     | Check package.json types/exports paths  |
-| `Cannot find module '@aibos/ui'`              | Package not built or linked | Run `pnpm -r build`                     |
-| `Property 'children' does not exist`          | Type resolution issue       | Check UI package exports                |
-| `TS1378: Top-level await expressions`         | BFF TypeScript config       | Add module: "ESNext", target: "ES2022"  |
-| `TS2430: Buffer interface conflicts`          | Node.js type issues         | Add skipLibCheck: true                  |
-| `TS1259: Module can only be default-imported` | esModuleInterop missing     | Add esModuleInterop: true               |
-| `'variable' is defined but never used`        | ESLint unused vars          | Prefix with `_` or configure ESLint     |
-| `Module not found`                            | Cache or linking issue      | Run `pnpm -w run clean && pnpm install` |
-| `Define a constant instead of duplicating`    | Code quality rules          | Extract duplicate strings to constants  |
+| Error Pattern                                  | Likely Cause                | Solution                                     |
+| ---------------------------------------------- | --------------------------- | -------------------------------------------- |
+| `TS6307: File '...' not listed`                | Monorepo type resolution    | Use battle-tested TS6307 solution            |
+| `TS2305: Module has no exported member`        | Package type resolution     | Check package.json types/exports paths       |
+| `Cannot find module '@aibos/ui'`               | Package not built or linked | Run `pnpm -r build`                          |
+| `Property 'children' does not exist`           | Type resolution issue       | Check UI package exports                     |
+| `TS1378: Top-level await expressions`          | BFF TypeScript config       | Add module: "ESNext", target: "ES2022"       |
+| `TS2430: Buffer interface conflicts`           | Node.js type issues         | Add skipLibCheck: true                       |
+| `TS1259: Module can only be default-imported`  | esModuleInterop missing     | Add esModuleInterop: true                    |
+| `'variable' is defined but never used`         | ESLint unused vars          | Prefix with `_` or configure ESLint          |
+| `Module not found`                             | Cache or linking issue      | Run `pnpm -w run clean && pnpm install`      |
+| `Define a constant instead of duplicating`     | Code quality rules          | Extract duplicate strings to constants       |
+| `Can't resolve '@aibos/accounting-contracts'`  | Next.js transpilePackages   | Check duplicate configs & exports            |
+| `module is not defined in ES module scope`     | Next.js config format       | Use export default instead of module.exports |
+| `experimental.esmExternals is not recommended` | Next.js deprecated option   | Remove experimental.esmExternals             |
 
 ## Critical Issues
 
@@ -220,7 +223,161 @@ export default defineConfig({
 
 **🚀 Result:** Perfect type resolution across the entire monorepo with 33/33 DX tasks passing.
 
-### 2. UI Package Type Export Issues (Legacy)
+### 2. Next.js Configuration Hell - Duplicate transpilePackages ⭐ **NEW CRITICAL ISSUE**
+
+**⚠️ CRITICAL**: Next.js configuration conflicts causing module resolution failures.
+
+**Symptoms:**
+
+- `Can't resolve '@aibos/accounting-contracts'` in web app builds
+- `Module not found: Can't resolve '@aibos/accounting-contracts'`
+- Web app fails to build despite packages being properly linked
+- Inconsistent module resolution across different environments
+
+**Root Cause:** Multiple configuration sources fighting over transpilePackages:
+
+1. **Legacy format** in `apps/web/package.json` (lines 55-61)
+2. **Modern format** in `apps/web/next.config.js` (lines 3-9)
+3. **Missing dependencies** in web app package.json
+4. **Incorrect package exports** pointing to non-existent files
+
+**🎯 BATTLE-TESTED SOLUTION:**
+
+#### Step 1: Remove Duplicate transpilePackages Configuration
+
+```json
+// ❌ REMOVE from apps/web/package.json
+{
+  "next": {
+    "transpilePackages": ["@aibos/ui", "@aibos/accounting-web", "@aibos/accounting-contracts"]
+  }
+}
+```
+
+```javascript
+// ✅ KEEP ONLY in apps/web/next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: [
+    '@aibos/accounting',
+    '@aibos/accounting-contracts',
+    '@aibos/accounting-web',
+    '@aibos/contracts',
+    '@aibos/ui',
+    '@aibos/utils',
+  ],
+};
+
+export default nextConfig;
+```
+
+#### Step 2: Fix Package Export Mismatches
+
+```json
+// ❌ BEFORE - Points to non-existent files
+{
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",  // File doesn't exist!
+      "require": "./dist/index.cjs"
+    }
+  },
+  "module": "./dist/index.mjs"  // File doesn't exist!
+}
+
+// ✅ AFTER - Points to actual files
+{
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",   // Actual file
+      "require": "./dist/index.cjs"
+    }
+  },
+  "module": "./dist/index.js"  // Actual file
+}
+```
+
+#### Step 3: Fix Dependency Version Conflicts
+
+```json
+// ❌ BEFORE - Version mismatch
+{
+  "dependencies": {
+    "@tanstack/react-query": "5.0.0",
+    "@tanstack/react-query-devtools": "^5.90.2"
+  }
+}
+
+// ✅ AFTER - Consistent versions
+{
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.2",
+    "@tanstack/react-query-devtools": "^5.90.2"
+  }
+}
+```
+
+#### Step 4: Fix TypeScript Configuration Conflicts
+
+```json
+// ❌ BEFORE - Wrong base config
+{
+  "extends": "../../tsconfig.json"  // Only has project references
+}
+
+// ✅ AFTER - Correct base config
+{
+  "extends": "../../tsconfig.base.json",  // Has actual compiler options
+  "compilerOptions": {
+    "moduleResolution": "bundler",  // Next.js specific
+    "experimentalDecorators": false,  // Override base config
+    "emitDecoratorMetadata": false,
+    "useDefineForClassFields": true
+  }
+}
+```
+
+#### Step 5: Add Missing Dependencies
+
+```json
+// ❌ BEFORE - Missing dependency
+{
+  "dependencies": {
+    "@aibos/accounting-web": "workspace:*"
+    // Missing @aibos/accounting!
+  }
+}
+
+// ✅ AFTER - Complete dependencies
+{
+  "dependencies": {
+    "@aibos/accounting": "workspace:*",
+    "@aibos/accounting-web": "workspace:*"
+  }
+}
+```
+
+**🔧 Why This Works:**
+
+1. **Single Source of Truth**: Only one transpilePackages configuration
+2. **Correct File Paths**: Package exports point to actual build files
+3. **Consistent Versions**: No peer dependency conflicts
+4. **Proper TypeScript**: Correct base config with Next.js overrides
+5. **Complete Dependencies**: All required packages included
+
+**✅ Verification Checklist:**
+
+- [ ] Only one transpilePackages configuration (in next.config.js)
+- [ ] Package exports point to actual files (index.js, not index.mjs)
+- [ ] Dependency versions are consistent across ecosystem
+- [ ] TypeScript extends correct base config
+- [ ] All required dependencies are included
+- [ ] Web app builds successfully
+- [ ] All DX tasks pass (53/53)
+
+**🚀 Result:** Web app builds successfully with 100% DX task success rate.
+
+### 3. UI Package Type Export Issues (Legacy)
 
 **⚠️ DEPRECATED**: This issue is now resolved by the TS6307 solution above.
 
@@ -804,10 +961,104 @@ pnpm dx
 - ✅ **Accounting Tests Properly Validated**
 - ✅ **All Linting Issues Resolved**
 - ✅ **Production-Ready Monorepo Configuration**
+- ✅ **Next.js Configuration Conflicts Resolved**
+- ✅ **100% DX Success Rate (53/53 tasks)**
+
+## 🔍 Next.js Configuration Troubleshooting Checklist
+
+### When Web App Fails to Build
+
+**✅ Step-by-Step Diagnosis:**
+
+1. **Check transpilePackages Configuration**
+
+   ```bash
+   # Check for duplicate configurations
+   grep -r "transpilePackages" apps/web/
+   ```
+
+   - Should only be in `next.config.js`
+   - Should NOT be in `package.json`
+
+2. **Verify Package Exports**
+
+   ```bash
+   # Check if exported files exist
+   ls packages/accounting-contracts/dist/
+   ```
+
+   - Should have `index.js` and `index.cjs`
+   - Should NOT reference `index.mjs`
+
+3. **Check Dependency Versions**
+
+   ```bash
+   # Check for version mismatches
+   pnpm list @tanstack/react-query
+   ```
+
+   - All related packages should have consistent versions
+
+4. **Verify TypeScript Configuration**
+
+   ```bash
+   # Check tsconfig extends
+   cat apps/web/tsconfig.json | grep "extends"
+   ```
+
+   - Should extend `tsconfig.base.json`
+   - Should NOT extend `tsconfig.json`
+
+5. **Check Missing Dependencies**
+   ```bash
+   # Check if all required packages are included
+   cat apps/web/package.json | grep "@aibos/"
+   ```
+
+   - Should include all packages used by dependencies
+
+**🚨 Common Failure Patterns:**
+
+| Error Message                                                   | Root Cause                  | Solution                                         |
+| --------------------------------------------------------------- | --------------------------- | ------------------------------------------------ |
+| `Can't resolve '@aibos/accounting-contracts'`                   | Duplicate transpilePackages | Remove from package.json                         |
+| `Module not found: Can't resolve '@aibos/accounting-contracts'` | Wrong export paths          | Fix exports to point to actual files             |
+| `module is not defined in ES module scope`                      | Wrong Next.js config format | Use `export default` instead of `module.exports` |
+| `experimental.esmExternals is not recommended`                  | Deprecated Next.js option   | Remove experimental options                      |
+| `Property 'children' does not exist`                            | Missing dependency          | Add missing @aibos package                       |
+
+**✅ Success Verification:**
+
+```bash
+# All these should pass
+pnpm --filter @aibos/web build
+pnpm --filter @aibos/web typecheck
+pnpm --filter @aibos/web lint
+pnpm dx  # Should show 53/53 tasks passing
+```
+
+### Next.js Configuration Hell - Critical Insights ⭐ **NEW**
+
+**The Problem:** Multiple configuration sources fighting over transpilePackages:
+
+1. **Legacy format** in `apps/web/package.json` (lines 55-61)
+2. **Modern format** in `apps/web/next.config.js` (lines 3-9)
+3. **Missing dependencies** in web app package.json
+4. **Incorrect package exports** pointing to non-existent files
+
+**The Solution:** Complete configuration cleanup:
+
+1. **Single Source of Truth**: Only one transpilePackages configuration
+2. **Correct File Paths**: Package exports point to actual build files
+3. **Consistent Versions**: No peer dependency conflicts
+4. **Proper TypeScript**: Correct base config with Next.js overrides
+5. **Complete Dependencies**: All required packages included
+
+**The Result:** Web app builds successfully with 100% DX task success rate (53/53).
 
 ---
 
 _Last updated: December 2024_
 _This guide was written after a major debugging session that achieved 100% DX success._
-_The TS6307 solution is battle-tested and production-ready._
+_The TS6307 solution and Next.js configuration fixes are battle-tested and production-ready._
 _For the latest version, see [docs/debugging/DEBUGGING.md](docs/debugging/DEBUGGING.md)_
