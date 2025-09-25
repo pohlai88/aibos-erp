@@ -2,10 +2,11 @@ import { defineConfig } from 'tsup';
 
 export default defineConfig({
   entry: ['src/index.ts'],
-  format: ['cjs', 'esm'],
+  format: ['esm', 'cjs'],
   dts: false,
-  splitting: false,
   sourcemap: true,
   clean: false,
+  splitting: false,
+  target: 'node18',
   external: ['pg', 'kafkajs'],
 });

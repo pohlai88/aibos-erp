@@ -65,6 +65,9 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 50, default: 'UTC' })
   timezone!: string;
 
+  @Column({ type: 'uuid' })
+  tenant_id!: string;
+
   // Relationships
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   user_roles!: UserRole[];

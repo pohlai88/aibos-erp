@@ -10,7 +10,7 @@ import * as React from 'react';
 type Properties = {
   tenantId: string;
   className?: string;
-        onPosted?: (id: string) => void;
+  onPosted?: (_id: string) => void;
   /** Optional default currency (e.g., "MYR") */
   defaultCurrency?: string;
 };

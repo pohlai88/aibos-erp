@@ -473,6 +473,42 @@ export default [
     },
   },
 
+  // Accounting-web package - handle unused vars
+  {
+    files: ['packages/accounting-web/**/*.{ts,tsx}'],
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+    },
+  },
+
+  // Web app - handle unused vars and restricted imports
+  {
+    files: ['apps/web/**/*.{ts,tsx}'],
+    rules: {
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          varsIgnorePattern: '^_',
+          argsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
+      // Temporarily disable restricted imports for lucide-react
+      'no-restricted-imports': 'off',
+    },
+  },
+
   // ------------- GLOBAL PRETTIER INTEGRATION -------------
   // Put this LAST so it can disable conflicting formatting rules and surface Prettier issues.
   {

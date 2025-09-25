@@ -12,8 +12,8 @@ export function useAccounting(client = new AccountingClient()): {
   loading: boolean;
   error: string | null;
   trialBalance: TTrialBalance | null;
-  postJournalEntry: (entry: TJournalEntry) => Promise<{ id: string }>;
-  loadTrialBalance: (q: { asOf: string; tenantId: string }) => Promise<TTrialBalance>;
+  postJournalEntry: (_entry: TJournalEntry) => Promise<{ id: string }>;
+  loadTrialBalance: (_q: { asOf: string; tenantId: string }) => Promise<TTrialBalance>;
 } {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);

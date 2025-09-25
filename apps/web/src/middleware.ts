@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-export function middleware(request: NextRequest): NextResponse {
+export function middleware(_request: NextRequest): NextResponse {
   // Generate a random nonce using Web Crypto API (Edge Runtime compatible)
   const nonce = crypto
     .getRandomValues(new Uint8Array(16))

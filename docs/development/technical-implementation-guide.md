@@ -159,7 +159,7 @@ class AccountingApiClient {
         headers: {
           'X-Tenant-Id': tenantId,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -469,30 +469,31 @@ export class AdvancedAnalyticsService {
 
   async generateTrendAnalysis(tenantId: string, periods: number = 12): Promise<TrendAnalysis[]> {
     const trends: TrendAnalysis[] = [];
-    
+
     for (let i = 0; i < periods; i++) {
       const period = new Date();
       period.setMonth(period.getMonth() - i);
-      
+
       const revenue = await this.calculateRevenue(tenantId, period);
       const expenses = await this.calculateExpenses(tenantId, period);
       const netIncome = revenue - expenses;
-      
+
       trends.push({
         period: period.toISOString().slice(0, 7),
         revenue,
         expenses,
         netIncome,
-        growthRate: i > 0 ? ((netIncome - trends[i-1].netIncome) / trends[i-1].netIncome) * 100 : 0,
+        growthRate:
+          i > 0 ? ((netIncome - trends[i - 1].netIncome) / trends[i - 1].netIncome) * 100 : 0,
       });
     }
-    
+
     return trends.reverse();
   }
 
   async generatePredictiveInsights(tenantId: string): Promise<PredictiveInsight[]> {
     const insights: PredictiveInsight[] = [];
-    
+
     // Revenue prediction
     const revenueInsight = await this.predictRevenue(tenantId);
     insights.push({
@@ -502,7 +503,7 @@ export class AdvancedAnalyticsService {
       confidence: revenueInsight.confidence,
       recommendation: revenueInsight.recommendation,
     });
-    
+
     return insights;
   }
 
@@ -641,7 +642,7 @@ describe('AdvancedAnalyticsService Integration', () => {
 
   it('should generate trend analysis', async () => {
     const trends = await service.generateTrendAnalysis('tenant-1', 6);
-    
+
     expect(trends).toHaveLength(6);
     expect(trends[0]).toHaveProperty('period');
     expect(trends[0]).toHaveProperty('revenue');
@@ -652,7 +653,7 @@ describe('AdvancedAnalyticsService Integration', () => {
 
   it('should generate predictive insights', async () => {
     const insights = await service.generatePredictiveInsights('tenant-1');
-    
+
     expect(insights).toBeInstanceOf(Array);
     expect(insights[0]).toHaveProperty('metric');
     expect(insights[0]).toHaveProperty('currentValue');
@@ -754,9 +755,7 @@ import { AccountingHealthService } from '../services/accounting-health.service';
 
 @Controller('health')
 export class HealthController {
-  constructor(
-    private readonly healthService: AccountingHealthService,
-  ) {}
+  constructor(private readonly healthService: AccountingHealthService) {}
 
   @Get()
   async checkHealth() {

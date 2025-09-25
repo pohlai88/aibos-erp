@@ -7,6 +7,7 @@
 ## 📋 Standard Package Configuration Checklist
 
 ### 1. TypeScript Configuration (`tsconfig.json`)
+
 ```json
 {
   "extends": "../../tsconfig.base.json",
@@ -20,11 +21,13 @@
 ```
 
 **❌ NEVER ADD:**
+
 - `rootDir` or `outDir` in main tsconfig.json
 - `include: ["src/**/*"]` (too broad)
 - Custom compiler options not in working packages
 
 ### 2. TypeScript Types Configuration (`tsconfig.types.json`)
+
 ```json
 {
   "extends": "./tsconfig.json",
@@ -42,6 +45,7 @@
 ```
 
 ### 3. Package.json Build Scripts
+
 ```json
 {
   "main": "dist/index.js",
@@ -58,6 +62,7 @@
 ```
 
 ### 4. TSUP Configuration (`tsup.config.ts`)
+
 ```typescript
 import { defineConfig } from 'tsup';
 
@@ -80,6 +85,7 @@ export default defineConfig({
 ## 🎯 Reference Working Packages
 
 **ALWAYS COPY FROM THESE PROVEN WORKING PACKAGES:**
+
 - `packages/ui/` - React components package
 - `packages/utils/` - Utility functions package
 - `packages/contracts/` - Shared contracts package

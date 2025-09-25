@@ -5,11 +5,13 @@
 ### **Step 1: Run Setup Script**
 
 **Windows:**
+
 ```bash
 scripts\setup-accounting-topup.bat
 ```
 
 **Linux/Mac:**
+
 ```bash
 chmod +x scripts/setup-accounting-topup.sh
 ./scripts/setup-accounting-topup.sh
@@ -18,11 +20,13 @@ chmod +x scripts/setup-accounting-topup.sh
 ### **Step 2: Start Development Environment**
 
 **Option A: Using Docker Compose (Recommended)**
+
 ```bash
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
 **Option B: Using Development Script**
+
 ```bash
 # Windows
 scripts\dev-accounting.bat
@@ -57,6 +61,7 @@ pnpm lint
 ### **Code Templates Ready to Use**
 
 #### **API Client Template**
+
 ```typescript
 // apps/web/src/lib/accounting-api.ts
 export interface JournalEntry {
@@ -91,6 +96,7 @@ export const accountingApi = new AccountingApiClient();
 ```
 
 #### **React Hooks Template**
+
 ```typescript
 // apps/web/src/hooks/useAccounting.ts
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -111,6 +117,7 @@ export function useAccounting() {
 ```
 
 #### **Journal Entry Form Template**
+
 ```typescript
 // apps/web/src/components/accounting/JournalEntryForm.tsx
 import { useForm } from 'react-hook-form';
@@ -138,12 +145,14 @@ export function JournalEntryForm() {
 ## 📋 **Daily Development Checklist**
 
 ### **Morning Routine (5 minutes)**
+
 - [ ] Start development environment
 - [ ] Check service health
 - [ ] Review yesterday's progress
 - [ ] Plan today's tasks
 
 ### **Development Workflow**
+
 - [ ] Create feature branch: `git checkout -b feature/journal-entry-form`
 - [ ] Implement feature following templates
 - [ ] Write tests
@@ -152,6 +161,7 @@ export function JournalEntryForm() {
 - [ ] Create pull request
 
 ### **Evening Routine (5 minutes)**
+
 - [ ] Commit all changes
 - [ ] Update progress in documentation
 - [ ] Plan next day's tasks
@@ -160,30 +170,35 @@ export function JournalEntryForm() {
 ## 🎯 **Week 1 Focus Areas**
 
 ### **Day 1: Foundation**
+
 - [ ] Complete setup
 - [ ] Create API client
 - [ ] Implement basic journal entry form
 - [ ] Add form validation
 
 ### **Day 2: Enhancement**
+
 - [ ] Add error handling
 - [ ] Implement loading states
 - [ ] Create responsive design
 - [ ] Add accessibility features
 
 ### **Day 3: Integration**
+
 - [ ] Connect to backend API
 - [ ] Test end-to-end flow
 - [ ] Add success notifications
 - [ ] Implement form reset
 
 ### **Day 4: Polish**
+
 - [ ] Add comprehensive tests
 - [ ] Optimize performance
 - [ ] Add keyboard navigation
 - [ ] Review code quality
 
 ### **Day 5: Validation**
+
 - [ ] Run full test suite
 - [ ] Performance testing
 - [ ] User acceptance testing
@@ -192,6 +207,7 @@ export function JournalEntryForm() {
 ## 🚨 **Common Issues & Solutions**
 
 ### **Issue: Dependencies not installing**
+
 ```bash
 # Solution: Clear cache and reinstall
 pnpm store prune
@@ -199,6 +215,7 @@ pnpm install
 ```
 
 ### **Issue: Database connection failed**
+
 ```bash
 # Solution: Check Docker containers
 docker ps
@@ -206,6 +223,7 @@ docker logs aibos-postgres-dev
 ```
 
 ### **Issue: Port already in use**
+
 ```bash
 # Solution: Kill processes using ports
 # Windows
@@ -217,6 +235,7 @@ lsof -ti:3000 | xargs kill -9
 ```
 
 ### **Issue: Tests failing**
+
 ```bash
 # Solution: Check test setup
 pnpm test --verbose
@@ -226,6 +245,7 @@ pnpm test --coverage
 ## 📊 **Progress Tracking**
 
 ### **Phase 1 Progress (Week 13)**
+
 - [ ] **Day 1**: API client and basic form (20%)
 - [ ] **Day 2**: Form validation and error handling (40%)
 - [ ] **Day 3**: Backend integration (60%)
@@ -233,6 +253,7 @@ pnpm test --coverage
 - [ ] **Day 5**: Testing and documentation (100%)
 
 ### **Success Metrics**
+
 - [ ] Journal entry form functional
 - [ ] Form validation working
 - [ ] Error handling implemented
@@ -251,11 +272,13 @@ pnpm test --coverage
 ## 📞 **Support**
 
 ### **Immediate Help**
+
 - **Technical Issues**: Check troubleshooting guide
 - **Setup Problems**: Run setup script again
 - **Code Questions**: Refer to technical implementation guide
 
 ### **Documentation**
+
 - **Development Plan**: `docs/development/accounting-top-up-development-plan-v2.md`
 - **Technical Guide**: `docs/development/technical-implementation-guide.md`
 - **Preparation Guide**: `docs/development/DEVELOPMENT_PREPARATION.md`

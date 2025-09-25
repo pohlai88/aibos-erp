@@ -15,6 +15,7 @@ The current implementation violates clean monorepo architecture principles by pl
 ## 📁 **Current Repository Structure**
 
 ### **Root Structure**
+
 ```
 d:\aibos-erp\
 ├── apps/                          # Applications (Presentation Layer)
@@ -143,6 +144,7 @@ d:\aibos-erp\
 ## 🎯 **Proposed Clean Architecture**
 
 ### **Target Structure:**
+
 ```
 d:\aibos-erp\
 ├── apps/                          # Applications (Presentation Only)
@@ -213,12 +215,14 @@ d:\aibos-erp\
 ### **Phase 1: Create New Packages**
 
 #### **1.1 Create `packages/accounting-web`**
+
 ```bash
 mkdir packages/accounting-web
 cd packages/accounting-web
 ```
 
 **Package Structure:**
+
 ```
 packages/accounting-web/
 ├── src/
@@ -237,6 +241,7 @@ packages/accounting-web/
 ```
 
 **Dependencies:**
+
 - `@aibos/accounting` (domain logic)
 - `@aibos/ui` (UI components)
 - `@aibos/contracts` (types)
@@ -246,12 +251,14 @@ packages/accounting-web/
 - `zod`
 
 #### **1.2 Create `packages/accounting-contracts`**
+
 ```bash
 mkdir packages/accounting-contracts
 cd packages/accounting-contracts
 ```
 
 **Package Structure:**
+
 ```
 packages/accounting-contracts/
 ├── src/
@@ -268,30 +275,35 @@ packages/accounting-contracts/
 ```
 
 **Dependencies:**
+
 - `zod` (for validation)
 - `@aibos/accounting` (domain types)
 
 ### **Phase 2: Move Business Logic**
 
 #### **2.1 Move Components**
+
 ```bash
 # Move from apps/web/src/components/accounting/ to packages/accounting-web/src/components/
 mv apps/web/src/components/accounting/* packages/accounting-web/src/components/
 ```
 
 #### **2.2 Move Hooks**
+
 ```bash
 # Move from apps/web/src/hooks/ to packages/accounting-web/src/hooks/
 mv apps/web/src/hooks/useAccounting.ts packages/accounting-web/src/hooks/
 ```
 
 #### **2.3 Move API Client**
+
 ```bash
 # Move from apps/web/src/lib/ to packages/accounting-web/src/lib/
 mv apps/web/src/lib/accounting-api.ts packages/accounting-web/src/lib/
 ```
 
 #### **2.4 Move Types**
+
 ```bash
 # Move from apps/web/src/lib/types.ts to packages/accounting-contracts/src/types/
 mv apps/web/src/lib/types.ts packages/accounting-contracts/src/types/
@@ -300,6 +312,7 @@ mv apps/web/src/lib/types.ts packages/accounting-contracts/src/types/
 ### **Phase 3: Update Imports**
 
 #### **3.1 Update `apps/web/src/app/accounting/page.tsx`**
+
 ```typescript
 // Before (❌ Wrong)
 import { JournalEntryForm } from '../../components/accounting/JournalEntryForm';
@@ -310,6 +323,7 @@ import { JournalEntryForm, FinancialDashboard } from '@aibos/accounting-web';
 ```
 
 #### **3.2 Update Package Dependencies**
+
 ```json
 // apps/web/package.json
 {
@@ -324,6 +338,7 @@ import { JournalEntryForm, FinancialDashboard } from '@aibos/accounting-web';
 ### **Phase 4: Clean Apps Directory**
 
 #### **4.1 Remove Business Logic from `apps/web`**
+
 ```bash
 # Remove business logic directories
 rm -rf apps/web/src/components/accounting/
@@ -333,6 +348,7 @@ rm -rf apps/web/src/lib/types.ts
 ```
 
 #### **4.2 Keep Only Presentation Logic**
+
 ```
 apps/web/src/
 ├── app/                    # Next.js App Router
@@ -353,29 +369,35 @@ apps/web/src/
 ### **Files to Move:**
 
 #### **From `apps/web/src/components/accounting/` to `packages/accounting-web/src/components/`:**
+
 - `JournalEntryForm.tsx` → `packages/accounting-web/src/components/JournalEntryForm.tsx`
 - `FinancialDashboard.tsx` → `packages/accounting-web/src/components/FinancialDashboard.tsx`
 - `ChartOfAccounts.tsx` → `packages/accounting-web/src/components/ChartOfAccounts.tsx`
 - `TrialBalance.tsx` → `packages/accounting-web/src/components/TrialBalance.tsx`
 
 #### **From `apps/web/src/hooks/` to `packages/accounting-web/src/hooks/`:**
+
 - `useAccounting.ts` → `packages/accounting-web/src/hooks/useAccounting.ts`
 
 #### **From `apps/web/src/lib/` to `packages/accounting-web/src/lib/`:**
+
 - `accounting-api.ts` → `packages/accounting-web/src/lib/accounting-api.ts`
 
 #### **From `apps/web/src/lib/` to `packages/accounting-contracts/src/types/`:**
+
 - `types.ts` → `packages/accounting-contracts/src/types/index.ts`
 
 ### **Files to Update:**
 
 #### **Import Updates Required:**
+
 1. `apps/web/src/app/accounting/page.tsx`
 2. `apps/web/src/app/layout.tsx`
 3. `apps/web/src/app/page.tsx`
 4. `apps/web/src/components/Navigation.tsx`
 
 #### **Package.json Updates Required:**
+
 1. `packages/accounting-web/package.json` (new)
 2. `packages/accounting-contracts/package.json` (new)
 3. `apps/web/package.json` (add dependencies)
@@ -386,6 +408,7 @@ apps/web/src/
 ## 🎯 **Benefits of Refactoring**
 
 ### **Architecture Benefits:**
+
 - ✅ **Separation of Concerns**: Business logic separated from presentation
 - ✅ **Reusability**: Components can be used across multiple apps
 - ✅ **Testability**: Business logic can be tested independently
@@ -393,12 +416,14 @@ apps/web/src/
 - ✅ **Scalability**: Easy to add new apps (mobile, desktop)
 
 ### **Development Benefits:**
+
 - ✅ **Type Safety**: Shared types across packages
 - ✅ **Code Reuse**: Components shared across apps
 - ✅ **Independent Development**: Teams can work on different packages
 - ✅ **Version Management**: Packages can be versioned independently
 
 ### **Deployment Benefits:**
+
 - ✅ **Independent Deployment**: Packages can be deployed separately
 - ✅ **Bundle Optimization**: Only necessary code included in apps
 - ✅ **Caching**: Shared packages can be cached independently
@@ -408,16 +433,19 @@ apps/web/src/
 ## 🚀 **Implementation Timeline**
 
 ### **Week 1: Package Creation**
+
 - Day 1-2: Create `packages/accounting-web`
 - Day 3-4: Create `packages/accounting-contracts`
 - Day 5: Update workspace configuration
 
 ### **Week 2: Code Migration**
+
 - Day 1-2: Move components and hooks
 - Day 3-4: Move API client and types
 - Day 5: Update imports and dependencies
 
 ### **Week 3: Testing & Validation**
+
 - Day 1-2: Update tests
 - Day 3-4: Validate functionality
 - Day 5: Performance testing
@@ -427,12 +455,14 @@ apps/web/src/
 ## ⚠️ **Risks & Mitigation**
 
 ### **Risks:**
+
 1. **Breaking Changes**: Import paths will change
 2. **Testing**: Tests need to be updated
 3. **Dependencies**: Package dependencies need to be managed
 4. **Build Process**: Build configuration needs updates
 
 ### **Mitigation:**
+
 1. **Incremental Migration**: Move packages one at a time
 2. **Comprehensive Testing**: Test each step thoroughly
 3. **Documentation**: Update all documentation
@@ -466,4 +496,4 @@ apps/web/src/
 
 ---
 
-*This document outlines the critical architecture violations and provides a comprehensive refactoring plan to restore clean monorepo architecture.*
+_This document outlines the critical architecture violations and provides a comprehensive refactoring plan to restore clean monorepo architecture._
