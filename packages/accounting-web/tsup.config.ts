@@ -3,13 +3,10 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: ['src/index.ts'],
   format: ['esm', 'cjs'],
-  dts: false, // Temporarily disable DTS - will create manually
-  splitting: false,
+  dts: false,
   sourcemap: true,
   clean: false,
-  treeshake: true,
-  skipNodeModulesBundle: true,
-  minify: false,
-  target: 'es2022',
+  splitting: false,
+  target: 'node18',
   external: ['react', 'react-dom'],
 });

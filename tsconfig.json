@@ -6,7 +6,12 @@
     { "path": "packages/eventsourcing" },
     { "path": "packages/ui" },
     { "path": "packages/accounting" },
-    { "path": "apps/bff" }
+    { "path": "packages/accounting-contracts" },
+    { "path": "packages/accounting-web" },
+    { "path": "packages/observability" },
+    { "path": "packages/policy" },
+    { "path": "apps/bff" },
+    { "path": "apps/web" }
   ],
   "compilerOptions": {
     "composite": true

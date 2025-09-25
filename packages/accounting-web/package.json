@@ -1,12 +1,38 @@
 {
   "name": "@aibos/accounting-web",
   "version": "0.1.0",
+  "private": false,
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/types/src/index.d.ts",
-  "peerDependencies": { 
-    "react": ">=18", 
-    "react-dom": ">=18" 
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/src/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/types/src/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build:types": "tsc -p tsconfig.types.json",
+    "build:js": "tsup",
+    "build": "pnpm run build:types && pnpm run build:js",
+    "format": "prettier -w .",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'No tests yet'",
+    "dep:check": "depcruise --validate --config ../../.dependency-cruiser.js --output-type text src",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist"
   },
   "dependencies": {
     "@aibos/accounting": "workspace:*",
@@ -14,19 +40,19 @@
     "@aibos/ui": "workspace:*",
     "zod": "^3.22.4"
   },
-  "scripts": {
-    "build:types": "tsc -p tsconfig.types.json",
-    "build:js": "tsup",
-    "build": "pnpm run build:types && pnpm run build:js",
-    "test": "vitest run",
-    "lint": "eslint src --ext .ts,.tsx",
-    "typecheck": "tsc --noEmit"
-  },
   "devDependencies": {
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0",
-    "tsup": "^8.0.0",
-    "typescript": "^5.0.0",
-    "vitest": "^1.0.0"
+    "@types/react": "18.2.0",
+    "@types/react-dom": "18.2.0",
+    "eslint": "9.36.0",
+    "prettier": "3.6.2",
+    "tsup": "8.5.0",
+    "typescript": "5.9.2"
+  },
+  "peerDependencies": {
+    "react": "18.2.0",
+    "react-dom": "18.2.0"
+  },
+  "engines": {
+    "node": ">=18.18.0"
   }
 }

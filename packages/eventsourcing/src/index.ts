@@ -32,7 +32,7 @@ export * from './schema/schema-registry';
 export * from './schema/upcaster';
 
 // CLI Tools
-export * from './cli/replay-cli';
+// export * from './cli/replay-cli'; // TODO: Implement CLI tools
 
 // Utilities
 export * from './utils/event-replay';
