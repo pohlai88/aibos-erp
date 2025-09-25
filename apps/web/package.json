@@ -15,6 +15,7 @@
     "clean": "rimraf .next"
   },
   "dependencies": {
+    "@aibos/accounting": "workspace:*",
     "@aibos/accounting-contracts": "workspace:*",
     "@aibos/accounting-web": "workspace:*",
     "@aibos/contracts": "workspace:*",
@@ -22,7 +23,7 @@
     "@aibos/utils": "workspace:*",
     "@headlessui/react": "1.7.0",
     "@hookform/resolvers": "3.3.0",
-    "@tanstack/react-query": "5.0.0",
+    "@tanstack/react-query": "^5.90.2",
     "@tanstack/react-query-devtools": "^5.90.2",
     "@tanstack/react-table": "8.21.3",
     "@types/d3": "7.4.0",
@@ -51,12 +52,5 @@
   },
   "engines": {
     "node": ">=18.18.0"
-  },
-  "next": {
-    "transpilePackages": [
-      "@aibos/ui",
-      "@aibos/accounting-web",
-      "@aibos/accounting-contracts"
-    ]
   }
 }
