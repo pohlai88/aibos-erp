@@ -1,27 +1,140 @@
-# Dependencies
+# --- OS / Editor junk ---
+.DS_Store
+Thumbs.db
+$RECYCLE.BIN/
+.idea/
+*.iml
+
+# VS Code: ignore everything, then allow the useful project configs
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+!.vscode/launch.json
+
+# --- Package managers / logs ---
 node_modules/
 .pnpm-store/
-
-# Build outputs
-dist/
-build/
-.next/
-out/
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
+logs/
+*.log
+*.log.*
 
+# --- TypeScript ---
+*.tsbuildinfo
+
+# --- Build artifacts / caches ---
+dist/
+build/
+lib/
+out/
+coverage/
+.cache/
+.tmp/
+temp/
+
+# --- Turborepo ---
+.turbo/
+.turbo/*
+turbo/generate/*
+
+# --- Next.js / Vercel ---
+.next/
+.vercel/*
+# keep project link if you use it
+!.vercel/project.json
+
+# --- Storybook / Tests ---
+storybook-static/
+.playwright/
+test-results/
+cypress/videos/
+cypress/screenshots/
+
+# --- Lint / Tool caches ---
+.eslintcache
+
+# --- Databases (dev) ---
+*.sqlite
+*.sqlite-journal
+prisma/dev.db
+
+# --- Docker local data (keep compose files; see allowlist below) ---
+docker-data/
+
+# --- Supabase local clutter (keep config & migrations; see allowlist) ---
+supabase/.temp/
+supabase/.branches/
+supabase/.logs/
+
+# --- ENV & secrets (commit only examples) ---
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ------------- CONFIG ALLOWLIST -------------
+# Make sure config files are tracked even if covered by rules above
+!**/.editorconfig
+!**/.gitattributes
+!**/.gitignore
+!**/.gitkeep
+
+!**/package.json
+!**/pnpm-workspace.yaml
+!**/turbo.json
+!**/biome.json
+
+# TypeScript / Build tooling
+!**/tsconfig.json
+!**/tsconfig.*.json
+!**/tsup.config.*
+!**/vite.config.*
+!**/vitest.config.*
+!**/jest.config.*
+!**/rollup.config.*
+!**/webpack.config.*
+!**/babel.config.*
+
+# Lint / Format
+!**/.eslintrc
+!**/.eslintrc.*
+!**/eslint.config.*
+!**/.prettierrc
+!**/.prettierrc.*
+!**/prettier.config.*
+!**/.stylelintrc*
+!**/stylelint.config.*
+
+# UI / CSS toolchains
+!**/tailwind.config.*
+!**/postcss.config.*
+
+# Framework configs
+!**/next.config.*
+!**/nest-cli.json
+!**/vercel.json
+
+# DB / ORM
+!**/drizzle.config.*
+!**/knexfile.*
+!**/ormconfig.*
+!**/sqlc.yaml
+# Supabase project files to keep:
+!supabase/config.toml
+!supabase/functions/**/deno.json
+!supabase/migrations/**
+
+# Docker / CI
+!**/Dockerfile
+!**/docker-compose*.yml
+!**/.dockerignore
+!.github/**
+
+# --- Legacy cleanup (keeping some from old .gitignore) ---
 # Runtime data
 pids
 *.pid
@@ -29,7 +142,6 @@ pids
 *.pid.lock
 
 # Coverage directory used by tools like istanbul
-coverage/
 *.lcov
 
 # nyc test coverage
@@ -38,14 +150,8 @@ coverage/
 # Dependency directories
 jspm_packages/
 
-# TypeScript cache
-*.tsbuildinfo
-
 # Optional npm cache directory
 .npm
-
-# Optional eslint cache
-.eslintcache
 
 # Optional REPL history
 .node_repl_history
@@ -57,53 +163,35 @@ jspm_packages/
 .yarn-integrity
 
 # parcel-bundler cache (https://parceljs.org/)
-.cache
 .parcel-cache
-
-# Next.js build output
-.next
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
-.cache/
 public
 
 # Storybook build outputs
-.out
 .storybook-out
 
 # Temporary folders
 tmp/
-temp/
 
-# Editor directories and files
-.vscode/
-.idea/
+# Editor files
 *.swp
 *.swo
 *~
 
 # OS generated files
-.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
 
 # Package manager lock files (keep pnpm-lock.yaml)
 package-lock.json
 yarn.lock
 
-# Turbo
-.turbo
-
 # Test reports and results
 playwright-report/
-test-results/
-coverage/
-*.lcov
