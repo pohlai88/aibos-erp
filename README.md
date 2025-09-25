@@ -2,6 +2,14 @@
 
 A modern, cloud-native Enterprise Resource Planning (ERP) system built with cutting-edge technologies and enterprise-grade architecture patterns.
 
+## 🚨 CRITICAL DEVELOPMENT INSIGHT
+
+**⚠️ SUPER IMPORTANT:** Always follow working package patterns. Never create manual configurations or deviate from proven working packages.
+
+👉 **[PACKAGE CONFIGURATION STANDARD](./docs/development/PACKAGE_CONFIGURATION_STANDARD.md)** - Mandatory reading before creating packages.
+
+**Reference Working Packages:** `packages/ui/`, `packages/utils/`, `packages/contracts/`
+
 ## 🎯 **Phase 1 Status: 80% Complete (2 Days Ahead of Schedule)**
 
 ### **✅ COMPLETED INFRASTRUCTURE**

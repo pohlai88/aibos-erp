@@ -1,0 +1,23 @@
+{
+  "name": "@aibos/accounting-contracts",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/types/index.d.ts",
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "scripts": {
+    "build:types": "tsc -p tsconfig.types.json",
+    "build:js": "tsup",
+    "build": "pnpm run build:types && pnpm run build:js",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}

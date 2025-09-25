@@ -15,18 +15,36 @@
     "clean": "rimraf .next"
   },
   "dependencies": {
+    "@aibos/accounting-contracts": "workspace:*",
+    "@aibos/accounting-web": "workspace:*",
     "@aibos/contracts": "workspace:*",
     "@aibos/ui": "workspace:*",
     "@aibos/utils": "workspace:*",
-    "next": "15.4.7",
+    "@headlessui/react": "1.7.0",
+    "@hookform/resolvers": "3.3.0",
+    "@tanstack/react-query": "5.0.0",
+    "@tanstack/react-query-devtools": "^5.90.2",
+    "@tanstack/react-table": "8.21.3",
+    "@types/d3": "7.4.0",
+    "@types/lodash": "4.17.20",
+    "lucide-react": "0.400.0",
+    "next": "15.5.3",
     "react": "18.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "18.2.0",
+    "react-hook-form": "7.48.0",
+    "recharts": "2.8.0",
+    "zod": "3.22.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "6.0.0",
+    "@testing-library/react": "14.0.0",
+    "@testing-library/user-event": "14.0.0",
     "@types/node": "20.0.0",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
     "autoprefixer": "10.4.0",
+    "jest": "29.0.0",
+    "jest-environment-jsdom": "29.0.0",
     "postcss": "8.4.0",
     "tailwindcss": "3.4.0",
     "typescript": "5.9.2"
@@ -36,7 +54,9 @@
   },
   "next": {
     "transpilePackages": [
-      "@aibos/ui"
+      "@aibos/ui",
+      "@aibos/accounting-web",
+      "@aibos/accounting-contracts"
     ]
   }
 }

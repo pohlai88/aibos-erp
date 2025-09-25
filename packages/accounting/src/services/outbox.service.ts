@@ -89,21 +89,9 @@ export class OutboxService {
 
     for (const event of pendingEvents) {
       try {
-        await this.kafkaProducer.send({
-          topic: event.topic,
-          messages: [
-            {
-              key: event.key,
-              value: JSON.stringify(event.payload),
-              headers: {
-                'tenant-id': String(event.tenantId),
-                'event-type': String(
-                  (event.payload as Record<string, unknown>).eventType ?? 'unknown',
-                ),
-              },
-            },
-          ],
-        });
+        // Convert outbox event back to DomainEvent for publishing
+        const domainEvent = event.payload as DomainEvent;
+        await this.kafkaProducer.publishEvent(domainEvent);
 
         await this.outboxRepository.update(event.id, {
           status: 'PUBLISHED',

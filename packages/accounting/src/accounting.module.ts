@@ -1,8 +1,9 @@
 import { AccountEntity } from './infrastructure/database/entities/account.entity';
 import { ExchangeRateEntity } from './infrastructure/database/entities/exchange-rate.entity';
+import { JournalEntryEntity } from './infrastructure/database/entities/journal-entry.entity';
 import { OutboxEventEntity } from './infrastructure/database/entities/outbox-event.entity';
 import { TypeormAccountRepository } from './infrastructure/database/repositories/typeorm-account.repository';
-import { InMemoryAccountRepository } from './infrastructure/repositories/in-memory-account.repository';
+import { TypeormJournalEntryRepository } from './infrastructure/database/repositories/typeorm-journal-entry.repository';
 import { InMemoryEventStore } from './infrastructure/repositories/in-memory-event-store.repository';
 import { GeneralLedgerProjection } from './projections/general-ledger-projection';
 import { AccountingHealthService } from './services/accounting-health.service';
@@ -16,13 +17,20 @@ import { DefaultTaxAccountsMap } from './services/tax-account.mapper';
 import { TaxComplianceService } from './services/tax-compliance.service';
 import { TaxLineCalculatorService } from './services/tax-line-calculator.service';
 import { TrialBalanceService } from './services/trial-balance.service';
+import { EVENT_STORE, ACCOUNT_REPOSITORY, JOURNAL_ENTRY_REPOSITORY } from './tokens';
+import { KafkaEventProducer } from '@aibos/eventsourcing';
 import { HttpModule } from '@nestjs/axios';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([AccountEntity, ExchangeRateEntity, OutboxEventEntity]),
+    TypeOrmModule.forFeature([
+      AccountEntity,
+      ExchangeRateEntity,
+      OutboxEventEntity,
+      JournalEntryEntity,
+    ]),
     HttpModule,
   ],
   providers: [
@@ -38,17 +46,18 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     FinancialReportingService,
     TrialBalanceService,
     GeneralLedgerProjection,
+    KafkaEventProducer,
     {
-      provide: 'EventStore',
+      provide: EVENT_STORE,
       useClass: InMemoryEventStore,
     },
     {
-      provide: 'AccountRepository',
+      provide: ACCOUNT_REPOSITORY,
       useClass: TypeormAccountRepository,
     },
     {
-      provide: 'JournalEntryRepository',
-      useClass: InMemoryAccountRepository, // TODO: Create proper JournalEntryRepository implementation
+      provide: JOURNAL_ENTRY_REPOSITORY,
+      useClass: TypeormJournalEntryRepository,
     },
   ],
   exports: [

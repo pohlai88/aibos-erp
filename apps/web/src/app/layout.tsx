@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 
+import { Navigation } from '../components/Navigation';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -64,7 +65,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        {children}
+        <Navigation />
+        <main>{children}</main>
       </body>
     </html>
   );

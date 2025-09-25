@@ -1,0 +1,25 @@
+{
+  "name": "@aibos/policy",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/types/src/index.d.ts",
+  "scripts": {
+    "build:types": "tsc -p tsconfig.types.json",
+    "build:js": "tsup",
+    "build": "pnpm run build:types && pnpm run build:js",
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "eslint": "^9.36.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^1.6.1"
+  }
+}

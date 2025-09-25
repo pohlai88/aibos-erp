@@ -24,6 +24,8 @@
       "@aibos/utils/*": ["packages/utils/src/*"],
       "@aibos/eventsourcing/*": ["packages/eventsourcing/src/*"],
       "@aibos/accounting/*": ["packages/accounting/src/*"],
+      "@aibos/accounting-web/*": ["packages/accounting-web/src/*"],
+      "@aibos/accounting-contracts/*": ["packages/accounting-contracts/src/*"],
       "@aibos/bff/*": ["apps/bff/src/*"]
     }
   }

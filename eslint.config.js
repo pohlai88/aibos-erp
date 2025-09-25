@@ -10,6 +10,7 @@ import sonarjs from 'eslint-plugin-sonarjs';
 import security from 'eslint-plugin-security';
 import unicorn from 'eslint-plugin-unicorn';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
+import reactHooks from 'eslint-plugin-react-hooks';
 // import nextPlugin from 'eslint-config-next'; // Temporarily disabled due to ESLint compatibility issues
 
 export default [
@@ -109,6 +110,7 @@ export default [
       security,
       unicorn,
       'jsx-a11y': jsxA11y,
+      'react-hooks': reactHooks,
     },
     rules: {
       // Enhanced TypeScript rules
