@@ -2,17 +2,17 @@ import type { JournalEntryRepository } from '../domain/repositories.interface';
 import type { AccountRepository } from '../domain/repositories.interface';
 import type { EventStore } from '../domain/repositories.interface';
 
-import { type CreateAccountCommand } from '../commands/create-account-command';
-import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
+import { type CreateAccountCommand } from '../commands/create-account.command';
+import { PostJournalEntryCommand } from '../commands/post-journal-entry.command';
 import {
   EVENT_STORE,
   ACCOUNT_REPOSITORY,
   JOURNAL_ENTRY_REPOSITORY,
-} from '../constants/injection-tokens';
-import { ChartOfAccounts } from '../domain/chart-of-accounts';
+} from '../constants/injection.tokens';
+import { ChartOfAccounts } from '../domain/chart-of-accounts.domain';
 import { JournalEntry } from '../domain/journal-entry';
-import { CircuitBreaker } from '../infrastructure/resilience/circuit-breaker';
-import { GeneralLedgerProjection } from '../projections/general-ledger-projection';
+import { CircuitBreaker } from '../infrastructure/circuit-breaker.infrastructure';
+import { GeneralLedgerProjection } from '../projections/general-ledger.projection';
 import { FinancialReportingService } from './financial-reporting.service';
 import { MultiCurrencyService } from './multi-currency.service';
 import { OutboxService } from './outbox.service';

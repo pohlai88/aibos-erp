@@ -1,16 +1,16 @@
 import type { DomainEvent } from '@aibos/eventsourcing';
 
-import { type CreateAccountCommand } from '../commands/create-account-command';
-import { AccountCompanionLinksSetEvent } from '../events/account-companion-links-set-event';
-import { AccountCreatedEvent } from '../events/account-created-event';
-import { AccountParentChangedEvent } from '../events/account-parent-changed-event';
-import { AccountPostingPolicyChangedEvent } from '../events/account-posting-policy-changed-event';
+import { type CreateAccountCommand } from '../commands/create-account.command';
+import { AccountCompanionLinksSetEvent } from '../events/account-companion-links-set.event';
+import { AccountCreatedEvent } from '../events/account-created.event';
+import { AccountParentChangedEvent } from '../events/account-parent-changed.event';
+import { AccountPostingPolicyChangedEvent } from '../events/account-posting-policy-changed.event';
 import {
   AccountBalanceUpdatedEvent,
   AccountStateUpdatedEvent,
-} from '../events/account-updated-event';
-import { AccountType, SpecialAccountType } from './account';
-import { Account } from './account';
+} from '../events/account-updated.event';
+import { AccountType, SpecialAccountType } from './account.domain';
+import { Account } from './account.domain';
 import { AggregateRoot } from '@aibos/eventsourcing';
 
 export class ChartOfAccounts extends AggregateRoot {

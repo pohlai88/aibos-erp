@@ -1,8 +1,8 @@
-import type { AccountType } from '../domain/account';
+import type { AccountType } from '../domain/account.domain';
 import type { DomainEvent } from '@aibos/eventsourcing';
 
-import { Money } from '../domain/money';
-import { assertAggregateMatchesTenant, moneyFromCentsShim } from './common';
+import { Money } from '../domain/Money';
+import { assertAggregateMatchesTenant, moneyFromCentsShim } from './common.utility';
 import { randomUUID } from 'node:crypto';
 
 const CODE = /^[A-Z0-9._-]{1,64}$/i;

@@ -1,4 +1,4 @@
-import { AccountType, SpecialAccountType } from '../domain/account';
+import { AccountType, SpecialAccountType } from '../domain/account.domain';
 
 export interface CreateAccountCommandProperties {
   readonly accountCode: string;

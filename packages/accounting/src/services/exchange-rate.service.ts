@@ -1,4 +1,4 @@
-import { ExchangeRateEntity } from '../infrastructure/database/entities/exchange-rate.entity';
+import { ExchangeRateEntity } from '../infrastructure/exchange-rate.entity';
 import { type HttpService } from '@nestjs/axios';
 import { Injectable, Logger } from '@nestjs/common';
 import { type ConfigService } from '@nestjs/config';

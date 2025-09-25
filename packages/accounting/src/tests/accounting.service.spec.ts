@@ -1,14 +1,14 @@
-import type { AccountRepository } from '../domain/interfaces/repositories.interface';
+import type { AccountRepository } from '../domain/repositories.interface';
 
-import { CreateAccountCommand } from '../commands/create-account-command';
-import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
+import { CreateAccountCommand } from '../commands/create-account.command';
+import { PostJournalEntryCommand } from '../commands/post-journal-entry.command';
 import {
   EVENT_STORE,
   ACCOUNT_REPOSITORY,
   JOURNAL_ENTRY_REPOSITORY,
-} from '../constants/injection-tokens';
-import { AccountCreatedEvent } from '../events/account-created-event';
-import { GeneralLedgerProjection } from '../projections/general-ledger-projection';
+} from '../constants/injection.tokens';
+import { AccountCreatedEvent } from '../events/account-created.event';
+import { GeneralLedgerProjection } from '../projections/general-ledger.projection';
 import { AccountingService } from '../services/accounting.service';
 import { FinancialReportingService } from '../services/financial-reporting.service';
 import { KafkaProducerService } from '../services/kafka-producer.service';

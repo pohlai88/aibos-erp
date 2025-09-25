@@ -1,9 +1,9 @@
 import type { DomainEvent } from '@aibos/eventsourcing';
 
-import { type PostJournalEntryCommand } from '../commands/post-journal-entry-command';
-import { JournalEntryPostedEvent } from '../events/journal-entry-posted-event';
+import { type PostJournalEntryCommand } from '../commands/post-journal-entry.command';
+import { JournalEntryPostedEvent } from '../events/journal-entry-posted.event';
 import { JournalEntryLine } from './journal-entry-line';
-import { JournalEntryStatus, JournalEntryStatusValidator } from './journal-entry-status';
+import { JournalEntryStatus, JournalEntryStatusValidator } from './journal-entry-status.domain';
 import { AggregateRoot } from '@aibos/eventsourcing';
 
 export class JournalEntry extends AggregateRoot {

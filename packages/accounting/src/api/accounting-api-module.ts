@@ -11,7 +11,7 @@ import {
   validateQueryParameters,
   errorHandler,
   requestLogger,
-} from './validation-middleware';
+} from './validation.middleware';
 
 // Constants
 const API_BASE_PATH = '/api/accounting';

@@ -1,6 +1,6 @@
-import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
-import { AccountType, SpecialAccountType } from '../domain/account';
-import { type ChartOfAccounts } from '../domain/chart-of-accounts';
+import { PostJournalEntryCommand } from '../commands/post-journal-entry.command';
+import { AccountType, SpecialAccountType } from '../domain/account.domain';
+import { type ChartOfAccounts } from '../domain/chart-of-accounts.domain';
 // import { JournalEntryLine } from '../domain/journal-entry-line'; // No longer needed
 
 export interface IntercompanyJournalLine {

@@ -1,6 +1,6 @@
-import type { GeneralLedgerProjection } from '../projections/general-ledger-projection';
+import type { GeneralLedgerProjection } from '../projections/general-ledger.projection';
 
-import { AccountType } from '../domain/account';
+import { AccountType } from '../domain/account.domain';
 
 /**
  * Profit and Loss Statement

@@ -8,5 +8,5 @@ export {
   validateQueryParameters,
   errorHandler,
   requestLogger,
-} from './validation-middleware';
+} from './validation.middleware';
 export { AccountingApiModule } from './accounting-api-module';

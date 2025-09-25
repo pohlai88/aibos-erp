@@ -1,8 +1,8 @@
 import type { AccountingService } from '../services/accounting.service';
 import type { Request, Response } from 'express';
 
-import { CreateAccountCommand } from '../commands/create-account-command';
-import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
+import { CreateAccountCommand } from '../commands/create-account.command';
+import { PostJournalEntryCommand } from '../commands/post-journal-entry.command';
 // import { JournalEntryLine } from '../../domain/journal-entry-line'; // No longer needed
 
 // Types

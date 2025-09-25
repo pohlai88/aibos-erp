@@ -1,4 +1,4 @@
-import type { ProjectionHealth } from './projection-health';
+import type { ProjectionHealth } from './health.utility';
 
 export class GLBalancesDailyProjection {
   async materialize(tenantId: string, asOfDate: Date): Promise<void> {

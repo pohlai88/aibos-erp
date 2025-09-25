@@ -1,4 +1,4 @@
-import { ResilienceManager } from '../infrastructure/resilience/resilience-manager';
+import { ResilienceManager } from '../infrastructure/resilience-manager.infrastructure';
 import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 

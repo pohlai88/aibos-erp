@@ -2,12 +2,12 @@ import type {
   GeneralLedgerProjection,
   TrialBalanceData,
   GLIntegrityReport,
-} from '../projections/general-ledger-projection';
+} from '../projections/general-ledger.projection';
 
 // Re-export types for external use
 export type { TrialBalanceData, GLIntegrityReport };
 
-import { AccountType } from '../domain/account';
+import { AccountType } from '../domain/account.domain';
 
 /**
  * Trial balance validation result

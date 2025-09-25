@@ -1,6 +1,6 @@
-import { CreateAccountCommand } from '../commands/create-account-command';
-import { type Account, AccountType, SpecialAccountType } from '../domain/account';
-import { type ChartOfAccounts } from '../domain/chart-of-accounts';
+import { CreateAccountCommand } from '../commands/create-account.command';
+import { type Account, AccountType, SpecialAccountType } from '../domain/account.domain';
+import { type ChartOfAccounts } from '../domain/chart-of-accounts.domain';
 
 export interface DepreciableAssetBundleInput {
   asset: { code: string; name: string; parentCode?: string };

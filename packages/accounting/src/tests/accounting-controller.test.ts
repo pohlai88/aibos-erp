@@ -1,5 +1,5 @@
 import { AccountingController } from '../api/accounting-controller';
-import { AccountType } from '../domain/account';
+import { AccountType } from '../domain/account.domain';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
 // Constants

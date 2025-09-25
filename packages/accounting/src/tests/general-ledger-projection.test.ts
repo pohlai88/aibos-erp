@@ -1,11 +1,11 @@
-import { AccountType } from '../domain/account';
+import { AccountType } from '../domain/account.domain';
 import { JournalEntryLine } from '../domain/journal-entry-line';
 import {
   AccountBalanceUpdatedEvent,
   AccountStateUpdatedEvent,
-} from '../events/account-updated-event';
-import { JournalEntryPostedEvent } from '../events/journal-entry-posted-event';
-import { GeneralLedgerProjection } from '../projections/general-ledger-projection';
+} from '../events/account-updated.event';
+import { JournalEntryPostedEvent } from '../events/journal-entry-posted.event';
+import { GeneralLedgerProjection } from '../projections/general-ledger.projection';
 import { describe, it, expect, beforeEach } from 'vitest';
 
 // Constants

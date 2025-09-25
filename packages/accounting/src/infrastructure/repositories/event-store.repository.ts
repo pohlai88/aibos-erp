@@ -2,9 +2,9 @@ import type { EventStore } from '../../domain/repositories.interface';
 import type { DomainEvent } from '@aibos/eventsourcing';
 import type { DataSource, QueryRunner, EntityManager } from 'typeorm';
 
-import { AccountCreatedEvent } from '../../events/account-created-event';
-import { JournalEntryPostedEvent } from '../../events/journal-entry-posted-event';
-import { AccountingEventEntity } from '../database/entities/accounting-event.entity';
+import { AccountCreatedEvent } from '../../events/account-created.event';
+import { JournalEntryPostedEvent } from '../../events/journal-entry-posted.event';
+import { AccountingEventEntity } from '../accounting-event.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { type Repository } from 'typeorm';

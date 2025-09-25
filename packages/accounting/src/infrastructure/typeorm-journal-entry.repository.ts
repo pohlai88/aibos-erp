@@ -1,7 +1,7 @@
-import type { JournalEntry } from '../../domain/accounting-entities';
-import type { JournalEntryRepository } from '../../domain/repositories.interface';
+import type { JournalEntry } from '@aibos/accounting/domain/accounting-entities';
+import type { JournalEntryRepository } from '@aibos/accounting/domain/repositories.interface';
 
-import { JournalEntryEntity } from '../database/entities/journal-entry.entity';
+import { JournalEntryEntity } from './journal-entry.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { type Repository } from 'typeorm';

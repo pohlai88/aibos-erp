@@ -1,4 +1,4 @@
-import type { EventStore } from '../../domain/repositories.interface';
+import type { EventStore } from '@aibos/accounting/domain/repositories.interface';
 import type { DomainEvent } from '@aibos/eventsourcing';
 import type { EntityManager } from 'typeorm';
 

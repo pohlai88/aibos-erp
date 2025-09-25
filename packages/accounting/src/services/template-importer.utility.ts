@@ -5,9 +5,9 @@
  * topological sorting, and comprehensive validation.
  */
 
-import { CreateAccountCommand } from '../commands/create-account-command';
-import { AccountType, SpecialAccountType } from '../domain/account';
-import { ChartOfAccounts } from '../domain/chart-of-accounts';
+import { CreateAccountCommand } from '../commands/create-account.command';
+import { AccountType, SpecialAccountType } from '../domain/account.domain';
+import { ChartOfAccounts } from '../domain/chart-of-accounts.domain';
 import {
   type TemplateBundle,
   type CoaTemplateAccount,

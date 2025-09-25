@@ -1,11 +1,11 @@
 import type { DomainEvent as _DomainEvent } from '@aibos/eventsourcing';
 
-import { AccountType } from '../domain/account';
+import { AccountType } from '../domain/account.domain';
 import {
   type AccountBalanceUpdatedEvent,
   type AccountStateUpdatedEvent,
-} from '../events/account-updated-event';
-import { type JournalEntryPostedEvent } from '../events/journal-entry-posted-event';
+} from '../events/account-updated.event';
+import { type JournalEntryPostedEvent } from '../events/journal-entry-posted.event';
 
 /**
  * Account balance snapshot at a specific point in time

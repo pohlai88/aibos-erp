@@ -1,8 +1,8 @@
-import type { AccountRepository } from '../domain/interfaces/account-repository.interface';
-import type { EventStore } from '../domain/interfaces/event-store.interface';
-import type { JournalEntryRepository } from '../domain/interfaces/journal-entry-repository.interface';
+import type { AccountRepository } from '@aibos/accounting/domain/repositories.interface';
+import type { EventStore } from '@aibos/accounting/domain/repositories.interface';
+import type { JournalEntryRepository } from '@aibos/accounting/domain/repositories.interface';
 
-import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
+import { PostJournalEntryCommand } from '../commands/post-journal-entry.command';
 import { AccountingService } from '../services/accounting.service';
 import { type MultiCurrencyService } from '../services/multi-currency.service';
 import { type OutboxService } from '../services/outbox.service';

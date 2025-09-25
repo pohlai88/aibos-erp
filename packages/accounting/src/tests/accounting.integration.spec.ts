@@ -1,8 +1,8 @@
 import type { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 
-import { AccountingModule } from '../../accounting.module';
-import { CreateAccountCommand } from '../../commands/create-account-command';
-import { AccountingService } from '../../services/accounting.service';
+import { AccountingModule } from '../accounting.module';
+import { CreateAccountCommand } from '../commands/create-account.command';
+import { AccountingService } from '../services/accounting.service';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PostgreSqlContainer } from '@testcontainers/postgresql';

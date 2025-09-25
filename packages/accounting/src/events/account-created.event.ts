@@ -1,6 +1,6 @@
 import type { DomainEvent } from '@aibos/eventsourcing';
 
-import { AccountType } from '../domain/account';
+import { AccountType } from '../domain/account.domain';
 import { randomUUID } from 'node:crypto';
 
 export class AccountCreatedEvent implements DomainEvent {

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
+import { ClientProviders } from '../components/ClientProviders';
 import { Navigation } from '../components/Navigation';
-import { ErrorBoundary, CorrelationProvider } from '@aibos/ui';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -66,21 +66,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        <ErrorBoundary
-          onError={(error, errorInfo, errorId) => {
-            console.error('Application Error:', {
-              errorId,
-              error: error.message,
-              stack: error.stack,
-              componentStack: errorInfo.componentStack,
-            });
-          }}
-        >
-          <CorrelationProvider>
-            <Navigation />
-            <main>{children}</main>
-          </CorrelationProvider>
-        </ErrorBoundary>
+        <ClientProviders>
+          <Navigation />
+          <main>{children}</main>
+        </ClientProviders>
       </body>
     </html>
   );

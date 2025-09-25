@@ -2,20 +2,20 @@ import {
   EVENT_STORE,
   ACCOUNT_REPOSITORY,
   JOURNAL_ENTRY_REPOSITORY,
-} from './constants/injection-tokens';
-import { AccountEntity } from './infrastructure/database/entities/account.entity';
-import { ExchangeRateEntity } from './infrastructure/database/entities/exchange-rate.entity';
-import { JournalEntryEntity } from './infrastructure/database/entities/journal-entry.entity';
-import { OutboxEventEntity } from './infrastructure/database/entities/outbox-event.entity';
-import { InMemoryEventStore } from './infrastructure/repositories/in-memory-event-store.repository';
-import { TypeormAccountRepository } from './infrastructure/repositories/typeorm-account.repository';
-import { TypeormJournalEntryRepository } from './infrastructure/repositories/typeorm-journal-entry.repository';
-import { ResilienceManager } from './infrastructure/resilience/resilience-manager';
-import { GeneralLedgerProjection } from './projections/general-ledger-projection';
+} from './constants/injection.tokens';
+import { AccountEntity } from './infrastructure/account.entity';
+import { ExchangeRateEntity } from './infrastructure/exchange-rate.entity';
+import { InMemoryEventStore } from './infrastructure/in-memory-event-store.repository';
+import { JournalEntryEntity } from './infrastructure/journal-entry.entity';
+import { OutboxEventEntity } from './infrastructure/outbox-event.entity';
+import { ResilienceManager } from './infrastructure/resilience-manager.infrastructure';
+import { TypeormAccountRepository } from './infrastructure/typeorm-account.repository';
+import { TypeormJournalEntryRepository } from './infrastructure/typeorm-journal-entry.repository';
 import {
   ProjectionCircuitBreaker,
   ProjectionHealthService,
-} from './projections/projection-circuit-breaker';
+} from './projections/circuit-breaker.utility';
+import { GeneralLedgerProjection } from './projections/general-ledger.projection';
 import { AccountingHealthService } from './services/accounting-health.service';
 import { AccountingService } from './services/accounting.service';
 import { ErrorHandlingService } from './services/error-handling.service';
