@@ -1010,6 +1010,7 @@ pnpm dx
    - Should NOT extend `tsconfig.json`
 
 5. **Check Missing Dependencies**
+
    ```bash
    # Check if all required packages are included
    cat apps/web/package.json | grep "@aibos/"
