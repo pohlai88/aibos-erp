@@ -1,6 +1,6 @@
-import type { ChangeEvent } from 'react';
+import type { ChangeEvent, ElementType } from 'react';
 
-import { cn, variants, createPolymorphic } from './utils';
+import { cn, variants, createPolymorphic, type PolymorphicReference } from '../utils';
 
 export interface InputProperties {
   variant?: 'default' | 'error';
@@ -10,14 +10,15 @@ export interface InputProperties {
   className?: string;
   value?: string;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  as?: ElementType;
 }
 
 const inputVariants = variants({
-  base: 'flex w-full rounded-md border bg-white px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+  base: 'flex w-full rounded-md border bg-semantic-background text-semantic-foreground px-3 py-2 text-sm transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-semantic-background disabled:opacity-50 disabled:pointer-events-none',
   variants: {
     variant: {
-      default: 'border-gray-300 focus:ring-blue-500 focus:border-blue-500',
-      error: 'border-red-300 focus:ring-red-500 focus:border-red-500',
+      default: 'border-semantic-input focus:ring-semantic-primary focus:border-semantic-primary',
+      error: 'border-semantic-error focus:ring-semantic-error focus:border-semantic-error',
     },
     size: {
       sm: 'h-8 px-2 text-xs',
@@ -26,10 +27,11 @@ const inputVariants = variants({
     },
   },
   defaultVariants: { variant: 'default', size: 'md' },
+  strict: true, // Enable dev-time warnings for unknown variants
 });
 
 export const Input = createPolymorphic<'input', InputProperties>(
-  ({ as, variant, size, disabled, placeholder, className, value, onChange, ...props }, ref) => {
+  ({ as, variant, size, disabled, placeholder, className, value, onChange, ...props }, ref: PolymorphicReference<'input'>) => {
     const Component = as || 'input';
 
     return (

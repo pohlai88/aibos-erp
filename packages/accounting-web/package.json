@@ -38,6 +38,7 @@
     "@aibos/accounting": "workspace:*",
     "@aibos/accounting-contracts": "workspace:*",
     "@aibos/ui": "workspace:*",
+    "@aibos/ui-business": "workspace:*",
     "zod": "^3.22.4"
   },
   "devDependencies": {

@@ -4,19 +4,19 @@
 // Core utilities
 export * from './utils';
 
-// UI Components - Direct exports for clean imports
-export * from './button';
-export * from './input';
-export * from './card';
-export * from './badge';
+// Primitive Components (Atoms)
+export * from './primitives/button';
+export * from './primitives/input';
+export * from './primitives/badge';
 
-// Error Handling & Loading States
-export * from './error-boundary';
-export * from './correlation-context';
-export * from './loading-states';
+// Complex Components (Molecules)
+export * from './components/card';
+export * from './components/loading-states';
+export * from './components/error-boundary';
+export * from './components/virtual-table';
 
-// Financial Analytics & Dashboards
-export * from './cfo-dashboard';
+// Hooks
+export * from './hooks/correlation-context';
 
-// Performance & Data Management
-export * from './virtual-table';
+// Design System
+export * from './tokens/index';

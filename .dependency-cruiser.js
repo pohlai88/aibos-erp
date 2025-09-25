@@ -1,5 +1,7 @@
 export default {
   forbidden: [
+    // ===== EXISTING RULES =====
+    
     // Forbid dependencies from packages to apps
     {
       name: 'no-packages-to-apps',
@@ -34,6 +36,48 @@ export default {
       to: {
         path: '^apps',
       },
+    },
+
+    // ===== UI ECOSYSTEM RULES =====
+    
+    // UI Primitives should not import business packages
+    {
+      name: 'ui-primitives-no-business-imports',
+      severity: 'error',
+      from: {
+        path: '^packages/ui/src',
+      },
+      to: {
+        path: '^packages/(ui-business|accounting-contracts|accounting-web)',
+      },
+      comment: 'UI primitives must not import business packages - they should be pure UI components only',
+    },
+
+    // Apps should not import UI primitives directly
+    {
+      name: 'apps-no-direct-ui-imports',
+      severity: 'error',
+      from: {
+        path: '^apps',
+      },
+      to: {
+        path: '^packages/ui/src/(primitives|components|hooks)',
+      },
+      comment: 'Apps must import from @aibos/ui-business, not directly from UI primitives',
+    },
+
+    // UI-Business should not import from other business packages
+    {
+      name: 'ui-business-no-cross-business-imports',
+      severity: 'error',
+      from: {
+        path: '^packages/ui-business/src',
+      },
+      to: {
+        path: '^packages/(accounting-web|accounting-contracts)',
+        pathNot: '^packages/accounting-contracts/src/types',
+      },
+      comment: 'UI-Business should only import domain contracts, not other business packages',
     },
 
     // Forbid deep imports into package internals from outside packages
@@ -120,6 +164,43 @@ export default {
       path:
         '(^|/)(node_modules|dist|build|coverage|.next|storybook-static)($|/)|' +
         '\\.(test|spec|stories)\\.(ts|tsx|js|jsx)$|(__mocks__|__fixtures__)',
+    },
+    
+    // Enhanced options for UI ecosystem validation
+    enhancedResolveOptions: {
+      // Enable better module resolution for UI packages
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+      mainFields: ['module', 'main'],
+    },
+    
+    // Custom reporters for UI ecosystem violations
+    reporterOptions: {
+      dot: {
+        collapsePattern: '^packages/ui/src/(primitives|components|hooks|utils)/',
+        theme: {
+          graph: {
+            splines: 'ortho',
+          },
+          modules: [
+            {
+              criteria: { matchesFocus: true },
+              attributes: { fillcolor: 'lime' },
+            },
+            {
+              criteria: { source: '^packages/ui/src' },
+              attributes: { fillcolor: 'lightblue' },
+            },
+            {
+              criteria: { source: '^packages/ui-business/src' },
+              attributes: { fillcolor: 'lightgreen' },
+            },
+            {
+              criteria: { source: '^apps' },
+              attributes: { fillcolor: 'lightyellow' },
+            },
+          ],
+        },
+      },
     },
   },
 };

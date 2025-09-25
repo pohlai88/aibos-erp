@@ -11,10 +11,33 @@
       "require": "./dist/index.cjs",
       "default": "./dist/index.js"
     },
+    "./tokens": {
+      "types": "./dist/types/src/tokens/index.d.ts",
+      "import": "./dist/tokens.js",
+      "require": "./dist/tokens.cjs",
+      "default": "./dist/tokens.js"
+    },
+    "./primitives/*": {
+      "types": "./dist/types/src/primitives/*.d.ts",
+      "import": "./dist/primitives/*.js",
+      "require": "./dist/primitives/*.cjs",
+      "default": "./dist/primitives/*.js"
+    },
+    "./components/*": {
+      "types": "./dist/types/src/components/*.d.ts",
+      "import": "./dist/components/*.js",
+      "require": "./dist/components/*.cjs",
+      "default": "./dist/components/*.js"
+    },
+    "./utils": {
+      "types": "./dist/types/src/utils/index.d.ts",
+      "import": "./dist/utils.js",
+      "require": "./dist/utils.cjs",
+      "default": "./dist/utils.js"
+    },
     "./package.json": "./package.json"
   },
   "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
   "types": "./dist/types/src/index.d.ts",
   "files": [
     "dist",
@@ -22,21 +45,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "format": "prettier -w .",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "echo 'No tests yet'",
     "build:types": "tsc -p tsconfig.types.json",
     "build:js": "tsup",
     "build": "pnpm run build:types && pnpm run build:js",
-    "dep:check": "depcruise --validate --config ../../.dependency-cruiser.js --output-type text src",
-    "dev": "tsup --watch",
-    "clean": "rimraf dist",
-    "dx:stage1": "prettier --write . && eslint . --fix",
-    "dx:stage2": "knip --fix --no-gitignore || true && ts-prune || true",
-    "dx:security": "eslint . --rule 'security/detect-object-injection:error'",
-    "dx": "pnpm run build && tsc --noEmit && eslint . --max-warnings=0"
+    "test": "vitest run",
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "clsx": "2.1.1",
@@ -44,20 +58,37 @@
     "tailwind-merge": "2.6.0"
   },
   "devDependencies": {
+    "@storybook/addon-essentials": "^8.0.0",
+    "@storybook/addon-interactions": "^8.0.0",
+    "@storybook/addon-links": "^8.0.0",
+    "@storybook/blocks": "^8.0.0",
+    "@storybook/react": "^8.0.0",
+    "@storybook/react-vite": "^8.0.0",
+    "@storybook/test": "^8.0.0",
     "@tailwindcss/container-queries": "0.1.0",
     "@tailwindcss/forms": "0.5.0",
     "@tailwindcss/typography": "0.5.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/user-event": "^14.0.0",
     "@types/react": "18.2.0",
     "@types/react-dom": "18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
     "autoprefixer": "10.4.0",
     "eslint": "9.36.0",
+    "fast-glob": "^3.3.0",
     "postcss": "8.4.0",
     "prettier": "3.6.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "size-limit": "^11.0.0",
+    "storybook": "^8.0.0",
     "tailwindcss": "3.4.0",
+    "tsx": "^4.0.0",
     "tsup": "8.5.0",
-    "typescript": "5.9.2"
+    "typescript": "5.9.2",
+    "vite": "^5.0.0",
+    "vitest": "^1.0.0"
   },
   "peerDependencies": {
     "react": "18.2.0",
@@ -65,5 +96,15 @@
   },
   "engines": {
     "node": ">=18.18.0"
-  }
+  },
+  "size-limit": [
+    {
+      "path": "dist/index.js",
+      "limit": "50 KB"
+    },
+    {
+      "path": "dist/index.cjs",
+      "limit": "50 KB"
+    }
+  ]
 }

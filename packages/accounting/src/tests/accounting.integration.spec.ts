@@ -40,16 +40,25 @@ describe('Accounting Integration Tests', () => {
       // Skip all tests in this suite
       return;
     }
-  });
+  }, 60000); // Increase timeout to 60 seconds
 
   afterAll(async () => {
-    if (module) {
-      await module.close();
+    try {
+      if (module) {
+        await module.close();
+      }
+    } catch (error) {
+      console.warn('Error closing module:', error);
     }
-    if (db) {
-      await db.stop();
+    
+    try {
+      if (db) {
+        await db.stop();
+      }
+    } catch (error) {
+      console.warn('Error stopping database container:', error);
     }
-  });
+  }, 30000); // 30 second timeout for cleanup
 
   it('should create account and persist to database', async () => {
     if (!db || !service) {

@@ -11,6 +11,7 @@ import security from 'eslint-plugin-security';
 import unicorn from 'eslint-plugin-unicorn';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import reactHooks from 'eslint-plugin-react-hooks';
+import aibosUi from './packages/ui/eslint-plugin/index.js';
 // import nextPlugin from 'eslint-config-next'; // Temporarily disabled due to ESLint compatibility issues
 
 export default [
@@ -111,6 +112,7 @@ export default [
       unicorn,
       'jsx-a11y': jsxA11y,
       'react-hooks': reactHooks,
+      'aibos-ui': aibosUi,
     },
     rules: {
       // Enhanced TypeScript rules
@@ -167,6 +169,9 @@ export default [
       'security/detect-unsafe-regex': 'error',
       'security/detect-buffer-noassert': 'error',
       'security/detect-child-process': 'warn',
+
+      // Anti-drift protection - prevents hardcoded colors
+      'aibos-ui/no-hardcoded-palette': ['error', { allow: ['bg-transparent', '^ring-offset-'] }],
       'security/detect-disable-mustache-escape': 'error',
       'security/detect-eval-with-expression': 'error',
       'security/detect-no-csrf-before-method-override': 'error',

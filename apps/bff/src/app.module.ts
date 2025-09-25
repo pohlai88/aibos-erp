@@ -4,6 +4,7 @@ import { DatabaseService } from './config/database.service.js';
 import { HealthModule } from './health/health.module.js';
 import { AccountingModule } from './modules/accounting/accounting.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { CFODashboardModule } from './modules/cfo-dashboard/cfo-dashboard.module.js';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_INTERCEPTOR } from '@nestjs/core';
@@ -22,6 +23,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     HealthModule,
     AuthModule,
     AccountingModule,
+    CFODashboardModule,
   ],
   controllers: [],
   providers: [

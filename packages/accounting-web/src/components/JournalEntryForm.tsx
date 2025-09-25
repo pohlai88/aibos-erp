@@ -1,9 +1,10 @@
-import type { TJournalEntry, TJournalEntryLine } from '@aibos/accounting-contracts';
+import * as React from 'react';
 
-import { useAccounting } from '../hooks/useAccounting';
+import type { TJournalEntry, TJournalEntryLine } from '@aibos/accounting-contracts';
 import { JournalEntry } from '@aibos/accounting-contracts';
 import { cn, LoadingButton } from '@aibos/ui';
-import * as React from 'react';
+
+import { useAccounting } from '../hooks/useAccounting';
 
 type Properties = {
   tenantId: string;
@@ -20,6 +21,7 @@ export function JournalEntryForm({
   defaultCurrency = 'MYR',
 }: Properties): JSX.Element {
   const { loading, error, postJournalEntry } = useAccounting();
+
   const [lines, setLines] = React.useState<TJournalEntryLine[]>([
     { accountId: '', amount: { currency: defaultCurrency, amount: 0 } },
     { accountId: '', amount: { currency: defaultCurrency, amount: 0 } },
@@ -33,11 +35,12 @@ export function JournalEntryForm({
 
   const addLine = (): void =>
     setLines((ls) => [...ls, { accountId: '', amount: { currency: defaultCurrency, amount: 0 } }]);
-  const removeLine = (index: number): void =>
-    setLines((ls) => ls.filter((_, index_) => index_ !== index));
+
+  const removeLine = (index: number): void => setLines((ls) => ls.filter((_, index_) => index_ !== index));
 
   const onSubmit = async (event: React.FormEvent): Promise<void> => {
     event.preventDefault();
+
     const payload: TJournalEntry = {
       tenantId,
       postedBy: 'current-user', // replace at integration
@@ -46,11 +49,13 @@ export function JournalEntryForm({
       reference: ref || undefined,
       lines,
     };
+
     const parsed = JournalEntry.safeParse(payload);
     if (!parsed.success) {
       console.error(parsed.error.issues.map((issue) => issue.message).join('\n'));
       return;
     }
+
     const { id } = await postJournalEntry(parsed.data);
     onPosted?.(id);
   };
@@ -60,7 +65,7 @@ export function JournalEntryForm({
       <div className="space-y-2">
         <label className="block text-sm font-medium">Reference</label>
         <input
-          className="w-full rounded border p-2"
+          className="w-full rounded border border-semantic-border p-2"
           value={ref}
           onChange={(event) => setReference(event.target.value)}
         />
@@ -69,7 +74,7 @@ export function JournalEntryForm({
       <div className="space-y-2">
         <label className="block text-sm font-medium">Description</label>
         <textarea
-          className="w-full rounded border p-2"
+          className="w-full rounded border border-semantic-border p-2"
           value={desc}
           onChange={(event) => setDesc(event.target.value)}
         />
@@ -80,22 +85,24 @@ export function JournalEntryForm({
         {lines.map((l, index) => (
           <div key={index} className="grid grid-cols-12 gap-2">
             <input
-              className="col-span-5 rounded border p-2"
+              className="col-span-5 rounded border border-semantic-border p-2"
               placeholder="Account ID"
               value={l.accountId}
               onChange={(event) => updateLine(index, { accountId: event.target.value })}
             />
             <input
-              className="col-span-3 rounded border p-2"
+              className="col-span-3 rounded border border-semantic-border p-2"
               placeholder="Amount (use + for Debit, - for Credit)"
               type="number"
               value={l.amount.amount}
               onChange={(event) =>
-                updateLine(index, { amount: { ...l.amount, amount: Number(event.target.value) } })
+                updateLine(index, {
+                  amount: { ...l.amount, amount: Number(event.target.value) },
+                })
               }
             />
             <input
-              className="col-span-2 rounded border p-2"
+              className="col-span-2 rounded border border-semantic-border p-2"
               placeholder="Currency"
               value={l.amount.currency}
               onChange={(event) =>
@@ -106,23 +113,23 @@ export function JournalEntryForm({
             />
             <button
               type="button"
-              className="col-span-2 rounded border p-2"
+              className="col-span-2 rounded border border-semantic-border p-2"
               onClick={() => removeLine(index)}
             >
               Remove
             </button>
           </div>
         ))}
-        <button type="button" className="rounded border p-2" onClick={addLine}>
+        <button type="button" className="rounded border border-semantic-border p-2" onClick={addLine}>
           Add line
         </button>
       </div>
 
       {error && (
-        <div className="rounded-md bg-red-50 p-4">
+        <div className="rounded-md bg-semantic-error/10 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-semantic-error" viewBox="0 0 20 20" fill="currentColor">
                 <path
                   fillRule="evenodd"
                   d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
@@ -131,8 +138,8 @@ export function JournalEntryForm({
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="mt-2 text-sm text-red-700">{error}</div>
+              <h3 className="text-sm font-medium text-semantic-error">Error</h3>
+              <div className="mt-2 text-sm text-semantic-error">{error}</div>
             </div>
           </div>
         </div>
@@ -142,7 +149,7 @@ export function JournalEntryForm({
         type="submit"
         isLoading={loading}
         loadingText="Posting..."
-        className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        className="w-full rounded-md bg-semantic-primary px-4 py-2 text-sm font-medium text-semantic-primary-foreground hover:bg-semantic-primary/90 focus:outline-none focus:ring-2 focus:ring-semantic-primary focus:ring-offset-2 disabled:opacity-50"
       >
         Post Journal Entry
       </LoadingButton>

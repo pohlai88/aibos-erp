@@ -1,7 +1,14 @@
-import type { ComponentPropsWithRef, ElementType, MutableRefObject, Ref, RefCallback } from 'react';
+import type {
+  ComponentPropsWithRef,
+  ElementType,
+  MutableRefObject,
+  Ref,
+  RefCallback,
+  ElementRef,
+} from 'react';
 
 import { clsx, type ClassValue } from 'clsx';
-import { forwardRef } from 'react';
+import { forwardRef, useCallback } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 /**
@@ -53,7 +60,7 @@ export function createPolymorphic<
   },
 ) => JSX.Element | null {
   // Wrap with forwardRef so consumers pass standard `ref` instead of a prop.
-  const Comp = forwardRef<unknown, PolymorphicProperties<DefaultAs, OwnProperties>>(
+  const Comp = forwardRef<ElementRef<DefaultAs>, PolymorphicProperties<DefaultAs, OwnProperties>>(
     (_props, _ref) => {
       // We intentionally keep the render API you provided.
       return render(
@@ -76,18 +83,27 @@ export function createPolymorphic<
  * Compose multiple refs into a single ref callback
  * Useful when you need to forward refs to multiple elements
  */
-export function composeReferences<T>(...references: Array<Ref<T> | undefined>): RefCallback<T> {
-  return (node: T) => {
+export function composeReferences<T>(...references: Array<Ref<T> | undefined>): RefCallback<T | null> {
+  return (node: T | null) => {
     for (const ref of references) {
       if (!ref) continue;
       if (typeof ref === 'function') {
         ref(node);
       } else {
-        // Narrow and assign safely; keep nullability semantics for React refs.
-        (ref as MutableRefObject<T | undefined>).current = node as T | undefined;
+        // React clears object refs with `null` on unmount.
+        (ref as MutableRefObject<T | null>).current = node as T | null;
       }
     }
   };
+}
+
+/**
+ * Hook variant that memoizes the composed ref callback.
+ * Avoids unnecessary re-renders when passing to DOM nodes.
+ */
+export function useComposedRefs<T>(...references: Array<Ref<T> | undefined>): RefCallback<T | null> {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useCallback(composeReferences<T>(...references), references);
 }
 
 /**
@@ -99,9 +115,9 @@ export function variants<
   D extends Partial<{ [K in keyof V]: keyof V[K] }> = Partial<{
     [K in keyof V]: keyof V[K];
   }>,
->(config: { base: string; variants: V; defaultVariants?: D }) {
+>(config: { base: string; variants: V; defaultVariants?: D; strict?: boolean }) {
   type Props = Partial<{ [K in keyof V]: keyof V[K] }>;
-  const { base, variants: variantConfig, defaultVariants } = config;
+  const { base, variants: variantConfig, defaultVariants, strict } = config;
 
   // Precompile to Maps to avoid dynamic object key sinks
   const variantMaps = new Map<string, Map<string, string>>(
@@ -115,14 +131,37 @@ export function variants<
     } as Props;
     let classes = base;
 
-    for (const [rawKey, rawValue] of Object.entries(resolvedProps)) {
-      if (!rawValue) continue;
+    // First apply defaults for all variant keys
+    for (const [key, defaultValue] of Object.entries(defaultVariants || {})) {
+      if (defaultValue) {
+        const inner = variantMaps.get(key);
+        const klass = inner?.get(String(defaultValue));
+        if (klass) {
+          classes = cn(classes, klass);
+        }
+      }
+    }
+
+    // Then override with provided props (only if they're valid)
+    for (const [rawKey, rawValue] of Object.entries(props || {})) {
+      if (rawValue === null || rawValue === undefined) continue;
       const key = String(rawKey);
       const value = String(rawValue);
       const inner = variantMaps.get(key);
-      if (!inner) continue;
+      if (!inner) {
+        if (strict && typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
+          // eslint-disable-next-line no-console
+          console.warn(`[variants] Unknown variant key "${key}"`);
+        }
+        continue;
+      }
       const klass = inner.get(value);
-      if (klass) classes = cn(classes, klass);
+      if (klass) {
+        classes = cn(classes, klass);
+      } else if (strict && typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
+        // eslint-disable-next-line no-console
+        console.warn(`[variants] Unknown value "${value}" for variant "${key}"`);
+      }
     }
     return classes;
   };

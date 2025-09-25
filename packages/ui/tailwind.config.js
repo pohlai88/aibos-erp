@@ -11,17 +11,24 @@ module.exports = {
   darkMode: ['class'],
   // Ensure our utilities win against third-party CSS without overusing !important everywhere
   important: 'html',
+  // Cleaner mobile behavior for hover utilities (Tailwind v3+)
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
   content: [
-    './src/**/*.{js,ts,jsx,tsx}',
+    './src/**/*.{js,ts,jsx,tsx,mdx}',
     // Future packages (anti-drift for monorepo growth)
-    '../../packages/*/src/**/*.{js,ts,jsx,tsx,mdx}',
+    '../../packages/**/*.{js,ts,jsx,tsx,mdx}',
+    '../../apps/**/*.{js,ts,jsx,tsx,mdx}',
+    // If shipping compiled UI as a package, include its dist so classes aren't purged
+    'node_modules/@aibos/ui/dist/**/*.js',
   ],
   // Prevent purge from dropping dynamic semantic/status classes
   safelist: [
     // text/bg/border/ring for semantic colors
     {
       pattern:
-        /^(text|bg|border|ring)-(primary|secondary|muted|accent|success|warning|info)(?:-(50|100|200|300|400|500|600|700|800|900))?$/,
+        /^(text|bg|border|ring|ring-offset|outline|fill|stroke)-(primary|secondary|muted|accent|success|warning|info|destructive|error)(?:-(50|100|200|300|400|500|600|700|800|900))?$/,
     },
     // status pills / states
     {
@@ -30,6 +37,11 @@ module.exports = {
     // foreground/background/card/popover variants often toggled via CMS/config
     {
       pattern: /^(text|bg|border|ring)-(foreground|background|card|popover)(?:-foreground)?$/,
+    },
+    // Our semantic plugin utilities (computed classnames at runtime)
+    {
+      pattern:
+        /^(bg|text|border|ring|ring-offset|outline|fill|stroke)-semantic-(primary|secondary|success|warning|error|info|muted|accent|foreground|background|card|popover)(?:-foreground)?$/,
     },
   ],
   theme: {
@@ -154,11 +166,28 @@ module.exports = {
           DEFAULT: 'hsl(var(--info))',
           foreground: 'hsl(var(--info-foreground))',
         },
-        // Status colors
-        pending: 'hsl(var(--pending))',
-        processing: 'hsl(var(--processing))',
-        completed: 'hsl(var(--completed))',
-        cancelled: 'hsl(var(--cancelled))',
+        // Error color (referenced but missing)
+        error: {
+          DEFAULT: 'hsl(var(--error))',
+          foreground: 'hsl(var(--error-foreground))',
+        },
+        // Status colors with proper definitions
+        pending: {
+          DEFAULT: 'hsl(var(--pending))',
+          foreground: 'hsl(var(--pending-foreground))',
+        },
+        processing: {
+          DEFAULT: 'hsl(var(--processing))',
+          foreground: 'hsl(var(--processing-foreground))',
+        },
+        completed: {
+          DEFAULT: 'hsl(var(--completed))',
+          foreground: 'hsl(var(--completed-foreground))',
+        },
+        cancelled: {
+          DEFAULT: 'hsl(var(--cancelled))',
+          foreground: 'hsl(var(--cancelled-foreground))',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -212,5 +241,65 @@ module.exports = {
     require('@tailwindcss/typography'),
     require('@tailwindcss/forms'),
     require('@tailwindcss/container-queries'),
+    // Semantic utilities & helpful variants: bg/text/border/ring/ring-offset/from/via/to/outline/fill/stroke
+    require('tailwindcss/plugin')(function({ addUtilities, addVariant, e }) {
+      const bases = [
+        'primary','secondary','success','warning','error','info',
+        'muted','accent','foreground','background','card','popover'
+      ];
+      const attrs = ['bg','text','border','ring','ring-offset','from','via','to','outline','fill','stroke'];
+      const utils = {};
+
+      for (const b of bases) {
+        // base color variable
+        const varBase = `hsl(var(--${b}))`;
+        const varFg   = `hsl(var(--${b}-foreground))`;
+
+        for (const a of attrs) {
+          // normal token (…-semantic-<base>)
+          const cls = `.${e(`${a}-semantic-${b}`)}`;
+          if (a === 'bg')           utils[cls] = { backgroundColor: varBase };
+          else if (a === 'text')    utils[cls] = { color: varBase };
+          else if (a === 'border')  utils[cls] = { borderColor: varBase };
+          else if (a === 'ring')    utils[cls] = { '--tw-ring-color': varBase };
+          else if (a === 'ring-offset') utils[cls] = { '--tw-ring-offset-color': varBase };
+          else if (a === 'from')    utils[cls] = { '--tw-gradient-from': varBase, '--tw-gradient-to': 'rgb(255 255 255 / 0)', '--tw-gradient-stops': 'var(--tw-gradient-from), var(--tw-gradient-to)' };
+          else if (a === 'via')     utils[cls] = { '--tw-gradient-to': 'rgb(255 255 255 / 0)', '--tw-gradient-stops': `var(--tw-gradient-from), ${varBase}, var(--tw-gradient-to)` };
+          else if (a === 'to')      utils[cls] = { '--tw-gradient-to': varBase };
+          else if (a === 'outline') utils[cls] = { outlineColor: varBase };
+          else if (a === 'fill')    utils[cls] = { fill: varBase };
+          else if (a === 'stroke')  utils[cls] = { stroke: varBase };
+
+          // foreground token (…-semantic-<base>-foreground) for text/bg-foreground etc.
+          const clsFg = `.${e(`${a}-semantic-${b}-foreground`)}`;
+          if (a === 'bg')           utils[clsFg] = { backgroundColor: varFg };
+          else if (a === 'text')    utils[clsFg] = { color: varFg };
+          else if (a === 'border')  utils[clsFg] = { borderColor: varFg };
+          else if (a === 'ring')    utils[clsFg] = { '--tw-ring-color': varFg };
+          else if (a === 'ring-offset') utils[clsFg] = { '--tw-ring-offset-color': varFg };
+          else if (a === 'from')    utils[clsFg] = { '--tw-gradient-from': varFg, '--tw-gradient-to': 'rgb(255 255 255 / 0)', '--tw-gradient-stops': 'var(--tw-gradient-from), var(--tw-gradient-to)' };
+          else if (a === 'via')     utils[clsFg] = { '--tw-gradient-to': 'rgb(255 255 255 / 0)', '--tw-gradient-stops': `var(--tw-gradient-from), ${varFg}, var(--tw-gradient-to)` };
+          else if (a === 'to')      utils[clsFg] = { '--tw-gradient-to': varFg };
+          else if (a === 'outline') utils[clsFg] = { outlineColor: varFg };
+          else if (a === 'fill')    utils[clsFg] = { fill: varFg };
+          else if (a === 'stroke')  utils[clsFg] = { stroke: varFg };
+        }
+      }
+
+      // Tailwind v3+ automatically supports variant modifiers (hover:, focus:, etc.)
+      addUtilities(utils);
+
+      // Helpful variants
+      addVariant('hocus', ['&:hover', '&:focus-visible']);           // e.g., hocus:bg-semantic-primary
+      addVariant('data-open', '&[data-open="true"]');                // e.g., data-open:bg-semantic-accent
+      addVariant('data-active', '&[data-active="true"]');
+      addVariant('aria-expanded', '&[aria-expanded="true"]');
+      // Widely-used state hooks in headless libs
+      addVariant('aria-selected', '&[aria-selected="true"]');
+      addVariant('data-state-open', '&[data-state="open"]');
+      addVariant('data-state-closed', '&[data-state="closed"]');
+      addVariant('data-state-checked', '&[data-state="checked"]');
+      addVariant('data-state-unchecked', '&[data-state="unchecked"]');
+    }),
   ],
 };

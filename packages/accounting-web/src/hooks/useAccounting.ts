@@ -14,6 +14,12 @@ export function useAccounting(client = new AccountingClient()): {
   trialBalance: TTrialBalance | null;
   postJournalEntry: (_entry: TJournalEntry) => Promise<{ id: string }>;
   loadTrialBalance: (_q: { asOf: string; tenantId: string }) => Promise<TTrialBalance>;
+  // Financial Chart Data Methods
+  getProfitLossData: (options: { period: string; companyId?: string; tenantId: string; periods?: number }) => Promise<any>;
+  getBalanceSheetData: (options: { period: string; companyId?: string; tenantId: string; periods?: number }) => Promise<any>;
+  getCashFlowData: (options: { period: string; companyId?: string; tenantId: string; periods?: number }) => Promise<any>;
+  getTrendData: (options: { period: string; companyId?: string; tenantId: string; metrics: string[]; periods?: number }) => Promise<any>;
+  getVarianceData: (options: { period: string; companyId?: string; tenantId: string; metric: string; periods?: number }) => Promise<any>;
 } {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -53,5 +59,97 @@ export function useAccounting(client = new AccountingClient()): {
     [client],
   );
 
-  return { loading, error, trialBalance, postJournalEntry, loadTrialBalance };
+  // Financial Chart Data Methods
+  const getProfitLossData = React.useCallback(
+    async (options: { period: string; companyId?: string; tenantId: string; periods?: number }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await client.getProfitLossData(options);
+      } catch (error_: unknown) {
+        setError((error_ as Error)?.message ?? 'Unknown error');
+        throw error_;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client],
+  );
+
+  const getBalanceSheetData = React.useCallback(
+    async (options: { period: string; companyId?: string; tenantId: string; periods?: number }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await client.getBalanceSheetData(options);
+      } catch (error_: unknown) {
+        setError((error_ as Error)?.message ?? 'Unknown error');
+        throw error_;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client],
+  );
+
+  const getCashFlowData = React.useCallback(
+    async (options: { period: string; companyId?: string; tenantId: string; periods?: number }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await client.getCashFlowData(options);
+      } catch (error_: unknown) {
+        setError((error_ as Error)?.message ?? 'Unknown error');
+        throw error_;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client],
+  );
+
+  const getTrendData = React.useCallback(
+    async (options: { period: string; companyId?: string; tenantId: string; metrics: string[]; periods?: number }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await client.getTrendData(options);
+      } catch (error_: unknown) {
+        setError((error_ as Error)?.message ?? 'Unknown error');
+        throw error_;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client],
+  );
+
+  const getVarianceData = React.useCallback(
+    async (options: { period: string; companyId?: string; tenantId: string; metric: string; periods?: number }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        return await client.getVarianceData(options);
+      } catch (error_: unknown) {
+        setError((error_ as Error)?.message ?? 'Unknown error');
+        throw error_;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [client],
+  );
+
+  return { 
+    loading, 
+    error, 
+    trialBalance, 
+    postJournalEntry, 
+    loadTrialBalance,
+    getProfitLossData,
+    getBalanceSheetData,
+    getCashFlowData,
+    getTrendData,
+    getVarianceData,
+  };
 }

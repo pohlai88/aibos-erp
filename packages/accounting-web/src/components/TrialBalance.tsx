@@ -1,9 +1,10 @@
+import * as React from 'react';
+
 import type { TTrialBalanceQuery } from '@aibos/accounting-contracts';
 import type { VirtualTableColumn } from '@aibos/ui';
+import { AsyncLoading, SkeletonTable, VirtualTable } from '@aibos/ui';
 
 import { useAccounting } from '../hooks/useAccounting';
-import { AsyncLoading, SkeletonTable, VirtualTable } from '@aibos/ui';
-import * as React from 'react';
 
 const RIGHT_ALIGN_CLASS = 'text-right';
 
@@ -63,12 +64,13 @@ export function TrialBalance({ query }: TrialBalanceProperties): JSX.Element {
 
   const handleRowClick = React.useCallback((row: TrialBalanceRow) => {
     // TODO: Implement account detail navigation
+    // eslint-disable-next-line no-console
     console.log('Account clicked:', row.accountCode);
   }, []);
 
   return (
     <div className="w-full">
-      <div className="mb-4 text-sm text-gray-600">
+      <div className="mb-4 text-sm text-semantic-muted-foreground">
         {trialBalance ? `As of ${new Date(trialBalance.asOf).toLocaleDateString()}` : 'Loading...'}
       </div>
 
@@ -76,16 +78,11 @@ export function TrialBalance({ query }: TrialBalanceProperties): JSX.Element {
         isLoading={loading}
         error={error ? new Error(error) : undefined}
         loadingComponent={<SkeletonTable rows={10} columns={4} className="h-96" />}
-        errorComponent={(error) => (
+        errorComponent={(error: Error) => (
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
-              <div className="mb-2 text-red-500">
-                <svg
-                  className="mx-auto h-8 w-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
+              <div className="mb-2 text-semantic-error">
+                <svg className="mx-auto h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -94,21 +91,19 @@ export function TrialBalance({ query }: TrialBalanceProperties): JSX.Element {
                   />
                 </svg>
               </div>
-              <p className="text-sm text-gray-600">{error.message}</p>
+              <p className="text-sm text-semantic-muted-foreground">{error.message}</p>
             </div>
           </div>
         )}
       >
         <VirtualTable
-          data={(trialBalance?.rows || []) as unknown as Record<string, unknown>[]}
-          columns={columns as unknown as VirtualTableColumn<Record<string, unknown>>[]}
+          data={trialBalance?.rows || []}
+          columns={columns}
           height={600}
           rowHeight={40}
-          onRowClick={
-            handleRowClick as unknown as (row: Record<string, unknown>, index: number) => void
-          }
+          onRowClick={(row: TrialBalanceRow) => handleRowClick(row)}
           emptyMessage="No trial balance data available"
-          className="rounded-lg border border-gray-200"
+          className="rounded-lg border border-semantic-border"
         />
       </AsyncLoading>
     </div>
