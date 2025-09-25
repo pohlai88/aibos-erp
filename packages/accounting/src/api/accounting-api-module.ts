@@ -1,7 +1,8 @@
 import type { AccountingService } from '../services/accounting.service';
 import type { Express, Request, Response } from 'express';
 
-import { AccountingController } from './controllers/accounting-controller';
+import { AccountingController } from './accounting-controller';
+import { createAccountingRoutes } from './accounting-routes';
 import {
   validateCreateAccount,
   validatePostJournalEntry,
@@ -10,8 +11,7 @@ import {
   validateQueryParameters,
   errorHandler,
   requestLogger,
-} from './middleware/validation-middleware';
-import { createAccountingRoutes } from './routes/accounting-routes';
+} from './validation-middleware';
 
 // Constants
 const API_BASE_PATH = '/api/accounting';

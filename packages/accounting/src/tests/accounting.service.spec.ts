@@ -2,16 +2,20 @@ import type { AccountRepository } from '../domain/interfaces/repositories.interf
 
 import { CreateAccountCommand } from '../commands/create-account-command';
 import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
+import {
+  EVENT_STORE,
+  ACCOUNT_REPOSITORY,
+  JOURNAL_ENTRY_REPOSITORY,
+} from '../constants/injection-tokens';
 import { AccountCreatedEvent } from '../events/account-created-event';
 import { GeneralLedgerProjection } from '../projections/general-ledger-projection';
-import { InMemoryEventStore } from '../services/__tests__/doubles/in-memory-event-store';
 import { AccountingService } from '../services/accounting.service';
 import { FinancialReportingService } from '../services/financial-reporting.service';
 import { KafkaProducerService } from '../services/kafka-producer.service';
 import { MultiCurrencyService } from '../services/multi-currency.service';
 import { OutboxService } from '../services/outbox.service';
 import { TrialBalanceService } from '../services/trial-balance.service';
-import { EVENT_STORE, ACCOUNT_REPOSITORY, JOURNAL_ENTRY_REPOSITORY } from '../tokens';
+import { InMemoryEventStore } from './doubles/in-memory-event-store';
 import { ConfigService } from '@nestjs/config';
 import { Test, type TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'node:crypto';

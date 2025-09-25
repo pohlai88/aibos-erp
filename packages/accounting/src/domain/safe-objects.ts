@@ -5,7 +5,7 @@
  * to prevent object injection and ensure type safety in accounting operations.
  */
 
-import { Money } from './Money';
+import { Money } from './money';
 
 // Constants for error messages
 const MONEY_DESERIALIZATION_ERROR = 'Failed to deserialize Money:';

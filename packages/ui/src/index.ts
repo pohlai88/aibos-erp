@@ -9,3 +9,14 @@ export * from './button';
 export * from './input';
 export * from './card';
 export * from './badge';
+
+// Error Handling & Loading States
+export * from './error-boundary';
+export * from './correlation-context';
+export * from './loading-states';
+
+// Financial Analytics & Dashboards
+export * from './cfo-dashboard';
+
+// Performance & Data Management
+export * from './virtual-table';

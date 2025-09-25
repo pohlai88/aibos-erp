@@ -1,4 +1,4 @@
-import type { Account, JournalEntry, GeneralLedgerEntry } from '../entities/accounting.entities';
+import type { Account, JournalEntry, GeneralLedgerEntry } from './accounting-entities';
 import type { DomainEvent } from '@aibos/eventsourcing';
 import type { EntityManager } from 'typeorm';
 

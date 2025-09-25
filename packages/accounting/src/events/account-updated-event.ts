@@ -1,7 +1,7 @@
 import type { AccountType } from '../domain/account';
 import type { DomainEvent } from '@aibos/eventsourcing';
 
-import { Money } from '../domain/Money';
+import { Money } from '../domain/money';
 import { assertAggregateMatchesTenant, moneyFromCentsShim } from './common';
 import { randomUUID } from 'node:crypto';
 

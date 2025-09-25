@@ -1,5 +1,5 @@
-import type { Account } from '../../domain/entities/accounting.entities';
-import type { AccountRepository } from '../../domain/interfaces/repositories.interface';
+import type { Account } from '../../domain/accounting-entities';
+import type { AccountRepository } from '../../domain/repositories.interface';
 
 export class InMemoryAccountRepository implements AccountRepository {
   private accounts: Map<string, Account> = new Map();

@@ -1,4 +1,4 @@
-import { AccountingController } from '../api/controllers/accounting-controller';
+import { AccountingController } from '../api/accounting-controller';
 import { AccountType } from '../domain/account';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 

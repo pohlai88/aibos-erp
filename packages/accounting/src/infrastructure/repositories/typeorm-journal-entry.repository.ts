@@ -1,7 +1,7 @@
-import type { JournalEntry } from '../../../domain/entities/accounting.entities';
-import type { JournalEntryRepository } from '../../../domain/interfaces/repositories.interface';
+import type { JournalEntry } from '../../domain/accounting-entities';
+import type { JournalEntryRepository } from '../../domain/repositories.interface';
 
-import { JournalEntryEntity } from '../entities/journal-entry.entity';
+import { JournalEntryEntity } from '../database/entities/journal-entry.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { type Repository } from 'typeorm';

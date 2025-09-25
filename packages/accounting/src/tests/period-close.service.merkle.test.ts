@@ -1,4 +1,4 @@
-import { PeriodCloseService } from '../period-close/period-close.service';
+import { PeriodCloseService } from '../services/period-close.service';
 import { describe, test, expect, beforeEach } from 'vitest';
 
 describe('PeriodCloseService - Merkle Tree', () => {

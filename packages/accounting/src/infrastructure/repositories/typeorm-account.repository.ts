@@ -1,6 +1,6 @@
-import { type Account } from '../../../domain/entities/accounting.entities';
-import { type AccountRepository } from '../../../domain/interfaces/repositories.interface';
-import { AccountEntity } from '../entities/account.entity';
+import { type Account } from '../../domain/accounting-entities';
+import { type AccountRepository } from '../../domain/repositories.interface';
+import { AccountEntity } from '../database/entities/account.entity';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, type Repository } from 'typeorm';

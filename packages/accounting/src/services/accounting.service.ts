@@ -1,14 +1,18 @@
-import type { JournalEntryRepository } from '../domain/interfaces/repositories.interface';
-import type { AccountRepository } from '../domain/interfaces/repositories.interface';
-import type { EventStore } from '../domain/interfaces/repositories.interface';
+import type { JournalEntryRepository } from '../domain/repositories.interface';
+import type { AccountRepository } from '../domain/repositories.interface';
+import type { EventStore } from '../domain/repositories.interface';
 
 import { type CreateAccountCommand } from '../commands/create-account-command';
 import { PostJournalEntryCommand } from '../commands/post-journal-entry-command';
+import {
+  EVENT_STORE,
+  ACCOUNT_REPOSITORY,
+  JOURNAL_ENTRY_REPOSITORY,
+} from '../constants/injection-tokens';
 import { ChartOfAccounts } from '../domain/chart-of-accounts';
 import { JournalEntry } from '../domain/journal-entry';
 import { CircuitBreaker } from '../infrastructure/resilience/circuit-breaker';
 import { GeneralLedgerProjection } from '../projections/general-ledger-projection';
-import { EVENT_STORE, ACCOUNT_REPOSITORY, JOURNAL_ENTRY_REPOSITORY } from '../tokens';
 import { FinancialReportingService } from './financial-reporting.service';
 import { MultiCurrencyService } from './multi-currency.service';
 import { OutboxService } from './outbox.service';
@@ -255,7 +259,7 @@ export class AccountingService {
   ): Promise<void> {
     const accountCodes = Array.from(new Set(entries.map((entry) => entry.accountCode)));
     const foundAccounts = await this.accountRepository.findAllByCodes(accountCodes, tenantId);
-    const foundSet = new Set(foundAccounts.map((a) => a.accountCode));
+    const foundSet = new Set(foundAccounts.map((account) => account.accountCode));
     const missingAccounts = accountCodes.filter((code) => !foundSet.has(code));
     if (missingAccounts.length > 0) {
       throw new Error(`Accounts not found: ${missingAccounts.join(', ')}`);

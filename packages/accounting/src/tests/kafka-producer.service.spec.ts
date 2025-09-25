@@ -1,4 +1,4 @@
-import { KafkaProducerService } from '../kafka-producer.service';
+import { KafkaProducerService } from '../services/kafka-producer.service';
 import { type DomainEvent } from '@aibos/eventsourcing';
 import { Test } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi } from 'vitest';

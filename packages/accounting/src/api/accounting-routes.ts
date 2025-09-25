@@ -1,4 +1,4 @@
-import type { AccountingController } from '../controllers/accounting-controller';
+import type { AccountingController } from './accounting-controller';
 import type { Router } from 'express';
 
 import { Router as ExpressRouter } from 'express';

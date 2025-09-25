@@ -1,5 +1,5 @@
-export { AccountingController } from './controllers/accounting-controller';
-export { createAccountingRoutes } from './routes/accounting-routes';
+export { AccountingController } from './accounting-controller';
+export { createAccountingRoutes } from './accounting-routes';
 export {
   validateCreateAccount,
   validatePostJournalEntry,
@@ -8,5 +8,5 @@ export {
   validateQueryParameters,
   errorHandler,
   requestLogger,
-} from './middleware/validation-middleware';
+} from './validation-middleware';
 export { AccountingApiModule } from './accounting-api-module';

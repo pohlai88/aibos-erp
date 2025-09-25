@@ -1,4 +1,4 @@
-import { Money } from './Money';
+import { Money } from './money';
 
 export interface JournalEntryLineProperties {
   readonly accountCode: string;

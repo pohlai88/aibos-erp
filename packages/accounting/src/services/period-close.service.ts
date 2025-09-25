@@ -5,7 +5,7 @@ export interface PeriodSnapshot {
   id: string;
   periodId: string;
   tenantId: string;
-  balances: Map<string, AccountBalance>;
+  balances: Map<string, PeriodAccountBalance>;
   merkleRoot: string;
   createdAt: Date;
   createdBy: string;
@@ -26,7 +26,7 @@ export interface ValidationResult {
   warnings: string[];
 }
 
-export interface AccountBalance {
+export interface PeriodAccountBalance {
   accountCode: string;
   accountName: string;
   balance: number;
@@ -223,7 +223,7 @@ export class PeriodCloseService {
     this.logger.debug(`Creating period snapshot for tenant ${tenantId}, period ${periodId}`);
 
     // Get all account balances for the period
-    const balances = new Map<string, AccountBalance>();
+    const balances = new Map<string, PeriodAccountBalance>();
 
     // Implementation would get balances from projection service
     // const balances = await this.projectionService.getPeriodBalances(tenantId, periodId);
@@ -313,7 +313,7 @@ export class PeriodCloseService {
     // Implementation would check user permissions and approval levels
   }
 
-  private async calculateMerkleRoot(balances: Map<string, AccountBalance>): Promise<string> {
+  private async calculateMerkleRoot(balances: Map<string, PeriodAccountBalance>): Promise<string> {
     // Implementation of Merkle tree for data integrity
     const entries = Array.from(balances.entries()).sort(([a], [b]) => a.localeCompare(b));
 
@@ -328,7 +328,7 @@ export class PeriodCloseService {
     return await this.buildMerkleTree(hashes);
   }
 
-  private async hashBalance(accountCode: string, balance: AccountBalance): Promise<string> {
+  private async hashBalance(accountCode: string, balance: PeriodAccountBalance): Promise<string> {
     // Simple hash implementation for demo purposes
     const data = `${accountCode}:${balance.balance}:${balance.balanceCents}:${balance.currencyCode}`;
     return Buffer.from(data).toString('base64');
@@ -381,7 +381,7 @@ export class PeriodCloseService {
       .digest('base64');
   }
 
-  private async generateChecksum(balances: Map<string, AccountBalance>): Promise<string> {
+  private async generateChecksum(balances: Map<string, PeriodAccountBalance>): Promise<string> {
     const entries = Array.from(balances.entries()).sort(([a], [b]) => a.localeCompare(b));
     const data = entries
       .map(([code, balance]) => `${code}:${balance.balance}:${balance.balanceCents}`)
